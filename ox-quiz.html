@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OX퀴즈 배틀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #F5F7FA;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(74, 144, 217, 0.15);
+            overflow: hidden;
+        }
+
+        /* 헤더 */
+        .header {
+            background: #4A90D9;
+            color: white;
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        /* 진행 바 */
+        .progress-section {
+            padding: 16px 24px;
+            background: #F0F4F8;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #E0E7EF;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4A90D9, #6BB5F0);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        /* 타이머 */
+        .timer-section {
+            text-align: center;
+            padding: 12px 24px 0;
+        }
+
+        .timer {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4A90D9;
+            padding: 6px 16px;
+            background: #EBF4FC;
+            border-radius: 20px;
+        }
+
+        .timer.warning {
+            color: #E74C3C;
+            background: #FDEDEC;
+            animation: pulse 0.5s ease infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        /* 문제 영역 */
+        .question-section {
+            padding: 28px 24px;
+            text-align: center;
+        }
+
+        .question-number {
+            font-size: 0.85rem;
+            color: #4A90D9;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #2C3E50;
+            line-height: 1.6;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* OX 버튼 */
+        .buttons-section {
+            display: flex;
+            gap: 16px;
+            padding: 0 24px 28px;
+            justify-content: center;
+        }
+
+        .btn-ox {
+            width: 130px;
+            height: 130px;
+            border: none;
+            border-radius: 50%;
+            font-size: 3.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .btn-o {
+            background: linear-gradient(135deg, #4A90D9, #357ABD);
+            color: white;
+        }
+
+        .btn-o:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(74, 144, 217, 0.4);
+        }
+
+        .btn-x {
+            background: linear-gradient(135deg, #E74C3C, #C0392B);
+            color: white;
+        }
+
+        .btn-x:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-ox:active {
+            transform: scale(0.95);
+        }
+
+        .btn-ox:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 피드백 */
+        .feedback {
+            text-align: center;
+            padding: 0 24px 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 30px;
+        }
+
+        .feedback.correct {
+            color: #27AE60;
+        }
+
+        .feedback.wrong {
+            color: #E74C3C;
+        }
+
+        /* 점수 */
+        .score-display {
+            text-align: center;
+            padding: 0 24px 20px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .score-display span {
+            font-weight: 700;
+            color: #4A90D9;
+            font-size: 1.1rem;
+        }
+
+        /* 시작 화면 */
+        .start-screen {
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            font-size: 1.5rem;
+            color: #2C3E50;
+            margin-bottom: 12px;
+        }
+
+        .start-screen p {
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #4A90D9, #357ABD);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.3);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 217, 0.4);
+        }
+
+        /* 결과 화면 */
+        .result-screen {
+            padding: 40px 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-emoji {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .result-score {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #4A90D9;
+            margin-bottom: 8px;
+        }
+
+        .result-grade {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+
+        .result-message {
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .btn-retry {
+            background: linear-gradient(135deg, #4A90D9, #357ABD);
+            color: white;
+            border: none;
+            padding: 12px 36px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.3);
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 217, 0.4);
+        }
+
+        /* 퀴즈 화면 숨김 */
+        .quiz-screen {
+            display: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 400px) {
+            .btn-ox {
+                width: 110px;
+                height: 110px;
+                font-size: 3rem;
+            }
+
+            .question-text {
+                font-size: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>OX퀴즈 배틀</h1>
+            <div class="subtitle">통합사회 1단원 - 통합적 관점</div>
+        </div>
+
+        <!-- 시작 화면 -->
+        <div class="start-screen" id="startScreen">
+            <h2>준비되셨나요?</h2>
+            <p>총 10문항, 문항당 15초<br>O 또는 X를 선택하세요!</p>
+            <button class="btn-start" onclick="startQuiz()">퀴즈 시작!</button>
+        </div>
+
+        <!-- 퀴즈 화면 -->
+        <div class="quiz-screen" id="quizScreen">
+            <!-- 진행 바 -->
+            <div class="progress-section">
+                <div class="progress-info">
+                    <span id="progressText">1 / 10</span>
+                    <span id="scoreText">점수: 0</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar" style="width: 10%"></div>
+                </div>
+            </div>
+
+            <!-- 타이머 -->
+            <div class="timer-section">
+                <div class="timer" id="timer">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm1 8.5l-3 2a.5.5 0 0 1-.7-.7L7.5 8V4a.5.5 0 0 1 1 0v4.5z"/>
+                    </svg>
+                    <span id="timerText">15</span>초
+                </div>
+            </div>
+
+            <!-- 문제 -->
+            <div class="question-section">
+                <div class="question-number" id="questionNumber">Q1</div>
+                <div class="question-text" id="questionText">문제가 여기에 표시됩니다</div>
+            </div>
+
+            <!-- OX 버튼 -->
+            <div class="buttons-section">
+                <button class="btn-ox btn-o" id="btnO" onclick="selectAnswer(true)">O</button>
+                <button class="btn-ox btn-x" id="btnX" onclick="selectAnswer(false)">X</button>
+            </div>
+
+            <!-- 피드백 -->
+            <div class="feedback" id="feedback"></div>
+
+            <!-- 점수 -->
+            <div class="score-display">
+                현재 점수: <span id="currentScore">0</span>점
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div class="result-screen" id="resultScreen">
+            <div class="result-emoji" id="resultEmoji"></div>
+            <div class="result-score" id="resultScore"></div>
+            <div class="result-grade" id="resultGrade"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="btn-retry" onclick="resetQuiz()">다시 도전하기</button>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    // ★★★ 여기에 문항을 수정하세요 ★★★
+    // 형식: { question: "문제 내용", answer: true 또는 false }
+    // answer가 true이면 정답이 O, false이면 정답이 X입니다.
+    // 문항 수를 늘리거나 줄여도 자동으로 작동합니다.
+    // ============================================================
+    const quizData = [
+        {
+            question: "통합적 관점이란 하나의 사회현상을 여러 학문의 시각에서 바라보는 것이다.",
+            answer: true
+        },
+        {
+            question: "통합사회에서는 시간적, 공간적, 사회적, 윤리적 관점을 활용한다.",
+            answer: true
+        },
+        {
+            question: "시간적 관점은 현재의 현상만 분석하는 것이다.",
+            answer: false
+        },
+        {
+            question: "공간적 관점은 지리적 위치와 환경이 인간 생활에 미치는 영향을 분석한다.",
+            answer: true
+        },
+        {
+            question: "사회적 관점은 개인의 심리만을 분석 대상으로 한다.",
+            answer: false
+        },
+        {
+            question: "윤리적 관점은 옳고 그름, 바람직한 가치를 판단하는 관점이다.",
+            answer: true
+        },
+        {
+            question: "통합적 관점에서는 한 가지 관점만으로 사회현상을 충분히 설명할 수 있다고 본다.",
+            answer: false
+        },
+        {
+            question: "기후 변화 문제는 통합적 관점으로 분석할 수 있는 주제이다.",
+            answer: true
+        },
+        {
+            question: "통합사회는 정치, 경제, 사회, 문화, 지리, 윤리를 통합한 과목이다.",
+            answer: true
+        },
+        {
+            question: "공간적 관점에서 '장소감'은 특정 장소에 대한 주관적 감정을 의미한다.",
+            answer: true
+        }
+    ];
+    // ============================================================
+    // ★★★ 문항 수정 끝 ★★★
+    // ============================================================
+
+    // ============================================================
+    // 설정 (타이머, 색상 등 변경 가능)
+    // ============================================================
+    const TIMER_SECONDS = 15; // 문항당 제한 시간 (초)
+    // ============================================================
+
+    let currentQuestion = 0;
+    let score = 0;
+    let timer = null;
+    let timeLeft = TIMER_SECONDS;
+    let isAnswered = false;
+
+    function startQuiz() {
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('quizScreen').style.display = 'block';
+        document.getElementById('resultScreen').style.display = 'none';
+        currentQuestion = 0;
+        score = 0;
+        showQuestion();
+    }
+
+    function showQuestion() {
+        isAnswered = false;
+        const q = quizData[currentQuestion];
+        const total = quizData.length;
+
+        document.getElementById('questionNumber').textContent = `Q${currentQuestion + 1}`;
+        document.getElementById('questionText').textContent = q.question;
+        document.getElementById('progressText').textContent = `${currentQuestion + 1} / ${total}`;
+        document.getElementById('scoreText').textContent = `점수: ${score}`;
+        document.getElementById('progressBar').style.width = `${((currentQuestion + 1) / total) * 100}%`;
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('feedback').className = 'feedback';
+        document.getElementById('currentScore').textContent = score;
+
+        document.getElementById('btnO').disabled = false;
+        document.getElementById('btnX').disabled = false;
+
+        // 타이머 시작
+        timeLeft = TIMER_SECONDS;
+        updateTimerDisplay();
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timeUp();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const timerEl = document.getElementById('timer');
+        document.getElementById('timerText').textContent = timeLeft;
+        if (timeLeft <= 5) {
+            timerEl.classList.add('warning');
+        } else {
+            timerEl.classList.remove('warning');
+        }
+    }
+
+    function timeUp() {
+        if (isAnswered) return;
+        isAnswered = true;
+        document.getElementById('btnO').disabled = true;
+        document.getElementById('btnX').disabled = true;
+        document.getElementById('feedback').textContent = '⏰ 시간 초과!';
+        document.getElementById('feedback').className = 'feedback wrong';
+
+        setTimeout(nextQuestion, 1500);
+    }
+
+    function selectAnswer(selected) {
+        if (isAnswered) return;
+        isAnswered = true;
+        clearInterval(timer);
+
+        document.getElementById('btnO').disabled = true;
+        document.getElementById('btnX').disabled = true;
+
+        const correct = quizData[currentQuestion].answer;
+        if (selected === correct) {
+            score++;
+            document.getElementById('feedback').textContent = '🎉 정답입니다!';
+            document.getElementById('feedback').className = 'feedback correct';
+        } else {
+            const correctText = correct ? 'O' : 'X';
+            document.getElementById('feedback').textContent = `❌ 오답! 정답은 ${correctText}`;
+            document.getElementById('feedback').className = 'feedback wrong';
+        }
+
+        document.getElementById('currentScore').textContent = score;
+        document.getElementById('scoreText').textContent = `점수: ${score}`;
+
+        setTimeout(nextQuestion, 1500);
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quizScreen').style.display = 'none';
+        document.getElementById('resultScreen').style.display = 'block';
+
+        const total = quizData.length;
+        const percentage = Math.round((score / total) * 100);
+        let emoji, grade, message;
+
+        if (percentage >= 90) {
+            emoji = '🏆';
+            grade = '최우수';
+            message = '완벽에 가까운 실력! 통합적 관점을 정확히 이해하고 있습니다.';
+        } else if (percentage >= 70) {
+            emoji = '🎉';
+            grade = '우수';
+            message = '잘했어요! 조금만 더 복습하면 만점도 가능합니다.';
+        } else if (percentage >= 50) {
+            emoji = '💪';
+            grade = '보통';
+            message = '기본 개념은 알고 있지만, 헷갈리는 부분을 다시 확인해보세요.';
+        } else {
+            emoji = '📖';
+            grade = '노력 필요';
+            message = '교과서를 다시 한번 읽어보고 도전해보세요!';
+        }
+
+        document.getElementById('resultEmoji').textContent = emoji;
+        document.getElementById('resultScore').textContent = `${score} / ${total}`;
+        document.getElementById('resultGrade').textContent = `등급: ${grade} (${percentage}%)`;
+        document.getElementById('resultMessage').textContent = message;
+    }
+
+    function resetQuiz() {
+        document.getElementById('resultScreen').style.display = 'none';
+        document.getElementById('startScreen').style.display = 'block';
+    }
+    </script>
+</body>
+</html>
