@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모둠 편성기 - Group Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: #333;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.subtitle {
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.panel h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #4a4a6a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel h2::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  border-radius: 2px;
+}
+
+.input-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .input-section {
+    grid-template-columns: 1fr;
+  }
+  h1 { font-size: 1.6rem; }
+  .panel { padding: 16px; }
+}
+
+textarea {
+  width: 100%;
+  height: 200px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.3s;
+  line-height: 1.6;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.helper-text {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 6px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.settings-row label {
+  font-weight: 500;
+  min-width: 100px;
+  font-size: 0.9rem;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+input[type="range"] {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border: 3px solid #667eea;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.slider-value {
+  background: #667eea;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 36px;
+  text-align: center;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+}
+
+.checkbox-row label {
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Conflict pairs */
+.conflict-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.conflict-pair-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.conflict-pair-row select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.85rem;
+}
+
+.conflict-pair-row .separator {
+  font-weight: 700;
+  color: #e74c3c;
+  font-size: 1.1rem;
+}
+
+.btn-remove-conflict {
+  background: #ff6b6b;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add-conflict {
+  background: none;
+  border: 1px dashed #667eea;
+  color: #667eea;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-top: 4px;
+}
+
+.btn-add-conflict:hover {
+  background: #f0f0ff;
+}
+
+/* Buttons */
+.action-bar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 30px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  font-size: 1.1rem;
+  padding: 14px 36px;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #555;
+  border: 2px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+  background: #e8e8e8;
+}
+
+.btn-save {
+  background: #27ae60;
+  color: #fff;
+}
+
+.btn-save:hover {
+  background: #219a52;
+}
+
+.btn-print {
+  background: #3498db;
+  color: #fff;
+}
+
+.btn-print:hover {
+  background: #2980b9;
+}
+
+/* Results area */
+.results-area {
+  min-height: 100px;
+  position: relative;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.group-card {
+  border-radius: 14px;
+  padding: 18px;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  opacity: 0;
+  transform: translateY(30px) rotateX(10deg);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.group-card.visible {
+  opacity: 1;
+  transform: translateY(0) rotateX(0);
+}
+
+.group-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+}
+
+.group-card .member {
+  padding: 5px 0;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.group-card .member.dealt {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.group-card .member::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 50%;
+}
+
+.gender-badge {
+  font-size: 0.7rem;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.3);
+  margin-left: auto;
+}
+
+/* Flying card animation */
+.flying-card {
+  position: fixed;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 1000;
+  pointer-events: none;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #333;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.4s;
+  z-index: 9999;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #aaa;
+}
+
+.empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: #fff !important;
+    padding: 10px;
+  }
+  .panel, .action-bar, .input-section, .subtitle {
+    display: none !important;
+  }
+  h1 {
+    color: #333 !important;
+    text-shadow: none !important;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+  }
+  .results-area {
+    display: block !important;
+  }
+  .results-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+  .group-card {
+    opacity: 1 !important;
+    transform: none !important;
+    color: #333 !important;
+    border: 2px solid #ccc;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .group-card .member {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: #666;
+  }
+}
+
+.print-header {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>모둠 편성기</h1>
+  <p class="subtitle">학생들을 균형 있게 모둠으로 나누어 드립니다</p>
+
+  <div class="panel">
+    <div class="input-section">
+      <!-- Left: Student names -->
+      <div>
+        <h2>학생 명단</h2>
+        <textarea id="studentInput" placeholder="학생 이름을 한 줄에 한 명씩 입력하세요.&#10;&#10;성별 표시 예시:&#10;김민수(M)&#10;이지은(F)&#10;박서준(M)&#10;최유나(F)&#10;&#10;성별 미표시도 가능합니다."></textarea>
+        <p class="helper-text">한 줄에 한 명. 성별 표시: 이름 뒤에 (M) 또는 (F) 추가 (선택사항)</p>
+      </div>
+
+      <!-- Right: Settings -->
+      <div>
+        <h2>편성 설정</h2>
+
+        <div class="settings-row">
+          <label>모둠 수</label>
+          <div class="slider-container">
+            <input type="range" id="groupCount" min="2" max="8" value="4">
+            <span class="slider-value" id="groupCountDisplay">4</span>
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="genderBalance">
+          <label for="genderBalance">성별 균형 배치 (M/F 표시된 학생만 적용)</label>
+        </div>
+
+        <div class="conflict-section">
+          <h2>분리 조건 (같은 모둠 금지)</h2>
+          <div id="conflictPairs"></div>
+          <button class="btn-add-conflict" id="addConflictBtn">+ 분리 쌍 추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-bar">
+    <button class="btn btn-primary" id="makeGroupsBtn">모둠 편성!</button>
+    <button class="btn btn-secondary" id="reshuffleBtn">다시 섞기</button>
+    <button class="btn btn-save" id="saveBtn">결과 저장</button>
+    <button class="btn btn-print" id="printBtn">인쇄</button>
+  </div>
+
+  <!-- Results -->
+  <div class="results-area" id="resultsArea">
+    <p class="print-header" id="printHeader"></p>
+    <div class="results-grid" id="resultsGrid">
+      <div class="empty-state">
+        <div class="icon">&#127183;</div>
+        <p>학생 명단을 입력하고<br>"모둠 편성!" 버튼을 눌러주세요</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // Group colors palette
+  const GROUP_COLORS = [
+    'linear-gradient(135deg, #f093fb, #f5576c)',
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #fa709a, #fee140)',
+    'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+    'linear-gradient(135deg, #fccb90, #d57eeb)',
+    'linear-gradient(135deg, #667eea, #764ba2)',
+    'linear-gradient(135deg, #f6d365, #fda085)'
+  ];
+
+  const SOLID_COLORS = [
+    '#f5576c', '#4facfe', '#43e97b', '#fa709a',
+    '#a18cd1', '#d57eeb', '#667eea', '#fda085'
+  ];
+
+  // DOM Elements
+  const studentInput = document.getElementById('studentInput');
+  const groupCountSlider = document.getElementById('groupCount');
+  const groupCountDisplay = document.getElementById('groupCountDisplay');
+  const genderBalance = document.getElementById('genderBalance');
+  const conflictPairsContainer = document.getElementById('conflictPairs');
+  const addConflictBtn = document.getElementById('addConflictBtn');
+  const makeGroupsBtn = document.getElementById('makeGroupsBtn');
+  const reshuffleBtn = document.getElementById('reshuffleBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const printBtn = document.getElementById('printBtn');
+  const resultsGrid = document.getElementById('resultsGrid');
+  const toastEl = document.getElementById('toast');
+  const printHeader = document.getElementById('printHeader');
+
+  let currentGroups = null;
+
+  // Load saved data
+  function loadSavedData() {
+    const saved = localStorage.getItem('groupMaker_students');
+    if (saved) studentInput.value = saved;
+    const savedCount = localStorage.getItem('groupMaker_groupCount');
+    if (savedCount) {
+      groupCountSlider.value = savedCount;
+      groupCountDisplay.textContent = savedCount;
+    }
+    const savedGender = localStorage.getItem('groupMaker_genderBalance');
+    if (savedGender === 'true') genderBalance.checked = true;
+  }
+
+  // Save student list
+  function saveStudentList() {
+    localStorage.setItem('groupMaker_students', studentInput.value);
+    localStorage.setItem('groupMaker_groupCount', groupCountSlider.value);
+    localStorage.setItem('groupMaker_genderBalance', genderBalance.checked);
+  }
+
+  // Parse students
+  function parseStudents() {
+    const lines = studentInput.value.trim().split('\n').filter(l => l.trim());
+    return lines.map(line => {
+      const trimmed = line.trim();
+      const genderMatch = trimmed.match(/\((M|F)\)\s*$/i);
+      let name = trimmed;
+      let gender = null;
+      if (genderMatch) {
+        gender = genderMatch[1].toUpperCase();
+        name = trimmed.replace(/\s*\((M|F)\)\s*$/i, '').trim();
+      }
+      return { name, gender };
+    });
+  }
+
+  // Parse conflict pairs
+  function getConflictPairs() {
+    const pairs = [];
+    const rows = conflictPairsContainer.querySelectorAll('.conflict-pair-row');
+    rows.forEach(row => {
+      const selects = row.querySelectorAll('select');
+      if (selects[0].value && selects[1].value && selects[0].value !== selects[1].value) {
+        pairs.push([selects[0].value, selects[1].value]);
+      }
+    });
+    return pairs;
+  }
+
+  // Update conflict pair dropdowns
+  function updateConflictDropdowns() {
+    const students = parseStudents();
+    const selects = conflictPairsContainer.querySelectorAll('select');
+    selects.forEach(select => {
+      const currentVal = select.value;
+      select.innerHTML = '<option value="">-- 선택 --</option>';
+      students.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.textContent = s.name + (s.gender ? ` (${s.gender})` : '');
+        select.appendChild(opt);
+      });
+      select.value = currentVal;
+    });
+  }
+
+  // Add conflict pair row
+  function addConflictPairRow() {
+    const row = document.createElement('div');
+    row.className = 'conflict-pair-row';
+    row.innerHTML = `
+      <select></select>
+      <span class="separator">&#10060;</span>
+      <select></select>
+      <button class="btn-remove-conflict" title="삭제">&#10005;</button>
+    `;
+    row.querySelector('.btn-remove-conflict').addEventListener('click', () => {
+      row.remove();
+    });
+    conflictPairsContainer.appendChild(row);
+    updateConflictDropdowns();
+  }
+
+  // Shuffle array (Fisher-Yates)
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Check if assignment violates conflicts
+  function hasConflict(groups, conflicts) {
+    for (const [a, b] of conflicts) {
+      for (const group of groups) {
+        const names = group.map(s => s.name);
+        if (names.includes(a) && names.includes(b)) return true;
+      }
+    }
+    return false;
+  }
+
+  // Make groups
+  function makeGroups() {
+    const students = parseStudents();
+    const numGroups = parseInt(groupCountSlider.value);
+    const useGender = genderBalance.checked;
+    const conflicts = getConflictPairs();
+
+    if (students.length < numGroups) {
+      showToast('학생 수가 모둠 수보다 적습니다!');
+      return null;
+    }
+
+    if (students.length === 0) {
+      showToast('학생 명단을 입력해주세요!');
+      return null;
+    }
+
+    let groups;
+    let attempts = 0;
+    const maxAttempts = 500;
+
+    do {
+      groups = Array.from({ length: numGroups }, () => []);
+
+      if (useGender) {
+        // Separate by gender
+        const males = shuffle(students.filter(s => s.gender === 'M'));
+        const females = shuffle(students.filter(s => s.gender === 'F'));
+        const others = shuffle(students.filter(s => !s.gender));
+
+        // Distribute males evenly
+        males.forEach((s, i) => groups[i % numGroups].push(s));
+        // Distribute females evenly
+        females.forEach((s, i) => groups[i % numGroups].push(s));
+        // Distribute others
+        others.forEach((s, i) => {
+          // Find group with fewest members
+          const minLen = Math.min(...groups.map(g => g.length));
+          const candidates = groups.filter(g => g.length === minLen);
+          candidates[i % candidates.length].push(s);
+        });
+      } else {
+        const shuffled = shuffle(students);
+        shuffled.forEach((s, i) => groups[i % numGroups].push(s));
+      }
+
+      attempts++;
+      if (attempts >= maxAttempts) {
+        if (conflicts.length > 0) {
+          showToast('분리 조건을 모두 만족시킬 수 없습니다. 최선의 결과를 표시합니다.');
+        }
+        break;
+      }
+    } while (conflicts.length > 0 && hasConflict(groups, conflicts));
+
+    return groups;
+  }
+
+  // Animate and display results
+  function displayResults(groups, animate = true) {
+    currentGroups = groups;
+    resultsGrid.innerHTML = '';
+
+    const cards = groups.map((group, idx) => {
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      card.style.background = GROUP_COLORS[idx % GROUP_COLORS.length];
+
+      let membersHTML = group.map(s => {
+        const genderBadge = s.gender ? `<span class="gender-badge">${s.gender === 'M' ? '남' : '여'}</span>` : '';
+        return `<div class="member">${s.name}${genderBadge}</div>`;
+      }).join('');
+
+      card.innerHTML = `<h3>${idx + 1}모둠 (${group.length}명)</h3>${membersHTML}`;
+      resultsGrid.appendChild(card);
+      return card;
+    });
+
+    if (animate) {
+      animateCardDealing(cards);
+    } else {
+      cards.forEach(card => {
+        card.classList.add('visible');
+        card.querySelectorAll('.member').forEach(m => m.classList.add('dealt'));
+      });
+    }
+
+    // Update print header
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+    printHeader.textContent = `모둠 편성 결과 - ${dateStr} (${groups.length}모둠, 총 ${groups.reduce((a,g) => a+g.length, 0)}명)`;
+  }
+
+  // Card dealing animation
+  function animateCardDealing(cards) {
+    // First show cards with stagger
+    cards.forEach((card, cardIdx) => {
+      setTimeout(() => {
+        card.classList.add('visible');
+
+        // Then deal members with stagger
+        const members = card.querySelectorAll('.member');
+        members.forEach((member, memberIdx) => {
+          setTimeout(() => {
+            // Create flying card
+            const flyCard = document.createElement('div');
+            flyCard.className = 'flying-card';
+            flyCard.textContent = member.textContent.replace('남', '').replace('여', '').trim();
+            flyCard.style.left = '50%';
+            flyCard.style.top = '50%';
+            flyCard.style.color = SOLID_COLORS[cardIdx % SOLID_COLORS.length];
+            document.body.appendChild(flyCard);
+
+            // Get target position
+            const rect = member.getBoundingClientRect();
+
+            requestAnimationFrame(() => {
+              flyCard.style.left = rect.left + 'px';
+              flyCard.style.top = rect.top + 'px';
+              flyCard.style.opacity = '0';
+              flyCard.style.transform = 'scale(0.8)';
+            });
+
+            setTimeout(() => {
+              flyCard.remove();
+              member.classList.add('dealt');
+            }, 600);
+          }, memberIdx * 120);
+        });
+      }, cardIdx * 250);
+    });
+  }
+
+  // Show toast notification
+  function showToast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 2500);
+  }
+
+  // Generate text result
+  function generateTextResult() {
+    if (!currentGroups) return '';
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+    let text = `=== 모둠 편성 결과 (${dateStr}) ===\n\n`;
+    currentGroups.forEach((group, idx) => {
+      text += `[ ${idx + 1}모둠 - ${group.length}명 ]\n`;
+      group.forEach(s => {
+        text += `  ${s.name}${s.gender ? ' (' + (s.gender === 'M' ? '남' : '여') + ')' : ''}\n`;
+      });
+      text += '\n';
+    });
+    text += `총 ${currentGroups.reduce((a,g) => a+g.length, 0)}명 / ${currentGroups.length}모둠`;
+    return text;
+  }
+
+  // Event listeners
+  groupCountSlider.addEventListener('input', () => {
+    groupCountDisplay.textContent = groupCountSlider.value;
+  });
+
+  studentInput.addEventListener('input', () => {
+    saveStudentList();
+    updateConflictDropdowns();
+  });
+
+  addConflictBtn.addEventListener('click', addConflictPairRow);
+
+  makeGroupsBtn.addEventListener('click', () => {
+    saveStudentList();
+    const groups = makeGroups();
+    if (groups) displayResults(groups, true);
+  });
+
+  reshuffleBtn.addEventListener('click', () => {
+    if (parseStudents().length === 0) {
+      showToast('학생 명단을 먼저 입력해주세요!');
+      return;
+    }
+    const groups = makeGroups();
+    if (groups) displayResults(groups, true);
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!currentGroups) {
+      showToast('먼저 모둠을 편성해주세요!');
+      return;
+    }
+    const text = generateTextResult();
+    // Save to localStorage
+    const savedResults = JSON.parse(localStorage.getItem('groupMaker_results') || '[]');
+    savedResults.unshift({ date: new Date().toISOString(), text });
+    if (savedResults.length > 20) savedResults.length = 20;
+    localStorage.setItem('groupMaker_results', JSON.stringify(savedResults));
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('결과가 저장되고 클립보드에 복사되었습니다!');
+    }).catch(() => {
+      showToast('결과가 저장되었습니다! (클립보드 복사 실패)');
+    });
+  });
+
+  printBtn.addEventListener('click', () => {
+    if (!currentGroups) {
+      showToast('먼저 모둠을 편성해주세요!');
+      return;
+    }
+    window.print();
+  });
+
+  // Initialize
+  loadSavedData();
+  updateConflictDropdowns();
+})();
+</script>
+</body>
+</html>
