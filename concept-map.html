@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개념도 만들기 (Concept Map Builder)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #f0f4f0;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background: #43A047;
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+header h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.toolbar button {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-mode {
+  background: #fff;
+  color: #43A047;
+  border: 2px solid #fff;
+}
+.btn-mode.active {
+  background: #2E7D32;
+  color: #fff;
+  border-color: #2E7D32;
+}
+.btn-action {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.btn-action:hover {
+  background: rgba(255,255,255,0.35);
+}
+.btn-danger {
+  background: rgba(255,80,80,0.8);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: rgba(255,50,50,1);
+}
+.mode-indicator {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.mode-move { background: #FFF9C4; color: #F57F17; }
+.mode-connect { background: #E1F5FE; color: #0277BD; }
+
+#svg-container {
+  flex: 1;
+  position: relative;
+  min-height: 500px;
+  background: #fafff9;
+  overflow: hidden;
+}
+#concept-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  display: block;
+}
+
+/* Node styling via SVG classes */
+.node-group { cursor: grab; }
+.node-group:active { cursor: grabbing; }
+.node-circle {
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.15));
+  transition: r 0.15s;
+}
+.node-text {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  fill: #333;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+}
+.edge-line {
+  stroke-width: 2.5;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+.edge-label {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  fill: #555;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.node-highlight {
+  stroke: #43A047;
+  stroke-width: 3;
+  stroke-dasharray: 5 3;
+  animation: pulse 0.8s infinite alternate;
+}
+@keyframes pulse {
+  from { stroke-opacity: 0.5; }
+  to { stroke-opacity: 1; }
+}
+
+.context-menu {
+  position: absolute;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  padding: 4px 0;
+  z-index: 1000;
+  min-width: 120px;
+  display: none;
+}
+.context-menu.visible { display: block; }
+.context-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #333;
+}
+.context-menu button:hover {
+  background: #f5f5f5;
+}
+.context-menu button.delete-btn { color: #d32f2f; }
+.context-menu button.delete-btn:hover { background: #ffebee; }
+
+.help-text {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  header { padding: 10px 12px; }
+  header h1 { font-size: 1rem; }
+  .toolbar button { font-size: 0.75rem; padding: 5px 10px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>개념도 만들기</h1>
+  <div class="toolbar">
+    <button class="btn-mode active" id="btn-move" onclick="setMode('move')">이동 모드</button>
+    <button class="btn-mode" id="btn-connect" onclick="setMode('connect')">연결 모드</button>
+    <span class="mode-indicator mode-move" id="mode-label">이동 모드</span>
+    <button class="btn-action" onclick="exportPNG()">PNG 저장</button>
+    <button class="btn-danger" onclick="clearAll()">초기화</button>
+  </div>
+</header>
+
+<div id="svg-container">
+  <svg id="concept-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+      </marker>
+    </defs>
+    <g id="edges-layer"></g>
+    <g id="nodes-layer"></g>
+  </svg>
+  <div class="context-menu" id="context-menu">
+    <button onclick="editTarget()">편집</button>
+    <button onclick="cycleColorTarget()">색상 변경</button>
+    <button class="delete-btn" onclick="deleteTarget()">삭제</button>
+  </div>
+  <div class="help-text" id="help-text">캔버스를 더블클릭하여 노드를 추가하세요</div>
+</div>
+
+<script>
+// ===== 여기에서 초기 노드를 설정하세요 =====
+const presetNodes = [
+  {id: 1, text: "산업화", x: 150, y: 150, color: "#FF6B6B"},
+  {id: 2, text: "도시화", x: 350, y: 150, color: "#4ECDC4"},
+  {id: 3, text: "환경 오염", x: 250, y: 300, color: "#F7DC6F"},
+];
+const presetEdges = [
+  {from: 1, to: 2, label: "촉진"},
+  {from: 2, to: 3, label: "야기"},
+];
+// ===== 초기 설정 끝 =====
+
+const COLORS = ["#FF6B6B", "#4ECDC4", "#F7DC6F", "#A78BFA", "#FB923C"];
+const NODE_RADIUS = 45;
+
+let nodes = [];
+let edges = [];
+let nextId = 1;
+let mode = 'move'; // 'move' or 'connect'
+let selectedNode = null; // for connect mode
+let dragNode = null;
+let dragOffset = { x: 0, y: 0 };
+let contextTarget = null; // {type: 'node'|'edge', id: ...}
+let longPressTimer = null;
+
+const svg = document.getElementById('concept-svg');
+const nodesLayer = document.getElementById('nodes-layer');
+const edgesLayer = document.getElementById('edges-layer');
+const contextMenu = document.getElementById('context-menu');
+const helpText = document.getElementById('help-text');
+
+function init() {
+  nodes = presetNodes.map(n => ({...n}));
+  edges = presetEdges.map(e => ({...e}));
+  nextId = Math.max(0, ...nodes.map(n => n.id)) + 1;
+  render();
+}
+
+function setMode(m) {
+  mode = m;
+  selectedNode = null;
+  document.getElementById('btn-move').classList.toggle('active', m === 'move');
+  document.getElementById('btn-connect').classList.toggle('active', m === 'connect');
+  const label = document.getElementById('mode-label');
+  if (m === 'move') {
+    label.textContent = '이동 모드';
+    label.className = 'mode-indicator mode-move';
+    helpText.textContent = '캔버스를 더블클릭하여 노드를 추가하세요';
+  } else {
+    label.textContent = '연결 모드';
+    label.className = 'mode-indicator mode-connect';
+    helpText.textContent = '첫 번째 노드를 클릭한 후 두 번째 노드를 클릭하세요';
+  }
+  render();
+}
+
+function render() {
+  // Clear layers
+  edgesLayer.innerHTML = '';
+  nodesLayer.innerHTML = '';
+
+  // Draw edges
+  edges.forEach(edge => {
+    const fromNode = nodes.find(n => n.id === edge.from);
+    const toNode = nodes.find(n => n.id === edge.to);
+    if (!fromNode || !toNode) return;
+
+    const dx = toNode.x - fromNode.x;
+    const dy = toNode.y - fromNode.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux = dx / dist;
+    const uy = dy / dist;
+
+    const x1 = fromNode.x + ux * NODE_RADIUS;
+    const y1 = fromNode.y + uy * NODE_RADIUS;
+    const x2 = toNode.x - ux * (NODE_RADIUS + 10);
+    const y2 = toNode.y - uy * (NODE_RADIUS + 10);
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', '#666');
+    line.setAttribute('class', 'edge-line');
+    line.dataset.from = edge.from;
+    line.dataset.to = edge.to;
+    edgesLayer.appendChild(line);
+
+    // Invisible wider line for easier clicking
+    const hitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    hitLine.setAttribute('x1', x1);
+    hitLine.setAttribute('y1', y1);
+    hitLine.setAttribute('x2', x2);
+    hitLine.setAttribute('y2', y2);
+    hitLine.setAttribute('stroke', 'transparent');
+    hitLine.setAttribute('stroke-width', '15');
+    hitLine.dataset.from = edge.from;
+    hitLine.dataset.to = edge.to;
+    hitLine.addEventListener('contextmenu', (e) => showEdgeContext(e, edge));
+    hitLine.addEventListener('touchstart', (e) => startLongPress(e, 'edge', edge));
+    hitLine.addEventListener('touchend', cancelLongPress);
+    hitLine.addEventListener('touchmove', cancelLongPress);
+    edgesLayer.appendChild(hitLine);
+
+    // Label
+    if (edge.label) {
+      const mx = (fromNode.x + toNode.x) / 2;
+      const my = (fromNode.y + toNode.y) / 2;
+      const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      const textLen = edge.label.length * 12 + 12;
+      labelBg.setAttribute('x', mx - textLen / 2);
+      labelBg.setAttribute('y', my - 10);
+      labelBg.setAttribute('width', textLen);
+      labelBg.setAttribute('height', 20);
+      labelBg.setAttribute('rx', 10);
+      labelBg.setAttribute('fill', '#fff');
+      labelBg.setAttribute('stroke', '#ddd');
+      labelBg.setAttribute('stroke-width', '1');
+      edgesLayer.appendChild(labelBg);
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', mx);
+      text.setAttribute('y', my);
+      text.setAttribute('class', 'edge-label');
+      text.textContent = edge.label;
+      edgesLayer.appendChild(text);
+    }
+  });
+
+  // Draw nodes
+  nodes.forEach(node => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'node-group');
+    g.dataset.id = node.id;
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', node.x);
+    circle.setAttribute('cy', node.y);
+    circle.setAttribute('r', NODE_RADIUS);
+    circle.setAttribute('fill', '#fff');
+    circle.setAttribute('stroke', node.color);
+    circle.setAttribute('stroke-width', '4');
+    circle.setAttribute('class', 'node-circle');
+    g.appendChild(circle);
+
+    // Highlight if selected in connect mode
+    if (mode === 'connect' && selectedNode === node.id) {
+      circle.classList.add('node-highlight');
+    }
+
+    // Color accent fill (subtle)
+    const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    innerCircle.setAttribute('cx', node.x);
+    innerCircle.setAttribute('cy', node.y);
+    innerCircle.setAttribute('r', NODE_RADIUS - 4);
+    innerCircle.setAttribute('fill', node.color);
+    innerCircle.setAttribute('opacity', '0.12');
+    g.appendChild(innerCircle);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', node.x);
+    text.setAttribute('y', node.y);
+    text.setAttribute('class', 'node-text');
+    text.textContent = node.text;
+    g.appendChild(text);
+
+    // Event listeners
+    g.addEventListener('mousedown', (e) => onNodeMouseDown(e, node));
+    g.addEventListener('touchstart', (e) => onNodeTouchStart(e, node), {passive: false});
+    g.addEventListener('contextmenu', (e) => showNodeContext(e, node));
+    g.addEventListener('dblclick', (e) => { e.stopPropagation(); editNodeText(node); });
+
+    nodesLayer.appendChild(g);
+  });
+}
+
+// --- Node interaction ---
+function onNodeMouseDown(e, node) {
+  e.preventDefault();
+  e.stopPropagation();
+  hideContextMenu();
+
+  if (e.button === 2) return; // right-click handled by contextmenu
+
+  if (mode === 'connect') {
+    handleConnect(node);
+  } else {
+    startDrag(e, node);
+  }
+}
+
+function onNodeTouchStart(e, node) {
+  e.stopPropagation();
+  hideContextMenu();
+
+  if (mode === 'connect') {
+    e.preventDefault();
+    handleConnect(node);
+  } else {
+    e.preventDefault();
+    const touch = e.touches[0];
+    startDragTouch(touch, node);
+    // Long press for context menu
+    startLongPress(e, 'node', node);
+  }
+}
+
+function handleConnect(node) {
+  if (selectedNode === null) {
+    selectedNode = node.id;
+    render();
+  } else {
+    if (selectedNode !== node.id) {
+      // Check if edge already exists
+      const exists = edges.some(e => e.from === selectedNode && e.to === node.id);
+      if (!exists) {
+        const label = prompt('관계를 입력하세요 (예: 원인, 결과, 포함):', '');
+        edges.push({ from: selectedNode, to: node.id, label: label || '' });
+      }
+    }
+    selectedNode = null;
+    render();
+  }
+}
+
+function startDrag(e, node) {
+  dragNode = node;
+  const pt = getSVGPoint(e.clientX, e.clientY);
+  dragOffset.x = pt.x - node.x;
+  dragOffset.y = pt.y - node.y;
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+}
+
+function startDragTouch(touch, node) {
+  dragNode = node;
+  const pt = getSVGPoint(touch.clientX, touch.clientY);
+  dragOffset.x = pt.x - node.x;
+  dragOffset.y = pt.y - node.y;
+  document.addEventListener('touchmove', onDragMoveTouch, {passive: false});
+  document.addEventListener('touchend', onDragEndTouch);
+}
+
+function onDragMove(e) {
+  if (!dragNode) return;
+  const pt = getSVGPoint(e.clientX, e.clientY);
+  dragNode.x = pt.x - dragOffset.x;
+  dragNode.y = pt.y - dragOffset.y;
+  render();
+}
+
+function onDragMoveTouch(e) {
+  if (!dragNode) return;
+  e.preventDefault();
+  cancelLongPress();
+  const touch = e.touches[0];
+  const pt = getSVGPoint(touch.clientX, touch.clientY);
+  dragNode.x = pt.x - dragOffset.x;
+  dragNode.y = pt.y - dragOffset.y;
+  render();
+}
+
+function onDragEnd() {
+  dragNode = null;
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+}
+
+function onDragEndTouch() {
+  dragNode = null;
+  cancelLongPress();
+  document.removeEventListener('touchmove', onDragMoveTouch);
+  document.removeEventListener('touchend', onDragEndTouch);
+}
+
+function getSVGPoint(clientX, clientY) {
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
+}
+
+// --- Double-click to add node ---
+svg.addEventListener('dblclick', (e) => {
+  if (e.target.closest('.node-group')) return;
+  const pt = getSVGPoint(e.clientX, e.clientY);
+  const text = prompt('노드 이름을 입력하세요:', '새 개념');
+  if (text === null || text.trim() === '') return;
+  const colorIdx = nodes.length % COLORS.length;
+  nodes.push({ id: nextId++, text: text.trim(), x: pt.x, y: pt.y, color: COLORS[colorIdx] });
+  render();
+});
+
+// Touch double-tap for adding node
+let lastTap = 0;
+svg.addEventListener('touchend', (e) => {
+  if (e.target.closest('.node-group')) return;
+  if (dragNode) return;
+  const now = Date.now();
+  if (now - lastTap < 350) {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    const pt = getSVGPoint(touch.clientX, touch.clientY);
+    const text = prompt('노드 이름을 입력하세요:', '새 개념');
+    if (text === null || text.trim() === '') return;
+    const colorIdx = nodes.length % COLORS.length;
+    nodes.push({ id: nextId++, text: text.trim(), x: pt.x, y: pt.y, color: COLORS[colorIdx] });
+    render();
+  }
+  lastTap = now;
+});
+
+// --- Context menu ---
+function showNodeContext(e, node) {
+  e.preventDefault();
+  e.stopPropagation();
+  contextTarget = { type: 'node', id: node.id };
+  showContextMenuAt(e.clientX, e.clientY);
+}
+
+function showEdgeContext(e, edge) {
+  e.preventDefault();
+  e.stopPropagation();
+  contextTarget = { type: 'edge', from: edge.from, to: edge.to };
+  showContextMenuAt(e.clientX, e.clientY);
+}
+
+function showContextMenuAt(clientX, clientY) {
+  const container = document.getElementById('svg-container');
+  const rect = container.getBoundingClientRect();
+  contextMenu.style.left = (clientX - rect.left) + 'px';
+  contextMenu.style.top = (clientY - rect.top) + 'px';
+  contextMenu.classList.add('visible');
+}
+
+function hideContextMenu() {
+  contextMenu.classList.remove('visible');
+  contextTarget = null;
+}
+
+function editTarget() {
+  if (!contextTarget) return;
+  if (contextTarget.type === 'node') {
+    const node = nodes.find(n => n.id === contextTarget.id);
+    if (node) editNodeText(node);
+  } else if (contextTarget.type === 'edge') {
+    const edge = edges.find(e => e.from === contextTarget.from && e.to === contextTarget.to);
+    if (edge) {
+      const label = prompt('관계를 입력하세요:', edge.label || '');
+      if (label !== null) { edge.label = label; render(); }
+    }
+  }
+  hideContextMenu();
+}
+
+function cycleColorTarget() {
+  if (!contextTarget || contextTarget.type !== 'node') { hideContextMenu(); return; }
+  const node = nodes.find(n => n.id === contextTarget.id);
+  if (node) {
+    const idx = COLORS.indexOf(node.color);
+    node.color = COLORS[(idx + 1) % COLORS.length];
+    render();
+  }
+  hideContextMenu();
+}
+
+function deleteTarget() {
+  if (!contextTarget) { hideContextMenu(); return; }
+  if (contextTarget.type === 'node') {
+    nodes = nodes.filter(n => n.id !== contextTarget.id);
+    edges = edges.filter(e => e.from !== contextTarget.id && e.to !== contextTarget.id);
+  } else if (contextTarget.type === 'edge') {
+    edges = edges.filter(e => !(e.from === contextTarget.from && e.to === contextTarget.to));
+  }
+  render();
+  hideContextMenu();
+}
+
+function editNodeText(node) {
+  const text = prompt('노드 이름을 수정하세요:', node.text);
+  if (text !== null && text.trim() !== '') {
+    node.text = text.trim();
+    render();
+  }
+}
+
+// Long press for touch context menu
+function startLongPress(e, type, item) {
+  cancelLongPress();
+  const touch = e.touches ? e.touches[0] : e;
+  longPressTimer = setTimeout(() => {
+    if (type === 'node') {
+      contextTarget = { type: 'node', id: item.id };
+    } else {
+      contextTarget = { type: 'edge', from: item.from, to: item.to };
+    }
+    showContextMenuAt(touch.clientX, touch.clientY);
+  }, 600);
+}
+
+function cancelLongPress() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+// Close context menu on click elsewhere
+document.addEventListener('click', (e) => {
+  if (!contextMenu.contains(e.target)) hideContextMenu();
+});
+document.addEventListener('touchstart', (e) => {
+  if (!contextMenu.contains(e.target)) hideContextMenu();
+});
+
+// Prevent default context menu on SVG
+svg.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// --- Actions ---
+function clearAll() {
+  if (!confirm('모든 노드와 연결을 삭제하시겠습니까?')) return;
+  nodes = [];
+  edges = [];
+  selectedNode = null;
+  render();
+}
+
+function exportPNG() {
+  const svgEl = document.getElementById('concept-svg');
+  const rect = svgEl.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
+
+  // Clone SVG and inline styles
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('width', width);
+  clone.setAttribute('height', height);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+  // Add inline font style
+  const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+  styleEl.textContent = `
+    .node-text { font-family: sans-serif; font-size: 14px; font-weight: 500; fill: #333; text-anchor: middle; dominant-baseline: central; }
+    .edge-label { font-family: sans-serif; font-size: 12px; font-weight: 500; fill: #555; text-anchor: middle; dominant-baseline: central; }
+    .edge-line { stroke-width: 2.5; fill: none; }
+    .node-circle { filter: none; }
+    .node-highlight { stroke: #43A047; stroke-width: 3; stroke-dasharray: 5 3; }
+  `;
+  clone.insertBefore(styleEl, clone.firstChild);
+
+  // Add white background
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width', '100%');
+  bg.setAttribute('height', '100%');
+  bg.setAttribute('fill', '#fafff9');
+  clone.insertBefore(bg, clone.firstChild);
+
+  const svgData = new XMLSerializer().serializeToString(clone);
+  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.drawImage(img, 0, 0, width, height);
+    URL.revokeObjectURL(url);
+
+    const link = document.createElement('a');
+    link.download = '개념도.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+  img.src = url;
+}
+
+// --- Resize SVG to fill container ---
+function resizeSVG() {
+  const container = document.getElementById('svg-container');
+  svg.setAttribute('width', container.clientWidth);
+  svg.setAttribute('height', container.clientHeight);
+}
+window.addEventListener('resize', resizeSVG);
+resizeSVG();
+
+// --- Initialize ---
+init();
+</script>
+</body>
+</html>
