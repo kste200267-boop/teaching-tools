@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교실 자리 배치 생성기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  color: #333;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+h1 span { color: #3498db; }
+
+/* Panels */
+.panels {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .panels { grid-template-columns: 1fr; }
+}
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.panel h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 6px;
+}
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #555;
+}
+textarea {
+  width: 100%;
+  height: 140px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+textarea:focus, input:focus, select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+}
+.row-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.row-input input {
+  width: 60px;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.row-input span { font-size: 0.9rem; color: #666; }
+
+.info-text {
+  font-size: 0.78rem;
+  color: #888;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.condition-section { margin-bottom: 12px; }
+.condition-section textarea {
+  height: 60px;
+  font-size: 0.82rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: #3498db; color: #fff; }
+.btn-primary:hover { background: #2980b9; }
+.btn-secondary { background: #ecf0f1; color: #2c3e50; }
+.btn-secondary:hover { background: #dfe6e9; }
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-danger:hover { background: #c0392b; }
+.btn-success { background: #27ae60; color: #fff; }
+.btn-success:hover { background: #219a52; }
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Classroom */
+.classroom-wrapper {
+  position: relative;
+}
+.teacher-desk {
+  background: #2c3e50;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+.classroom-grid {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.seat {
+  position: relative;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 500;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: all 0.3s;
+  user-select: none;
+}
+.seat:hover { border-color: #3498db; box-shadow: 0 2px 8px rgba(52,152,219,0.2); }
+.seat.empty {
+  background: #f8f9fa;
+  border-style: dashed;
+  color: #aaa;
+  cursor: default;
+}
+.seat.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+.seat.drag-over {
+  border-color: #e74c3c;
+  background: #ffeaea;
+}
+.seat .seat-num {
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  font-size: 0.65rem;
+  color: #aaa;
+}
+.seat .star {
+  color: #f39c12;
+  font-size: 0.7rem;
+}
+
+/* Color tags */
+.seat.color-0 { border-left: 4px solid #3498db; }
+.seat.color-1 { border-left: 4px solid #e74c3c; }
+.seat.color-2 { border-left: 4px solid #27ae60; }
+.seat.color-3 { border-left: 4px solid #9b59b6; }
+.seat.color-4 { border-left: 4px solid #f39c12; }
+.seat.color-5 { border-left: 4px solid #1abc9c; }
+.seat.color-6 { border-left: 4px solid #e67e22; }
+.seat.color-7 { border-left: 4px solid #2980b9; }
+
+/* Animation */
+.seat.animating {
+  animation: flyIn 0.6s ease-out forwards;
+}
+@keyframes flyIn {
+  from { opacity: 0; transform: translateY(-30px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* History */
+.history-panel {
+  margin-top: 20px;
+}
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+}
+.history-item .time { color: #888; }
+.history-item .actions { display: flex; gap: 4px; }
+.history-item .actions button {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.history-item .actions .restore-btn { background: #dfe6e9; color: #2c3e50; }
+.history-item .actions .restore-btn:hover { background: #b2bec3; }
+.history-item .actions .delete-btn { background: #ffeaea; color: #e74c3c; }
+.history-item .actions .delete-btn:hover { background: #e74c3c; color: #fff; }
+
+/* Print */
+@media print {
+  body { background: #fff; }
+  .panel:first-child, .btn-group, .history-panel, h1 { display: none !important; }
+  .panels { grid-template-columns: 1fr !important; }
+  .panel { box-shadow: none; padding: 0; }
+  .classroom-grid { gap: 4px; }
+  .seat { border: 1px solid #333; font-size: 0.9rem; padding: 8px 4px; }
+  .teacher-desk { background: #333; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  h1 { font-size: 1.4rem; }
+  .seat { font-size: 0.72rem; min-height: 40px; padding: 6px 4px; }
+  .classroom-grid { gap: 4px; }
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #2c3e50;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><span>&#x1F4BA;</span> 교실 자리 배치 생성기</h1>
+
+  <div class="panels">
+    <!-- Left Panel: Settings -->
+    <div class="panel">
+      <h2>학생 명단</h2>
+      <label for="students">학생 이름 (한 줄에 한 명)</label>
+      <textarea id="students" placeholder="김민준&#10;이서연&#10;박지호&#10;최하은&#10;..."></textarea>
+
+      <h2>교실 배치</h2>
+      <div class="row-input">
+        <label style="margin:0;min-width:40px;">행</label>
+        <input type="number" id="rows" value="6" min="1" max="10">
+        <span>x</span>
+        <label style="margin:0;min-width:40px;">열</label>
+        <input type="number" id="cols" value="5" min="1" max="8">
+        <span>= <strong id="totalSeats">30</strong>석</span>
+      </div>
+
+      <h2>조건 설정</h2>
+      <div class="condition-section">
+        <label>앞자리 우선 학생 (쉼표 구분)</label>
+        <p class="info-text">이 학생들은 앞쪽 행에 우선 배치됩니다.</p>
+        <textarea id="frontStudents" placeholder="김민준, 이서연"></textarea>
+      </div>
+      <div class="condition-section">
+        <label>떨어뜨리기 쌍 (한 줄에 한 쌍, 쉼표 구분)</label>
+        <p class="info-text">이 학생들은 서로 인접하지 않게 배치됩니다.</p>
+        <textarea id="separatePairs" placeholder="김민준, 박지호&#10;이서연, 최하은"></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="generateSeating()">&#x1F3B2; 자리 배치!</button>
+        <button class="btn btn-secondary" onclick="reshuffleSeating()">&#x1F500; 다시 섞기</button>
+        <button class="btn btn-success" onclick="saveToStorage()">&#x1F4BE; 저장</button>
+        <button class="btn btn-secondary" onclick="printSeating()">&#x1F5A8; 인쇄</button>
+      </div>
+
+      <!-- History -->
+      <div class="history-panel">
+        <h2>배치 이력 (최대 5개)</h2>
+        <div id="historyList"><p class="info-text">저장된 이력이 없습니다.</p></div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Classroom -->
+    <div class="panel">
+      <div class="classroom-wrapper">
+        <div class="teacher-desk">&#x1F4D6; 교 탁 (앞)</div>
+        <div class="classroom-grid" id="classroomGrid">
+          <p style="text-align:center;color:#aaa;padding:40px;">왼쪽에서 학생 명단을 입력하고<br>"자리 배치!" 버튼을 누르세요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// State
+let currentArrangement = [];
+let studentList = [];
+let gridRows = 6;
+let gridCols = 5;
+let dragSource = null;
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+  renderHistory();
+  updateTotalSeats();
+
+  document.getElementById('rows').addEventListener('input', updateTotalSeats);
+  document.getElementById('cols').addEventListener('input', updateTotalSeats);
+});
+
+function updateTotalSeats() {
+  const r = parseInt(document.getElementById('rows').value) || 1;
+  const c = parseInt(document.getElementById('cols').value) || 1;
+  document.getElementById('totalSeats').textContent = r * c;
+}
+
+function getStudents() {
+  const text = document.getElementById('students').value.trim();
+  if (!text) return [];
+  return text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+}
+
+function getFrontStudents() {
+  const text = document.getElementById('frontStudents').value.trim();
+  if (!text) return [];
+  return text.split(',').map(s => s.trim()).filter(s => s.length > 0);
+}
+
+function getSeparatePairs() {
+  const text = document.getElementById('separatePairs').value.trim();
+  if (!text) return [];
+  return text.split('\n').map(line => {
+    const parts = line.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    return parts.length === 2 ? parts : null;
+  }).filter(p => p !== null);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function areAdjacent(idx1, idx2, cols) {
+  const r1 = Math.floor(idx1 / cols), c1 = idx1 % cols;
+  const r2 = Math.floor(idx2 / cols), c2 = idx2 % cols;
+  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && idx1 !== idx2;
+}
+
+function generateSeating() {
+  const students = getStudents();
+  if (students.length === 0) {
+    showToast('학생 명단을 입력해 주세요.');
+    return;
+  }
+
+  gridRows = parseInt(document.getElementById('rows').value) || 6;
+  gridCols = parseInt(document.getElementById('cols').value) || 5;
+  const totalSeats = gridRows * gridCols;
+
+  if (students.length > totalSeats) {
+    showToast(`학생 수(${students.length}명)가 좌석 수(${totalSeats}석)보다 많습니다.`);
+    return;
+  }
+
+  studentList = students;
+  arrangeStudents();
+}
+
+function reshuffleSeating() {
+  if (studentList.length === 0) {
+    showToast('먼저 "자리 배치!"를 실행해 주세요.');
+    return;
+  }
+  arrangeStudents();
+}
+
+function arrangeStudents() {
+  const totalSeats = gridRows * gridCols;
+  const frontStudents = getFrontStudents();
+  const separatePairs = getSeparatePairs();
+
+  // Separate front-priority students from the rest
+  const frontList = studentList.filter(s => frontStudents.includes(s));
+  const otherList = studentList.filter(s => !frontStudents.includes(s));
+
+  let bestArrangement = null;
+  let bestScore = -Infinity;
+
+  // Try multiple times to find a good arrangement
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const arrangement = new Array(totalSeats).fill(null);
+    const shuffledFront = shuffle(frontList);
+    const shuffledOther = shuffle(otherList);
+
+    // Place front-priority students in front rows
+    const frontSeats = [];
+    for (let r = 0; r < gridRows; r++) {
+      for (let c = 0; c < gridCols; c++) {
+        frontSeats.push(r * gridCols + c);
+      }
+      if (frontSeats.length >= shuffledFront.length) break;
+    }
+
+    const shuffledFrontSeats = shuffle(frontSeats.slice(0, Math.max(shuffledFront.length * 2, frontSeats.length)));
+    for (let i = 0; i < shuffledFront.length; i++) {
+      arrangement[shuffledFrontSeats[i]] = shuffledFront[i];
+    }
+
+    // Place remaining students in remaining seats
+    const emptySeats = shuffle(
+      Array.from({length: totalSeats}, (_, i) => i).filter(i => arrangement[i] === null)
+    );
+    for (let i = 0; i < shuffledOther.length; i++) {
+      arrangement[emptySeats[i]] = shuffledOther[i];
+    }
+
+    // Mark remaining as empty
+    for (let i = 0; i < totalSeats; i++) {
+      if (arrangement[i] === null) arrangement[i] = '__EMPTY__';
+    }
+
+    // Score: check separate pairs
+    let score = 0;
+    for (const [a, b] of separatePairs) {
+      const idxA = arrangement.indexOf(a);
+      const idxB = arrangement.indexOf(b);
+      if (idxA >= 0 && idxB >= 0) {
+        if (!areAdjacent(idxA, idxB, gridCols)) {
+          score += 10;
+        } else {
+          score -= 20;
+        }
+      }
+    }
+
+    // Bonus for front students being in front
+    for (const s of frontList) {
+      const idx = arrangement.indexOf(s);
+      if (idx >= 0) {
+        const row = Math.floor(idx / gridCols);
+        score += (gridRows - row);
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestArrangement = [...arrangement];
+    }
+
+    if (score >= separatePairs.length * 10 + frontList.length * gridRows) break;
+  }
+
+  currentArrangement = bestArrangement;
+  renderGrid(true);
+}
+
+function renderGrid(animate = false) {
+  const grid = document.getElementById('classroomGrid');
+  grid.style.gridTemplateColumns = `repeat(${gridCols}, 1fr)`;
+  grid.innerHTML = '';
+
+  const frontStudents = getFrontStudents();
+
+  currentArrangement.forEach((student, idx) => {
+    const seat = document.createElement('div');
+    seat.className = 'seat';
+    seat.dataset.index = idx;
+
+    if (student === '__EMPTY__') {
+      seat.classList.add('empty');
+      seat.innerHTML = `<span class="seat-num">${idx + 1}</span><span>빈자리</span>`;
+    } else {
+      const colorIdx = hashString(student) % 8;
+      seat.classList.add(`color-${colorIdx}`);
+      const isFront = frontStudents.includes(student);
+      seat.innerHTML = `<span class="seat-num">${idx + 1}</span>${isFront ? '<span class="star">★</span>' : ''}${student}`;
+
+      // Drag events
+      seat.draggable = true;
+      seat.addEventListener('dragstart', handleDragStart);
+      seat.addEventListener('dragend', handleDragEnd);
+    }
+
+    seat.addEventListener('dragover', handleDragOver);
+    seat.addEventListener('drop', handleDrop);
+    seat.addEventListener('dragenter', handleDragEnter);
+    seat.addEventListener('dragleave', handleDragLeave);
+
+    // Touch events for mobile
+    seat.addEventListener('touchstart', handleTouchStart, {passive: false});
+    seat.addEventListener('touchend', handleTouchEnd);
+
+    if (animate) {
+      seat.style.opacity = '0';
+      setTimeout(() => {
+        seat.classList.add('animating');
+        seat.style.opacity = '';
+      }, idx * 40);
+    }
+
+    grid.appendChild(seat);
+  });
+}
+
+// Hash for consistent colors
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+// Drag & Drop
+function handleDragStart(e) {
+  dragSource = e.currentTarget;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.seat').forEach(s => s.classList.remove('drag-over'));
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+  e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const target = e.currentTarget;
+  target.classList.remove('drag-over');
+
+  if (dragSource && dragSource !== target) {
+    const srcIdx = parseInt(dragSource.dataset.index);
+    const tgtIdx = parseInt(target.dataset.index);
+
+    // Swap
+    [currentArrangement[srcIdx], currentArrangement[tgtIdx]] =
+    [currentArrangement[tgtIdx], currentArrangement[srcIdx]];
+
+    renderGrid(false);
+    showToast('자리를 교환했습니다.');
+  }
+  dragSource = null;
+}
+
+// Touch support for mobile drag
+let touchSource = null;
+function handleTouchStart(e) {
+  if (e.currentTarget.classList.contains('empty')) return;
+  touchSource = e.currentTarget;
+  touchSource.classList.add('dragging');
+}
+
+function handleTouchEnd(e) {
+  if (!touchSource) return;
+  touchSource.classList.remove('dragging');
+
+  const touch = e.changedTouches[0];
+  const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  const seatTarget = target ? target.closest('.seat') : null;
+
+  if (seatTarget && seatTarget !== touchSource) {
+    const srcIdx = parseInt(touchSource.dataset.index);
+    const tgtIdx = parseInt(seatTarget.dataset.index);
+
+    [currentArrangement[srcIdx], currentArrangement[tgtIdx]] =
+    [currentArrangement[tgtIdx], currentArrangement[srcIdx]];
+
+    renderGrid(false);
+    showToast('자리를 교환했습니다.');
+  }
+  touchSource = null;
+}
+
+// Storage
+function saveToStorage() {
+  if (currentArrangement.length === 0) {
+    showToast('저장할 배치가 없습니다.');
+    return;
+  }
+
+  let history = JSON.parse(localStorage.getItem('seatingHistory') || '[]');
+
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleString('ko-KR'),
+    arrangement: [...currentArrangement],
+    rows: gridRows,
+    cols: gridCols,
+    students: [...studentList]
+  };
+
+  history.unshift(entry);
+  if (history.length > 5) history = history.slice(0, 5);
+
+  localStorage.setItem('seatingHistory', JSON.stringify(history));
+  localStorage.setItem('seatingCurrent', JSON.stringify({
+    students: document.getElementById('students').value,
+    rows: gridRows,
+    cols: gridCols,
+    frontStudents: document.getElementById('frontStudents').value,
+    separatePairs: document.getElementById('separatePairs').value
+  }));
+
+  renderHistory();
+  showToast('저장되었습니다.');
+}
+
+function loadFromStorage() {
+  const current = JSON.parse(localStorage.getItem('seatingCurrent') || 'null');
+  if (current) {
+    document.getElementById('students').value = current.students || '';
+    document.getElementById('rows').value = current.rows || 6;
+    document.getElementById('cols').value = current.cols || 5;
+    document.getElementById('frontStudents').value = current.frontStudents || '';
+    document.getElementById('separatePairs').value = current.separatePairs || '';
+  }
+}
+
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem('seatingHistory') || '[]');
+  const container = document.getElementById('historyList');
+
+  if (history.length === 0) {
+    container.innerHTML = '<p class="info-text">저장된 이력이 없습니다.</p>';
+    return;
+  }
+
+  container.innerHTML = history.map((entry, i) => `
+    <div class="history-item">
+      <span class="time">${entry.date} (${entry.students.length}명)</span>
+      <div class="actions">
+        <button class="restore-btn" onclick="restoreHistory(${i})">복원</button>
+        <button class="delete-btn" onclick="deleteHistory(${i})">삭제</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function restoreHistory(index) {
+  const history = JSON.parse(localStorage.getItem('seatingHistory') || '[]');
+  if (!history[index]) return;
+
+  const entry = history[index];
+  currentArrangement = entry.arrangement;
+  gridRows = entry.rows;
+  gridCols = entry.cols;
+  studentList = entry.students;
+
+  document.getElementById('rows').value = gridRows;
+  document.getElementById('cols').value = gridCols;
+  document.getElementById('students').value = studentList.join('\n');
+  updateTotalSeats();
+
+  renderGrid(true);
+  showToast('이전 배치를 복원했습니다.');
+}
+
+function deleteHistory(index) {
+  let history = JSON.parse(localStorage.getItem('seatingHistory') || '[]');
+  history.splice(index, 1);
+  localStorage.setItem('seatingHistory', JSON.stringify(history));
+  renderHistory();
+  showToast('삭제되었습니다.');
+}
+
+// Print
+function printSeating() {
+  if (currentArrangement.length === 0) {
+    showToast('인쇄할 배치가 없습니다.');
+    return;
+  }
+  window.print();
+}
+
+// Toast
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
