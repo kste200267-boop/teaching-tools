@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수행평가 루브릭 채점 계산기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a2a4a;
+  --navy-light: #2c3e6b;
+  --navy-dark: #0f1a33;
+  --white: #ffffff;
+  --gray-50: #f8f9fa;
+  --gray-100: #e9ecef;
+  --gray-200: #dee2e6;
+  --gray-300: #ced4da;
+  --gray-500: #6c757d;
+  --gray-700: #495057;
+  --grade-a: #1565c0;
+  --grade-b: #2e7d32;
+  --grade-c: #f9a825;
+  --grade-d: #c62828;
+  --shadow: 0 2px 8px rgba(26,42,74,0.10);
+  --shadow-lg: 0 4px 16px rgba(26,42,74,0.15);
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--gray-50);
+  color: var(--navy-dark);
+  min-height: 100vh;
+}
+
+header {
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  color: var(--white);
+  padding: 20px 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+header p {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.phase-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.phase-tab {
+  flex: 1;
+  padding: 14px 20px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: none;
+  background: var(--white);
+  color: var(--gray-500);
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.phase-tab:hover {
+  background: var(--gray-50);
+  color: var(--navy);
+}
+
+.phase-tab.active {
+  color: var(--navy);
+  border-bottom-color: var(--navy);
+  background: var(--gray-50);
+  font-weight: 700;
+}
+
+.panel {
+  display: none;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+
+.panel.active { display: block; }
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+/* Setup Phase */
+.criteria-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.criteria-row input[type="text"] {
+  flex: 2;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.criteria-row input[type="number"] {
+  width: 80px;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  text-align: center;
+}
+
+.criteria-row label {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  min-width: 30px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+  background: var(--gray-100);
+  color: var(--navy);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-200);
+}
+
+.btn-danger {
+  background: var(--grade-d);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: #b71c1c;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.add-criteria-btn {
+  margin-top: 12px;
+}
+
+.grade-setup {
+  margin-top: 24px;
+}
+
+.grade-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.grade-label {
+  width: 40px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.grade-label.a { color: var(--grade-a); }
+.grade-label.b { color: var(--grade-b); }
+.grade-label.c { color: var(--grade-c); }
+.grade-label.d { color: var(--grade-d); }
+
+.grade-row input {
+  width: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  text-align: center;
+}
+
+.grade-row span {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+.setup-actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+}
+
+.setup-summary {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--gray-50);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+/* Scoring Phase */
+.student-input-area {
+  margin-bottom: 20px;
+}
+
+.student-input-area textarea {
+  width: 100%;
+  height: 120px;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.student-input-area .hint {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 6px;
+}
+
+.scoring-table-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.scoring-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.scoring-table th {
+  background: var(--navy);
+  color: var(--white);
+  padding: 12px 10px;
+  text-align: center;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.scoring-table th:first-child {
+  text-align: left;
+  padding-left: 16px;
+}
+
+.scoring-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.scoring-table td:first-child {
+  text-align: left;
+  padding-left: 16px;
+  font-weight: 500;
+}
+
+.scoring-table tr:hover {
+  background: var(--gray-50);
+}
+
+.score-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.score-cell .btn-icon {
+  width: 26px;
+  height: 26px;
+  font-size: 0.9rem;
+  background: var(--gray-100);
+  border: none;
+  cursor: pointer;
+  color: var(--navy);
+}
+
+.score-cell .btn-icon:hover {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.score-cell .score-value {
+  width: 36px;
+  height: 30px;
+  text-align: center;
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.total-cell {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.grade-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--white);
+}
+
+.grade-badge.a { background: var(--grade-a); }
+.grade-badge.b { background: var(--grade-b); }
+.grade-badge.c { background: var(--grade-c); }
+.grade-badge.d { background: var(--grade-d); }
+
+/* Results Phase */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card .stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.stat-card .stat-label {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+
+.chart-area {
+  margin: 24px 0;
+  text-align: center;
+}
+
+.chart-area canvas {
+  max-width: 100%;
+  height: 200px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sort-select {
+  padding: 8px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: var(--white);
+}
+
+/* Print */
+@media print {
+  header, .phase-tabs, .result-actions, .btn, .student-input-area,
+  .score-cell .btn-icon, .setup-actions, .chart-area, .stats-grid { display: none !important; }
+  .panel { display: block !important; box-shadow: none; padding: 0; }
+  .scoring-table { font-size: 0.8rem; }
+  .scoring-table th { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .grade-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: white; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .container { padding: 12px; }
+  .panel { padding: 16px; }
+  header { padding: 16px; }
+  header h1 { font-size: 1.2rem; }
+  .criteria-row { flex-wrap: wrap; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .result-actions { flex-direction: column; }
+}
+
+.hidden { display: none !important; }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--navy);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--grade-d);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.remove-btn:hover {
+  background: #ffebee;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>수행평가 루브릭 채점 계산기</h1>
+  <p>평가요소 설정 - 학생 채점 - 결과 확인까지 한 번에</p>
+</header>
+
+<div class="container">
+  <div class="phase-tabs">
+    <button class="phase-tab active" data-tab="setup">1. 평가 설정</button>
+    <button class="phase-tab" data-tab="scoring">2. 채점</button>
+    <button class="phase-tab" data-tab="results">3. 결과</button>
+  </div>
+
+  <!-- Setup Panel -->
+  <div class="panel active" id="panel-setup">
+    <h2 class="section-title">평가요소 설정</h2>
+    <div id="criteria-list"></div>
+    <button class="btn btn-secondary add-criteria-btn" id="add-criteria-btn">+ 평가요소 추가</button>
+
+    <div class="grade-setup">
+      <h2 class="section-title">등급 기준 설정</h2>
+      <p style="font-size:0.85rem; color:var(--gray-500); margin-bottom:12px;">총점 기준으로 등급을 나눕니다. (이상)</p>
+      <div class="grade-row">
+        <span class="grade-label a">A</span>
+        <input type="number" id="grade-a" min="0" placeholder="13">
+        <span>점 이상</span>
+      </div>
+      <div class="grade-row">
+        <span class="grade-label b">B</span>
+        <input type="number" id="grade-b" min="0" placeholder="10">
+        <span>점 이상</span>
+      </div>
+      <div class="grade-row">
+        <span class="grade-label c">C</span>
+        <input type="number" id="grade-c" min="0" placeholder="7">
+        <span>점 이상</span>
+      </div>
+      <div class="grade-row">
+        <span class="grade-label d">D</span>
+        <span style="font-size:0.85rem; color:var(--gray-500);">위 기준 미만</span>
+      </div>
+    </div>
+
+    <div class="setup-summary" id="setup-summary"></div>
+
+    <div class="setup-actions">
+      <button class="btn btn-primary" id="save-setup-btn">설정 완료</button>
+      <button class="btn btn-danger btn-sm" id="reset-all-btn">전체 초기화</button>
+    </div>
+  </div>
+
+  <!-- Scoring Panel -->
+  <div class="panel" id="panel-scoring">
+    <h2 class="section-title">학생 명단 입력</h2>
+    <div class="student-input-area">
+      <textarea id="student-names" placeholder="학생 이름을 한 줄에 하나씩 입력하세요.&#10;예:&#10;김민수&#10;이지현&#10;박서준"></textarea>
+      <p class="hint">한 줄에 학생 이름 하나씩 입력 후 아래 버튼을 눌러주세요.</p>
+      <button class="btn btn-primary" id="load-students-btn" style="margin-top:10px;">학생 불러오기</button>
+    </div>
+
+    <div id="scoring-area" class="hidden">
+      <h2 class="section-title">채점표</h2>
+      <div class="scoring-table-wrap">
+        <table class="scoring-table" id="scoring-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px; text-align:right;">
+        <button class="btn btn-primary" id="save-scores-btn">채점 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Panel -->
+  <div class="panel" id="panel-results">
+    <h2 class="section-title">채점 결과</h2>
+
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div class="chart-area">
+      <canvas id="grade-chart"></canvas>
+    </div>
+
+    <div class="result-actions">
+      <select class="sort-select" id="sort-select">
+        <option value="order">정렬: 입력순</option>
+        <option value="name">정렬: 이름순</option>
+        <option value="score-desc">정렬: 점수 높은순</option>
+        <option value="score-asc">정렬: 점수 낮은순</option>
+      </select>
+      <button class="btn btn-secondary" id="csv-btn">CSV 다운로드</button>
+      <button class="btn btn-secondary" id="print-btn">인쇄</button>
+    </div>
+
+    <div class="scoring-table-wrap">
+      <table class="scoring-table" id="result-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const STORAGE_KEY = 'rubric-calc-data';
+
+  // State
+  let state = {
+    criteria: [],
+    grades: { a: 13, b: 10, c: 7 },
+    students: [],
+    scores: {},
+    setupDone: false
+  };
+
+  // Load from localStorage
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+      }
+    } catch(e) {}
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  // Toast notification
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Tab switching
+  function initTabs() {
+    document.querySelectorAll('.phase-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.phase-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'results') renderResults();
+      });
+    });
+  }
+
+  // Criteria management
+  function renderCriteria() {
+    const container = document.getElementById('criteria-list');
+    container.innerHTML = '';
+    state.criteria.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.className = 'criteria-row';
+      row.innerHTML = `
+        <label>${i + 1}.</label>
+        <input type="text" value="${escHtml(c.name)}" placeholder="평가요소 이름" data-idx="${i}" data-field="name">
+        <input type="number" value="${c.max}" min="1" max="20" placeholder="만점" data-idx="${i}" data-field="max">
+        <label>점</label>
+        <button class="remove-btn" data-idx="${i}" title="삭제">&times;</button>
+      `;
+      container.appendChild(row);
+    });
+
+    // Bind events
+    container.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        const field = e.target.dataset.field;
+        if (field === 'name') state.criteria[idx].name = e.target.value;
+        else if (field === 'max') state.criteria[idx].max = parseInt(e.target.value) || 1;
+        updateSummary();
+      });
+    });
+
+    container.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        state.criteria.splice(idx, 1);
+        renderCriteria();
+        updateSummary();
+      });
+    });
+
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const total = state.criteria.reduce((s, c) => s + (c.max || 0), 0);
+    const summary = document.getElementById('setup-summary');
+    if (state.criteria.length === 0) {
+      summary.innerHTML = '평가요소를 추가해주세요.';
+      return;
+    }
+    const items = state.criteria.map(c => `${c.name || '(미입력)'}(${c.max}점)`).join(', ');
+    summary.innerHTML = `<strong>평가요소:</strong> ${items}<br><strong>총 만점:</strong> ${total}점`;
+  }
+
+  // Grade calculation
+  function getGrade(score) {
+    if (score >= state.grades.a) return 'A';
+    if (score >= state.grades.b) return 'B';
+    if (score >= state.grades.c) return 'C';
+    return 'D';
+  }
+
+  function getGradeClass(grade) {
+    return grade.toLowerCase();
+  }
+
+  // Scoring table
+  function renderScoringTable() {
+    if (!state.setupDone || state.students.length === 0) return;
+
+    const area = document.getElementById('scoring-area');
+    area.classList.remove('hidden');
+
+    const table = document.getElementById('scoring-table');
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+
+    // Header
+    let headerHtml = '<tr><th>번호</th><th>이름</th>';
+    state.criteria.forEach(c => {
+      headerHtml += `<th>${escHtml(c.name)}<br><small>(${c.max}점)</small></th>`;
+    });
+    headerHtml += '<th>총점</th><th>등급</th></tr>';
+    thead.innerHTML = headerHtml;
+
+    // Body
+    let bodyHtml = '';
+    state.students.forEach((name, si) => {
+      bodyHtml += `<tr><td>${si + 1}</td><td>${escHtml(name)}</td>`;
+      let total = 0;
+      state.criteria.forEach((c, ci) => {
+        const key = `${si}-${ci}`;
+        const val = state.scores[key] || 0;
+        total += val;
+        bodyHtml += `<td><div class="score-cell">
+          <button class="btn-icon" data-si="${si}" data-ci="${ci}" data-dir="-1">-</button>
+          <input class="score-value" type="number" min="0" max="${c.max}" value="${val}" data-si="${si}" data-ci="${ci}">
+          <button class="btn-icon" data-si="${si}" data-ci="${ci}" data-dir="1">+</button>
+        </div></td>`;
+      });
+      const grade = getGrade(total);
+      bodyHtml += `<td class="total-cell">${total}</td>`;
+      bodyHtml += `<td><span class="grade-badge ${getGradeClass(grade)}">${grade}</span></td></tr>`;
+    });
+    tbody.innerHTML = bodyHtml;
+
+    // Bind score events
+    tbody.querySelectorAll('.score-value').forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const si = e.target.dataset.si;
+        const ci = parseInt(e.target.dataset.ci);
+        let val = parseInt(e.target.value) || 0;
+        const max = state.criteria[ci].max;
+        val = Math.max(0, Math.min(max, val));
+        e.target.value = val;
+        state.scores[`${si}-${ci}`] = val;
+        updateRowTotal(parseInt(si));
+        saveState();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-icon').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const si = parseInt(e.target.dataset.si);
+        const ci = parseInt(e.target.dataset.ci);
+        const dir = parseInt(e.target.dataset.dir);
+        const key = `${si}-${ci}`;
+        const max = state.criteria[ci].max;
+        let val = (state.scores[key] || 0) + dir;
+        val = Math.max(0, Math.min(max, val));
+        state.scores[key] = val;
+        // Update input
+        const row = tbody.rows[si];
+        const cell = row.cells[ci + 2]; // offset for number + name cols
+        cell.querySelector('.score-value').value = val;
+        updateRowTotal(si);
+        saveState();
+      });
+    });
+  }
+
+  function updateRowTotal(si) {
+    const tbody = document.getElementById('scoring-table').querySelector('tbody');
+    const row = tbody.rows[si];
+    if (!row) return;
+    let total = 0;
+    state.criteria.forEach((c, ci) => {
+      total += (state.scores[`${si}-${ci}`] || 0);
+    });
+    const totalCell = row.cells[state.criteria.length + 2];
+    const gradeCell = row.cells[state.criteria.length + 3];
+    totalCell.textContent = total;
+    const grade = getGrade(total);
+    gradeCell.innerHTML = `<span class="grade-badge ${getGradeClass(grade)}">${grade}</span>`;
+  }
+
+  // Results
+  function renderResults() {
+    if (state.students.length === 0 || state.criteria.length === 0) {
+      document.getElementById('stats-grid').innerHTML = '<p style="color:var(--gray-500);">채점 데이터가 없습니다.</p>';
+      return;
+    }
+
+    // Calculate totals
+    const totals = state.students.map((name, si) => {
+      let total = 0;
+      state.criteria.forEach((c, ci) => {
+        total += (state.scores[`${si}-${ci}`] || 0);
+      });
+      return { name, index: si, total, grade: getGrade(total) };
+    });
+
+    // Stats
+    const avg = (totals.reduce((s, t) => s + t.total, 0) / totals.length).toFixed(1);
+    const maxScore = state.criteria.reduce((s, c) => s + c.max, 0);
+    const maxStudent = Math.max(...totals.map(t => t.total));
+    const minStudent = Math.min(...totals.map(t => t.total));
+
+    const dist = { A: 0, B: 0, C: 0, D: 0 };
+    totals.forEach(t => dist[t.grade]++);
+
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><div class="stat-value">${state.students.length}</div><div class="stat-label">총 학생 수</div></div>
+      <div class="stat-card"><div class="stat-value">${avg}</div><div class="stat-label">평균 점수 (만점 ${maxScore})</div></div>
+      <div class="stat-card"><div class="stat-value">${maxStudent}</div><div class="stat-label">최고 점수</div></div>
+      <div class="stat-card"><div class="stat-value">${minStudent}</div><div class="stat-label">최저 점수</div></div>
+    `;
+
+    // Chart
+    drawChart(dist);
+
+    // Sort and render result table
+    const sortBy = document.getElementById('sort-select').value;
+    let sorted = [...totals];
+    if (sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    else if (sortBy === 'score-desc') sorted.sort((a, b) => b.total - a.total);
+    else if (sortBy === 'score-asc') sorted.sort((a, b) => a.total - b.total);
+
+    const table = document.getElementById('result-table');
+    let headerHtml = '<tr><th>번호</th><th>이름</th>';
+    state.criteria.forEach(c => {
+      headerHtml += `<th>${escHtml(c.name)}</th>`;
+    });
+    headerHtml += '<th>총점</th><th>등급</th></tr>';
+    table.querySelector('thead').innerHTML = headerHtml;
+
+    let bodyHtml = '';
+    sorted.forEach((s, idx) => {
+      bodyHtml += `<tr><td>${idx + 1}</td><td>${escHtml(s.name)}</td>`;
+      state.criteria.forEach((c, ci) => {
+        bodyHtml += `<td>${state.scores[`${s.index}-${ci}`] || 0}</td>`;
+      });
+      bodyHtml += `<td class="total-cell">${s.total}</td>`;
+      bodyHtml += `<td><span class="grade-badge ${getGradeClass(s.grade)}">${s.grade}</span></td></tr>`;
+    });
+    table.querySelector('tbody').innerHTML = bodyHtml;
+  }
+
+  function drawChart(dist) {
+    const canvas = document.getElementById('grade-chart');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.parentElement.clientWidth;
+    const h = 200;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, w, h);
+
+    const grades = ['A', 'B', 'C', 'D'];
+    const colors = { A: '#1565c0', B: '#2e7d32', C: '#f9a825', D: '#c62828' };
+    const total = state.students.length || 1;
+    const maxVal = Math.max(...Object.values(dist), 1);
+
+    const barWidth = 60;
+    const gap = 40;
+    const startX = (w - (barWidth * 4 + gap * 3)) / 2;
+    const chartTop = 30;
+    const chartBottom = h - 40;
+    const chartHeight = chartBottom - chartTop;
+
+    grades.forEach((g, i) => {
+      const x = startX + i * (barWidth + gap);
+      const val = dist[g];
+      const barH = (val / maxVal) * chartHeight * 0.85;
+
+      // Bar
+      ctx.fillStyle = colors[g];
+      ctx.beginPath();
+      ctx.roundRect(x, chartBottom - barH, barWidth, barH, [4, 4, 0, 0]);
+      ctx.fill();
+
+      // Value
+      ctx.fillStyle = '#1a2a4a';
+      ctx.font = '700 14px Noto Sans KR, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${val}명`, x + barWidth / 2, chartBottom - barH - 8);
+
+      // Percent
+      ctx.fillStyle = '#6c757d';
+      ctx.font = '400 11px Noto Sans KR, sans-serif';
+      ctx.fillText(`(${((val / total) * 100).toFixed(0)}%)`, x + barWidth / 2, chartBottom - barH - 24);
+
+      // Label
+      ctx.fillStyle = colors[g];
+      ctx.font = '700 16px Noto Sans KR, sans-serif';
+      ctx.fillText(g, x + barWidth / 2, chartBottom + 20);
+    });
+  }
+
+  // CSV download
+  function downloadCSV() {
+    if (state.students.length === 0) return showToast('학생 데이터가 없습니다.');
+
+    let csv = '﻿'; // BOM for Korean in Excel
+    csv += '번호,이름,' + state.criteria.map(c => c.name).join(',') + ',총점,등급\n';
+
+    state.students.forEach((name, si) => {
+      let total = 0;
+      const scores = state.criteria.map((c, ci) => {
+        const val = state.scores[`${si}-${ci}`] || 0;
+        total += val;
+        return val;
+      });
+      const grade = getGrade(total);
+      csv += `${si + 1},${name},${scores.join(',')},${total},${grade}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `수행평가_채점결과_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV 파일이 다운로드되었습니다.');
+  }
+
+  // Utility
+  function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Init
+  function init() {
+    loadState();
+    initTabs();
+
+    // Render criteria
+    if (state.criteria.length === 0) {
+      state.criteria = [
+        { name: '내용 이해', max: 5 },
+        { name: '표현력', max: 5 },
+        { name: '창의성', max: 5 }
+      ];
+    }
+    renderCriteria();
+
+    // Grade inputs
+    document.getElementById('grade-a').value = state.grades.a;
+    document.getElementById('grade-b').value = state.grades.b;
+    document.getElementById('grade-c').value = state.grades.c;
+
+    // Add criteria button
+    document.getElementById('add-criteria-btn').addEventListener('click', () => {
+      if (state.criteria.length >= 6) {
+        showToast('평가요소는 최대 6개까지 추가할 수 있습니다.');
+        return;
+      }
+      state.criteria.push({ name: '', max: 5 });
+      renderCriteria();
+    });
+
+    // Save setup
+    document.getElementById('save-setup-btn').addEventListener('click', () => {
+      // Validate
+      const hasEmpty = state.criteria.some(c => !c.name.trim());
+      if (hasEmpty) {
+        showToast('모든 평가요소의 이름을 입력해주세요.');
+        return;
+      }
+      if (state.criteria.length === 0) {
+        showToast('평가요소를 하나 이상 추가해주세요.');
+        return;
+      }
+
+      state.grades.a = parseInt(document.getElementById('grade-a').value) || 13;
+      state.grades.b = parseInt(document.getElementById('grade-b').value) || 10;
+      state.grades.c = parseInt(document.getElementById('grade-c').value) || 7;
+
+      // Validate grade order
+      if (state.grades.a <= state.grades.b || state.grades.b <= state.grades.c) {
+        showToast('등급 기준은 A > B > C 순서여야 합니다.');
+        return;
+      }
+
+      state.setupDone = true;
+      saveState();
+      showToast('설정이 저장되었습니다.');
+    });
+
+    // Reset
+    document.getElementById('reset-all-btn').addEventListener('click', () => {
+      if (confirm('모든 데이터를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    });
+
+    // Load students
+    document.getElementById('load-students-btn').addEventListener('click', () => {
+      const text = document.getElementById('student-names').value.trim();
+      if (!text) {
+        showToast('학생 이름을 입력해주세요.');
+        return;
+      }
+      if (!state.setupDone) {
+        showToast('먼저 평가 설정을 완료해주세요.');
+        return;
+      }
+      const names = text.split('\n').map(n => n.trim()).filter(n => n);
+      if (names.length === 0) {
+        showToast('학생 이름을 입력해주세요.');
+        return;
+      }
+      state.students = names;
+      // Keep existing scores if student count matches, else reset
+      saveState();
+      renderScoringTable();
+      showToast(`${names.length}명의 학생이 등록되었습니다.`);
+    });
+
+    // Save scores
+    document.getElementById('save-scores-btn').addEventListener('click', () => {
+      saveState();
+      showToast('채점이 저장되었습니다.');
+    });
+
+    // If students exist, render table and textarea
+    if (state.students.length > 0) {
+      document.getElementById('student-names').value = state.students.join('\n');
+      if (state.setupDone) renderScoringTable();
+    }
+
+    // Sort
+    document.getElementById('sort-select').addEventListener('change', renderResults);
+
+    // CSV
+    document.getElementById('csv-btn').addEventListener('click', downloadCSV);
+
+    // Print
+    document.getElementById('print-btn').addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  // roundRect polyfill for older browsers
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+      const r = Array.isArray(radii) ? radii[0] : radii;
+      this.moveTo(x + r, y);
+      this.lineTo(x + w - r, y);
+      this.quadraticCurveTo(x + w, y, x + w, y + r);
+      this.lineTo(x + w, y + h);
+      this.lineTo(x, y + h);
+      this.lineTo(x, y + r);
+      this.quadraticCurveTo(x, y, x + r, y);
+      this.closePath();
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
