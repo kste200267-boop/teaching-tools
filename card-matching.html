@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카드 짝맞추기 드래그 게임</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #EDE7F6 0%, #D1C4E9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4A148C;
+            margin-bottom: 8px;
+        }
+
+        .game-subtitle {
+            font-size: 0.95rem;
+            color: #6A1B9A;
+            margin-bottom: 12px;
+        }
+
+        .score-board {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #7C4DFF;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .score-board span {
+            font-size: 1.2rem;
+        }
+
+        .game-board {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            max-width: 380px;
+        }
+
+        .column-label {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5E35B1;
+            padding: 6px;
+            background: rgba(124, 77, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 4px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 3px 12px rgba(124, 77, 255, 0.15);
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s, opacity 0.3s;
+            user-select: none;
+            -webkit-user-select: none;
+            border: 2px solid transparent;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #333;
+            position: relative;
+        }
+
+        .card img {
+            max-width: 100%;
+            max-height: 80px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 77, 255, 0.25);
+        }
+
+        .card.dragging {
+            opacity: 0.6;
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(124, 77, 255, 0.3);
+            cursor: grabbing;
+        }
+
+        .card.left-card {
+            border-left: 4px solid #7C4DFF;
+        }
+
+        .card.right-card {
+            border-right: 4px solid #CE93D8;
+        }
+
+        .card.drag-over {
+            border: 2px dashed #7C4DFF;
+            background: #F3E5F5;
+        }
+
+        .card.matched {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            cursor: default;
+            opacity: 0.85;
+        }
+
+        .card.matched::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            color: #4CAF50;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .card.wrong {
+            animation: shake 0.5s ease-in-out;
+            background: #FFEBEE;
+            border-color: #F44336;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        .celebration {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .celebration.active {
+            display: block;
+        }
+
+        .celebration h2 {
+            font-size: 2rem;
+            color: #4A148C;
+            margin-bottom: 8px;
+        }
+
+        .celebration p {
+            font-size: 1.1rem;
+            color: #6A1B9A;
+            margin-bottom: 16px;
+        }
+
+        .btn-reset {
+            background: #7C4DFF;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-reset:hover {
+            background: #651FFF;
+            transform: scale(1.05);
+        }
+
+        .btn-reset:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .confetti {
+            position: fixed;
+            top: -10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: fall linear forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 반응형 */
+        @media (max-width: 700px) {
+            .game-board {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+            }
+            .column {
+                max-width: 100%;
+                width: 100%;
+            }
+            .game-title {
+                font-size: 1.4rem;
+            }
+            .card {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #5E35B1;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">카드 짝맞추기 드래그 게임</h1>
+            <p class="game-subtitle">왼쪽 카드를 오른쪽 카드에 드래그해서 짝을 맞춰보세요!</p>
+            <div class="score-board">
+                점수: <span id="score">0</span> / <span id="total">8</span>
+            </div>
+        </div>
+
+        <div class="instructions">
+            💡 왼쪽 카드를 끌어서 오른쪽의 짝에 놓으세요. 모바일에서는 터치로 드래그할 수 있어요!
+        </div>
+
+        <div class="game-board">
+            <div class="column" id="left-column">
+                <div class="column-label">개념 카드</div>
+            </div>
+            <div class="column" id="right-column">
+                <div class="column-label">설명 카드</div>
+            </div>
+        </div>
+
+        <div class="celebration" id="celebration">
+            <h2>🎉 축하합니다!</h2>
+            <p>모든 카드를 맞췄어요! 대단해요!</p>
+            <button class="btn-reset" onclick="resetGame()">다시 하기</button>
+        </div>
+    </div>
+
+    <script>
+    // ===== 카드 데이터 수정 =====
+    // 아래 배열을 수정하여 원하는 내용으로 바꿀 수 있습니다.
+    // left: 왼쪽 카드 텍스트 (개념/단어)
+    // right: 오른쪽 카드 텍스트 (설명/뜻)
+    // leftImg: 왼쪽 카드 이미지 URL (없으면 null)
+    // rightImg: 오른쪽 카드 이미지 URL (없으면 null)
+    //
+    // 이미지 사용 예시:
+    // {left: "", right: "사과", leftImg: "https://example.com/apple.png", rightImg: null}
+    // ===== 카드 데이터 수정 =====
+
+    const cardData = [
+        {left: "Democracy", right: "민주주의", leftImg: null, rightImg: null},
+        {left: "Environment", right: "환경", leftImg: null, rightImg: null},
+        {left: "Technology", right: "기술", leftImg: null, rightImg: null},
+        {left: "Education", right: "교육", leftImg: null, rightImg: null},
+        {left: "Culture", right: "문화", leftImg: null, rightImg: null},
+        {left: "Economy", right: "경제", leftImg: null, rightImg: null},
+        {left: "Philosophy", right: "철학", leftImg: null, rightImg: null},
+        {left: "Communication", right: "의사소통", leftImg: null, rightImg: null}
+    ];
+
+    // ===== 카드 데이터 수정 끝 =====
+
+    let score = 0;
+    let totalPairs = cardData.length;
+    let draggedCard = null;
+    let draggedIndex = null;
+
+    function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function createCardContent(text, imgUrl) {
+        if (imgUrl) {
+            let html = `<img src="${imgUrl}" alt="${text || '카드 이미지'}" draggable="false">`;
+            if (text) html += `<div style="margin-top:6px;font-size:0.85rem;">${text}</div>`;
+            return html;
+        }
+        return text;
+    }
+
+    function initGame() {
+        const leftCol = document.getElementById('left-column');
+        const rightCol = document.getElementById('right-column');
+
+        // 라벨 유지하고 카드만 제거
+        leftCol.innerHTML = '<div class="column-label">개념 카드</div>';
+        rightCol.innerHTML = '<div class="column-label">설명 카드</div>';
+
+        // 왼쪽 카드 생성
+        cardData.forEach((pair, index) => {
+            const card = document.createElement('div');
+            card.className = 'card left-card';
+            card.innerHTML = createCardContent(pair.left, pair.leftImg);
+            card.setAttribute('data-index', index);
+            card.setAttribute('draggable', 'true');
+
+            // 마우스 드래그 이벤트
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+
+            // 터치 이벤트
+            card.addEventListener('touchstart', handleTouchStart, {passive: false});
+            card.addEventListener('touchmove', handleTouchMove, {passive: false});
+            card.addEventListener('touchend', handleTouchEnd, {passive: false});
+
+            leftCol.appendChild(card);
+        });
+
+        // 오른쪽 카드 (셔플)
+        const shuffledIndices = shuffle([...Array(cardData.length).keys()]);
+        shuffledIndices.forEach(index => {
+            const pair = cardData[index];
+            const card = document.createElement('div');
+            card.className = 'card right-card';
+            card.innerHTML = createCardContent(pair.right, pair.rightImg);
+            card.setAttribute('data-index', index);
+
+            // 드롭 이벤트
+            card.addEventListener('dragover', handleDragOver);
+            card.addEventListener('dragenter', handleDragEnter);
+            card.addEventListener('dragleave', handleDragLeave);
+            card.addEventListener('drop', handleDrop);
+
+            rightCol.appendChild(card);
+        });
+
+        document.getElementById('total').textContent = totalPairs;
+    }
+
+    // ===== 마우스 드래그 핸들러 =====
+    function handleDragStart(e) {
+        if (this.classList.contains('matched')) {
+            e.preventDefault();
+            return;
+        }
+        draggedCard = this;
+        draggedIndex = parseInt(this.getAttribute('data-index'));
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedIndex);
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDragEnter(e) {
+        e.preventDefault();
+        if (!this.classList.contains('matched')) {
+            this.classList.add('drag-over');
+        }
+    }
+
+    function handleDragLeave(e) {
+        this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+
+        if (this.classList.contains('matched')) return;
+
+        const rightIndex = parseInt(this.getAttribute('data-index'));
+        checkMatch(draggedCard, this, draggedIndex, rightIndex);
+    }
+
+    // ===== 터치 드래그 핸들러 =====
+    let touchClone = null;
+    let touchStartX, touchStartY;
+
+    function handleTouchStart(e) {
+        if (this.classList.contains('matched')) return;
+        e.preventDefault();
+
+        draggedCard = this;
+        draggedIndex = parseInt(this.getAttribute('data-index'));
+
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+
+        // 시각적 클론 생성
+        touchClone = this.cloneNode(true);
+        touchClone.style.position = 'fixed';
+        touchClone.style.zIndex = '9999';
+        touchClone.style.width = this.offsetWidth + 'px';
+        touchClone.style.opacity = '0.85';
+        touchClone.style.pointerEvents = 'none';
+        touchClone.style.transform = 'scale(1.05) rotate(2deg)';
+        touchClone.style.boxShadow = '0 8px 24px rgba(124, 77, 255, 0.4)';
+        document.body.appendChild(touchClone);
+
+        positionClone(touch);
+        this.classList.add('dragging');
+    }
+
+    function handleTouchMove(e) {
+        if (!touchClone) return;
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        positionClone(touch);
+
+        // 드래그 오버 효과
+        const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        if (elem && elem.classList.contains('right-card') && !elem.classList.contains('matched')) {
+            elem.classList.add('drag-over');
+        }
+    }
+
+    function handleTouchEnd(e) {
+        if (!touchClone) return;
+        e.preventDefault();
+
+        const touch = e.changedTouches[0];
+        const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (elem && elem.classList.contains('right-card') && !elem.classList.contains('matched')) {
+            const rightIndex = parseInt(elem.getAttribute('data-index'));
+            elem.classList.remove('drag-over');
+            checkMatch(draggedCard, elem, draggedIndex, rightIndex);
+        }
+
+        // 정리
+        if (touchClone && touchClone.parentNode) {
+            touchClone.parentNode.removeChild(touchClone);
+        }
+        touchClone = null;
+        if (draggedCard) {
+            draggedCard.classList.remove('dragging');
+        }
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function positionClone(touch) {
+        if (!touchClone) return;
+        touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px';
+        touchClone.style.top = (touch.clientY - touchClone.offsetHeight / 2) + 'px';
+    }
+
+    // ===== 매칭 확인 =====
+    function checkMatch(leftCard, rightCard, leftIndex, rightIndex) {
+        if (leftIndex === rightIndex) {
+            // 정답!
+            leftCard.classList.add('matched');
+            rightCard.classList.add('matched');
+            leftCard.setAttribute('draggable', 'false');
+            score++;
+            document.getElementById('score').textContent = score;
+
+            if (score === totalPairs) {
+                setTimeout(() => {
+                    document.getElementById('celebration').classList.add('active');
+                    launchConfetti();
+                }, 400);
+            }
+        } else {
+            // 오답
+            leftCard.classList.add('wrong');
+            rightCard.classList.add('wrong');
+            setTimeout(() => {
+                leftCard.classList.remove('wrong');
+                rightCard.classList.remove('wrong');
+            }, 600);
+        }
+    }
+
+    // ===== 축하 효과 =====
+    function launchConfetti() {
+        const colors = ['#7C4DFF', '#CE93D8', '#4CAF50', '#FF9800', '#F44336', '#2196F3'];
+        for (let i = 0; i < 60; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                confetti.style.width = (Math.random() * 8 + 6) + 'px';
+                confetti.style.height = (Math.random() * 8 + 6) + 'px';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3500);
+            }, i * 30);
+        }
+    }
+
+    // ===== 리셋 =====
+    function resetGame() {
+        score = 0;
+        document.getElementById('score').textContent = '0';
+        document.getElementById('celebration').classList.remove('active');
+        initGame();
+    }
+
+    // 게임 시작
+    initGame();
+    </script>
+</body>
+</html>
