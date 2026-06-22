@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Quiz - 영어 단어 뜻 맞추기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, #E91E63, #FF5252, #E91E63);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Start Screen */
+.screen {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Timer */
+.timer-bar {
+  background: rgba(255,255,255,0.2);
+  border-radius: 30px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: rgba(255,255,255,0.3);
+  border-radius: 30px;
+  transition: width 0.1s linear;
+}
+
+.timer-text {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.timer-text.urgent {
+  animation: pulse 0.5s infinite;
+  color: #FFEB3B;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Score display */
+.score-display {
+  text-align: center;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Question Card */
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.question-word {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: #E91E63;
+  margin-bottom: 28px;
+  letter-spacing: -0.5px;
+}
+
+/* Choices */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.choice-btn {
+  background: #f5f5f5;
+  border: 3px solid #e0e0e0;
+  border-radius: 14px;
+  padding: 18px 12px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.choice-btn:active {
+  transform: scale(0.95);
+}
+
+.choice-btn.correct {
+  background: #4CAF50;
+  border-color: #388E3C;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.choice-btn.wrong {
+  background: #f44336;
+  border-color: #d32f2f;
+  color: #fff;
+}
+
+.choice-btn.show-answer {
+  background: #4CAF50;
+  border-color: #388E3C;
+  color: #fff;
+}
+
+.choice-btn:disabled {
+  cursor: default;
+}
+
+/* Start Screen */
+.start-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 24px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.start-card h1 {
+  font-size: 36px;
+  font-weight: 900;
+  color: #E91E63;
+  margin-bottom: 12px;
+}
+
+.start-card .subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.start-card .best-record {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E91E63;
+  margin: 16px 0 24px;
+}
+
+.start-btn {
+  background: linear-gradient(135deg, #E91E63, #FF5252);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 20px 48px;
+  font-size: 22px;
+  font-weight: 900;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 20px rgba(233,30,99,0.4);
+  transition: transform 0.15s ease;
+}
+
+.start-btn:active {
+  transform: scale(0.95);
+}
+
+/* Result Screen */
+.result-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 24px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.result-card h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+.result-score {
+  font-size: 64px;
+  font-weight: 900;
+  color: #E91E63;
+  margin-bottom: 8px;
+}
+
+.result-details {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.result-accuracy {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.result-best {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E91E63;
+  margin: 16px 0 24px;
+}
+
+.new-record {
+  display: inline-block;
+  background: #FFEB3B;
+  color: #E91E63;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  animation: bounce 0.6s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.retry-btn {
+  background: linear-gradient(135deg, #E91E63, #FF5252);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 18px 40px;
+  font-size: 20px;
+  font-weight: 900;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 20px rgba(233,30,99,0.4);
+  transition: transform 0.15s ease;
+}
+
+.retry-btn:active {
+  transform: scale(0.95);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Start Screen -->
+  <div id="start-screen" class="screen active">
+    <div class="start-card">
+      <h1>Speed Quiz</h1>
+      <p class="subtitle">30초 안에 최대한 많이 맞춰보세요!</p>
+      <p class="subtitle">영어 단어 뜻 맞추기</p>
+      <p class="best-record" id="start-best"></p>
+      <button class="start-btn" onclick="startGame()">시작하기</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <div class="timer-bar">
+      <div class="timer-fill" id="timer-fill"></div>
+      <span class="timer-text" id="timer-text">30</span>
+    </div>
+    <div class="score-display">
+      정답: <span id="current-score">0</span>개
+    </div>
+    <div class="card">
+      <div class="question-word" id="question-word"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result-screen" class="screen">
+    <div class="result-card">
+      <h2>결과</h2>
+      <div id="new-record-badge" class="new-record" style="display:none;">NEW RECORD!</div>
+      <div class="result-score" id="result-score">0</div>
+      <p class="result-details" id="result-attempted"></p>
+      <p class="result-accuracy" id="result-accuracy"></p>
+      <p class="result-best" id="result-best"></p>
+      <button class="retry-btn" onclick="resetGame()">다시 도전</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 여기에서 문항을 수정하세요 =====
+const questions = [
+  {q: "democracy", choices: ["민주주의","자본주의","사회주의","공산주의"], answer: 0},
+  {q: "constitution", choices: ["헌법","법원","국회","정부"], answer: 0},
+  {q: "economy", choices: ["경제","경영","경쟁","경험"], answer: 0},
+  {q: "environment", choices: ["환경","환율","환기","환상"], answer: 0},
+  {q: "government", choices: ["정부","정치","정의","정보"], answer: 0},
+  {q: "revolution", choices: ["혁명","진화","발전","개혁"], answer: 0},
+  {q: "civilization", choices: ["문명","문화","문학","문서"], answer: 0},
+  {q: "independence", choices: ["독립","의존","자유","해방"], answer: 0},
+  {q: "population", choices: ["인구","인종","인권","인물"], answer: 0},
+  {q: "religion", choices: ["종교","종족","종류","종합"], answer: 0},
+  {q: "philosophy", choices: ["철학","과학","수학","문학"], answer: 0},
+  {q: "prejudice", choices: ["편견","판단","비판","평가"], answer: 0},
+  {q: "equality", choices: ["평등","자유","정의","권리"], answer: 0},
+  {q: "capitalism", choices: ["자본주의","사회주의","공산주의","민주주의"], answer: 0},
+  {q: "immigrant", choices: ["이민자","난민","시민","주민"], answer: 0},
+  {q: "stereotype", choices: ["고정관념","편견","차별","혐오"], answer: 0},
+  {q: "diplomacy", choices: ["외교","군사","경제","무역"], answer: 0},
+  {q: "legislation", choices: ["입법","사법","행정","헌법"], answer: 0},
+  {q: "globalization", choices: ["세계화","지역화","산업화","도시화"], answer: 0},
+  {q: "sovereignty", choices: ["주권","인권","자유","평화"], answer: 0},
+  {q: "welfare", choices: ["복지","복수","복습","복원"], answer: 0},
+  {q: "inequality", choices: ["불평등","불공정","불법","불안"], answer: 0},
+  {q: "terrorism", choices: ["테러","전쟁","폭동","시위"], answer: 0},
+  {q: "refugee", choices: ["난민","이민자","시민","국민"], answer: 0},
+  {q: "discrimination", choices: ["차별","구별","분류","분리"], answer: 0},
+  {q: "tradition", choices: ["전통","현대","미래","과거"], answer: 0},
+  {q: "conflict", choices: ["갈등","협력","화합","조화"], answer: 0},
+  {q: "authority", choices: ["권위","권리","의무","책임"], answer: 0},
+  {q: "ideology", choices: ["이념","이상","이론","이유"], answer: 0},
+  {q: "sustainable", choices: ["지속가능한","불가능한","일시적인","영구적인"], answer: 0}
+];
+// ===== 문항 수정 끝 =====
+
+let shuffledQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let attempted = 0;
+let timeLeft = 30;
+let timerInterval = null;
+let isAnswering = false;
+
+const STORAGE_KEY = 'speedquiz-best-score';
+
+function getBestScore() {
+  return parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+}
+
+function setBestScore(s) {
+  localStorage.setItem(STORAGE_KEY, s.toString());
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateBestDisplay() {
+  const best = getBestScore();
+  const startBest = document.getElementById('start-best');
+  if (best > 0) {
+    startBest.textContent = '🔥 최고 기록: ' + best + '개';
+  } else {
+    startBest.textContent = '';
+  }
+}
+
+function startGame() {
+  score = 0;
+  attempted = 0;
+  currentIndex = 0;
+  timeLeft = 30;
+  isAnswering = false;
+
+  shuffledQuestions = shuffle(questions);
+  // If we run out, reshuffle
+  document.getElementById('current-score').textContent = '0';
+  document.getElementById('timer-text').textContent = '30';
+  document.getElementById('timer-text').classList.remove('urgent');
+  document.getElementById('timer-fill').style.width = '100%';
+
+  showScreen('game-screen');
+  showQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  const startTime = Date.now();
+  const totalMs = 30000;
+
+  timerInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, totalMs - elapsed);
+    timeLeft = Math.ceil(remaining / 1000);
+
+    const timerText = document.getElementById('timer-text');
+    timerText.textContent = timeLeft;
+
+    // Timer fill
+    document.getElementById('timer-fill').style.width = (remaining / totalMs * 100) + '%';
+
+    // Urgent state
+    if (timeLeft <= 5) {
+      timerText.classList.add('urgent');
+    }
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      endGame();
+    }
+  }, 50);
+}
+
+function showQuestion() {
+  if (currentIndex >= shuffledQuestions.length) {
+    // Reshuffle if we exhaust all questions
+    shuffledQuestions = shuffle(questions);
+    currentIndex = 0;
+  }
+
+  const q = shuffledQuestions[currentIndex];
+  document.getElementById('question-word').textContent = q.q;
+
+  const choicesDiv = document.getElementById('choices');
+  choicesDiv.innerHTML = '';
+
+  q.choices.forEach((choice, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice;
+    btn.onclick = () => selectAnswer(i, btn);
+    choicesDiv.appendChild(btn);
+  });
+
+  isAnswering = false;
+}
+
+function selectAnswer(index, btn) {
+  if (isAnswering) return;
+  isAnswering = true;
+  attempted++;
+
+  const q = shuffledQuestions[currentIndex];
+  const buttons = document.querySelectorAll('.choice-btn');
+
+  if (index === q.answer) {
+    // Correct
+    score++;
+    document.getElementById('current-score').textContent = score;
+    btn.classList.add('correct');
+    setTimeout(() => {
+      currentIndex++;
+      showQuestion();
+    }, 200);
+  } else {
+    // Wrong
+    btn.classList.add('wrong');
+    buttons[q.answer].classList.add('show-answer');
+    setTimeout(() => {
+      currentIndex++;
+      showQuestion();
+    }, 500);
+  }
+
+  buttons.forEach(b => b.disabled = true);
+}
+
+function endGame() {
+  showScreen('result-screen');
+
+  const best = getBestScore();
+  const isNewRecord = score > best;
+
+  if (isNewRecord && score > 0) {
+    setBestScore(score);
+  }
+
+  document.getElementById('result-score').textContent = score + '개';
+  document.getElementById('result-attempted').textContent =
+    '총 ' + attempted + '문제 시도';
+
+  const accuracy = attempted > 0 ? Math.round(score / attempted * 100) : 0;
+  document.getElementById('result-accuracy').textContent =
+    '정답률: ' + accuracy + '%';
+
+  const currentBest = getBestScore();
+  document.getElementById('result-best').textContent =
+    '🔥 최고 기록: ' + currentBest + '개';
+
+  const badge = document.getElementById('new-record-badge');
+  if (isNewRecord && score > 0) {
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function resetGame() {
+  updateBestDisplay();
+  showScreen('start-screen');
+}
+
+// Init
+updateBestDisplay();
+</script>
+</body>
+</html>
