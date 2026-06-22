@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4지선다 CBT | 통합사회 2단원 - 행복</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #f8f9fa;
+            color: #2C3E50;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .timer {
+            background: rgba(26, 188, 156, 0.2);
+            border: 2px solid #1ABC9C;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1ABC9C;
+        }
+
+        .timer.warning {
+            border-color: #e74c3c;
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .question-counter {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* 진행바 */
+        .progress-wrapper {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1ABC9C, #16a085);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        /* 문항 카드 */
+        .question-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #1ABC9C;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-weight: 500;
+            margin-bottom: 16px;
+            word-break: keep-all;
+        }
+
+        .question-image {
+            width: 100%;
+            max-width: 500px;
+            margin: 16px auto;
+            display: block;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        /* 선택지 */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            word-break: keep-all;
+        }
+
+        .choice-btn:hover {
+            border-color: #1ABC9C;
+            background: rgba(26, 188, 156, 0.05);
+            transform: translateX(4px);
+        }
+
+        .choice-btn.selected {
+            border-color: #1ABC9C;
+            background: rgba(26, 188, 156, 0.1);
+        }
+
+        .choice-btn .num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f1f3f5;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            color: #2C3E50;
+        }
+
+        .choice-btn.selected .num {
+            background: #1ABC9C;
+            color: white;
+        }
+
+        /* 네비게이션 */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.prev {
+            background: #e9ecef;
+            color: #2C3E50;
+        }
+
+        .nav-btn.prev:hover {
+            background: #dee2e6;
+        }
+
+        .nav-btn.next {
+            background: #1ABC9C;
+            color: white;
+        }
+
+        .nav-btn.next:hover {
+            background: #16a085;
+        }
+
+        .nav-btn.submit {
+            background: #2C3E50;
+            color: white;
+        }
+
+        .nav-btn.submit:hover {
+            background: #1a252f;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 시작 화면 */
+        .start-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .start-screen h2 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            color: #2C3E50;
+        }
+
+        .start-screen p {
+            color: #6c757d;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .start-screen .info-box {
+            background: #f1f3f5;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 24px 0;
+            text-align: left;
+        }
+
+        .start-screen .info-box p {
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px 0;
+            justify-content: center;
+        }
+
+        .option-row label {
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #1ABC9C, #16a085);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            margin-top: 24px;
+            transition: transform 0.2s ease;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 결과 화면 */
+        .result-screen {
+            display: none;
+        }
+
+        .result-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #2C3E50, #34495E);
+            color: white;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        .result-header .score {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #1ABC9C;
+        }
+
+        .result-header .score-label {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        .result-header .grade {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .grade.pass {
+            background: rgba(26, 188, 156, 0.2);
+            color: #1ABC9C;
+        }
+
+        .grade.fail {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .review-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: #2C3E50;
+        }
+
+        .review-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            border-left: 4px solid #1ABC9C;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+        }
+
+        .review-item.wrong {
+            border-left-color: #e74c3c;
+        }
+
+        .review-item .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .review-item .q-num {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .review-item .q-status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        .review-item .q-status.correct {
+            background: rgba(26, 188, 156, 0.15);
+            color: #1ABC9C;
+        }
+
+        .review-item .q-status.incorrect {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+        }
+
+        .review-item .q-text {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .review-item .answer-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .review-item .answer-info .correct-answer {
+            color: #1ABC9C;
+            font-weight: 600;
+        }
+
+        .retry-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 32px auto 0;
+            padding: 14px;
+            background: #1ABC9C;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .retry-btn:hover {
+            background: #16a085;
+        }
+
+        /* 반응형 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+
+            .header {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .question-card {
+                padding: 20px;
+            }
+
+            .choice-btn {
+                padding: 14px 16px;
+                font-size: 0.95rem;
+            }
+
+            .nav-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+
+            .result-header .score {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 시작 화면 -->
+        <div id="startScreen" class="question-card start-screen">
+            <h2>📝 4지선다 CBT</h2>
+            <p style="color: #1ABC9C; font-weight: 600;">통합사회 2단원 — 행복</p>
+            <div class="info-box">
+                <p>📌 문항 수: <strong>20문항</strong></p>
+                <p>⏱️ 제한 시간: <strong>20분</strong></p>
+                <p>✅ 합격 기준: <strong>60점 이상</strong></p>
+                <p>📱 모바일에서도 풀 수 있습니다</p>
+            </div>
+            <div class="option-row">
+                <input type="checkbox" id="randomize" checked>
+                <label for="randomize">문항 순서 랜덤 섞기</label>
+            </div>
+            <button class="start-btn" onclick="startQuiz()">시험 시작하기</button>
+        </div>
+
+        <!-- 시험 화면 -->
+        <div id="quizScreen" style="display: none;">
+            <div class="header">
+                <h1>통합사회 2단원 — 행복</h1>
+                <div class="header-info">
+                    <span class="question-counter" id="questionCounter">1 / 20</span>
+                    <div class="timer" id="timer">20:00</div>
+                </div>
+            </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar" id="progressBar" style="width: 5%"></div>
+            </div>
+            <div class="question-card">
+                <span class="question-number" id="questionNumber">Q1</span>
+                <div class="question-text" id="questionText"></div>
+                <img class="question-image" id="questionImage" style="display: none;" alt="문항 이미지">
+                <div class="choices" id="choicesContainer"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn prev" id="prevBtn" onclick="prevQuestion()" disabled>← 이전</button>
+                <button class="nav-btn next" id="nextBtn" onclick="nextQuestion()">다음 →</button>
+                <button class="nav-btn submit" id="submitBtn" onclick="submitQuiz()" style="display: none;">제출하기</button>
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="resultScreen" class="result-screen"></div>
+    </div>
+
+    <script>
+    // ===================================================================
+    // ===== 여기부터 문항 수정 =====
+    // 각 문항 형식: {question: "문제", choices: ["①","②","③","④"], answer: 정답인덱스(0~3), image: null 또는 "이미지URL"}
+    // answer: 0 = 첫 번째 선택지, 1 = 두 번째, 2 = 세 번째, 3 = 네 번째
+    // image: null이면 이미지 없음, URL 문자열이면 이미지 표시
+    // ===================================================================
+
+    const quizData = {
+        title: "통합사회 2단원 — 행복",
+        timeLimit: 20, // 분 단위
+        passScore: 60, // 합격 기준 (%)
+        questions: [
+            {
+                question: "행복의 의미를 가장 적절하게 설명한 것은?",
+                choices: [
+                    "물질적 풍요만을 의미한다",
+                    "주관적 만족감과 삶의 질을 포함하는 개념이다",
+                    "타인의 평가에 의해서만 결정된다",
+                    "건강한 신체를 가진 상태만을 의미한다"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "아리스토텔레스가 말한 '에우다이모니아(eudaimonia)'의 의미로 가장 적절한 것은?",
+                choices: [
+                    "쾌락의 극대화",
+                    "물질적 부의 축적",
+                    "인간다운 삶의 번영과 덕의 실현",
+                    "고통의 완전한 제거"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "행복에 대한 쾌락주의적 관점을 주장한 사상가는?",
+                choices: [
+                    "칸트",
+                    "에피쿠로스",
+                    "공자",
+                    "소크라테스"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "다음 중 행복의 객관적 조건에 해당하지 않는 것은?",
+                choices: [
+                    "경제적 안정",
+                    "건강한 신체",
+                    "개인의 주관적 만족감",
+                    "안전한 주거 환경"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "'행복은 덕에 따르는 영혼의 활동'이라고 주장한 사상가는?",
+                choices: [
+                    "벤담",
+                    "밀",
+                    "아리스토텔레스",
+                    "장자"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "매슬로의 욕구 단계 이론에서 가장 상위 단계에 해당하는 것은?",
+                choices: [
+                    "안전의 욕구",
+                    "사회적 욕구",
+                    "존경의 욕구",
+                    "자아실현의 욕구"
+                ],
+                answer: 3,
+                image: null
+            },
+            {
+                question: "행복한 삶을 위한 조건 중 '질적 조건'에 해당하는 것은?",
+                choices: [
+                    "높은 소득 수준",
+                    "좋은 인간관계와 자아실현",
+                    "넓은 주거 면적",
+                    "높은 GDP"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "다음 중 '긍정 심리학'의 주요 연구 주제가 아닌 것은?",
+                choices: [
+                    "인간의 강점과 덕성",
+                    "몰입(flow) 경험",
+                    "정신 질환의 치료 방법",
+                    "감사와 낙관주의"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "행복에 영향을 미치는 요인 중 유전적 요인이 차지하는 비율은 대략 얼마인가?",
+                choices: [
+                    "약 10%",
+                    "약 30%",
+                    "약 50%",
+                    "약 80%"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "부탄에서 국가 발전의 지표로 사용하는 것은?",
+                choices: [
+                    "GDP(국내 총생산)",
+                    "GNH(국민 총 행복)",
+                    "HDI(인간개발지수)",
+                    "GNP(국민 총생산)"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "다음 중 행복을 증진시키는 개인적 노력으로 적절하지 않은 것은?",
+                choices: [
+                    "감사 일기 쓰기",
+                    "타인과의 끊임없는 비교",
+                    "명상과 운동",
+                    "긍정적 인간관계 형성"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "이스털린의 역설(Easterlin Paradox)이 설명하는 내용은?",
+                choices: [
+                    "소득이 높을수록 행복도 비례하여 증가한다",
+                    "일정 소득 이상에서는 소득 증가가 행복 증가로 이어지지 않는다",
+                    "가난할수록 행복하다",
+                    "행복은 전적으로 유전에 의해 결정된다"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "칸트의 도덕 철학에서 행복에 대한 관점으로 옳은 것은?",
+                choices: [
+                    "행복이 도덕의 최고 목적이다",
+                    "도덕적 의무를 다할 때 행복할 자격이 생긴다",
+                    "행복과 도덕은 전혀 관계없다",
+                    "쾌락의 추구가 곧 도덕이다"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "'소확행(소소하지만 확실한 행복)'이라는 개념과 가장 관련 있는 행복 유형은?",
+                choices: [
+                    "거시적 행복",
+                    "일상적·미시적 행복",
+                    "물질적 행복",
+                    "사회적 지위를 통한 행복"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "행복한 삶을 위한 시민적 조건에 해당하는 것은?",
+                choices: [
+                    "개인의 성격 특성",
+                    "유전적 기질",
+                    "민주주의와 인권 보장",
+                    "타고난 외모"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "마틴 셀리그만의 PERMA 모델에 포함되지 않는 요소는?",
+                choices: [
+                    "긍정적 정서(Positive Emotion)",
+                    "물질적 풍요(Material Wealth)",
+                    "몰입(Engagement)",
+                    "성취(Accomplishment)"
+                ],
+                answer: 1,
+                image: null
+            },
+            {
+                question: "다음 중 행복의 역설에 해당하는 현상은?",
+                choices: [
+                    "행복을 직접 추구할수록 오히려 행복해지기 어렵다",
+                    "돈이 많으면 반드시 행복하다",
+                    "건강하면 항상 행복하다",
+                    "교육 수준이 높으면 반드시 행복하다"
+                ],
+                answer: 0,
+                image: null
+            },
+            {
+                question: "동양 사상에서 행복에 대한 관점으로 적절한 것은?",
+                choices: [
+                    "개인의 쾌락 극대화를 강조한다",
+                    "물질적 풍요를 최고 가치로 본다",
+                    "마음의 평안과 자연과의 조화를 중시한다",
+                    "경쟁에서의 승리를 행복으로 본다"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "행복 지수를 측정할 때 고려하는 요소가 아닌 것은?",
+                choices: [
+                    "기대 수명",
+                    "사회적 지원",
+                    "군사력 순위",
+                    "삶을 선택할 자유"
+                ],
+                answer: 2,
+                image: null
+            },
+            {
+                question: "행복한 삶을 위해 사회가 갖추어야 할 조건으로 가장 적절한 것은?",
+                choices: [
+                    "경쟁을 극대화하는 교육 제도",
+                    "정의로운 사회 제도와 복지 시스템",
+                    "개인의 자유를 완전히 제한하는 체제",
+                    "소수에게 부가 집중되는 경제 구조"
+                ],
+                answer: 1,
+                image: null
+            }
+        ]
+    };
+
+    // ===== 여기까지 문항 수정 =====
+    // ===================================================================
+
+    // 상태 관리
+    let currentQuestion = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let timeRemaining = 0;
+    let shuffledQuestions = [];
+
+    function startQuiz() {
+        const randomize = document.getElementById('randomize').checked;
+        shuffledQuestions = [...quizData.questions];
+
+        if (randomize) {
+            for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+            }
+        }
+
+        userAnswers = new Array(shuffledQuestions.length).fill(-1);
+        currentQuestion = 0;
+        timeRemaining = quizData.timeLimit * 60;
+
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('quizScreen').style.display = 'block';
+
+        renderQuestion();
+        startTimer();
+    }
+
+    function startTimer() {
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            updateTimerDisplay();
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                submitQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (timeRemaining <= 60) {
+            timerEl.classList.add('warning');
+        } else {
+            timerEl.classList.remove('warning');
+        }
+    }
+
+    function renderQuestion() {
+        const q = shuffledQuestions[currentQuestion];
+        const total = shuffledQuestions.length;
+
+        document.getElementById('questionCounter').textContent = `${currentQuestion + 1} / ${total}`;
+        document.getElementById('progressBar').style.width = `${((currentQuestion + 1) / total) * 100}%`;
+        document.getElementById('questionNumber').textContent = `Q${currentQuestion + 1}`;
+        document.getElementById('questionText').innerHTML = q.question;
+
+        // 이미지 처리
+        const imgEl = document.getElementById('questionImage');
+        if (q.image) {
+            imgEl.src = q.image;
+            imgEl.style.display = 'block';
+        } else {
+            imgEl.style.display = 'none';
+        }
+
+        // 선택지 렌더링
+        const container = document.getElementById('choicesContainer');
+        container.innerHTML = '';
+        const labels = ['①', '②', '③', '④'];
+
+        q.choices.forEach((choice, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn' + (userAnswers[currentQuestion] === idx ? ' selected' : '');
+            btn.innerHTML = `<span class="num">${labels[idx]}</span><span>${choice}</span>`;
+            btn.onclick = () => selectChoice(idx);
+            container.appendChild(btn);
+        });
+
+        // 버튼 상태
+        document.getElementById('prevBtn').disabled = currentQuestion === 0;
+
+        if (currentQuestion === total - 1) {
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'inline-block';
+        } else {
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+    }
+
+    function selectChoice(idx) {
+        userAnswers[currentQuestion] = idx;
+        renderQuestion();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < shuffledQuestions.length - 1) {
+            currentQuestion++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            renderQuestion();
+        }
+    }
+
+    function submitQuiz() {
+        const unanswered = userAnswers.filter(a => a === -1).length;
+        if (unanswered > 0) {
+            if (!confirm(`아직 ${unanswered}문항을 풀지 않았습니다. 그래도 제출하시겠습니까?`)) {
+                return;
+            }
+        }
+
+        clearInterval(timerInterval);
+
+        let correctCount = 0;
+        const reviewItems = shuffledQuestions.map((q, idx) => {
+            const isCorrect = userAnswers[idx] === q.answer;
+            if (isCorrect) correctCount++;
+            return { ...q, userAnswer: userAnswers[idx], isCorrect, index: idx };
+        });
+
+        const score = Math.round((correctCount / shuffledQuestions.length) * 100);
+        const passed = score >= quizData.passScore;
+
+        document.getElementById('quizScreen').style.display = 'none';
+
+        const resultScreen = document.getElementById('resultScreen');
+        resultScreen.style.display = 'block';
+        resultScreen.innerHTML = `
+            <div class="result-header">
+                <div class="score">${score}점</div>
+                <div class="score-label">${correctCount} / ${shuffledQuestions.length} 정답</div>
+                <div class="grade ${passed ? 'pass' : 'fail'}">${passed ? '✅ 합격' : '❌ 불합격'}</div>
+            </div>
+            <div class="review-section">
+                <h3>📋 문항별 결과</h3>
+                ${reviewItems.map((item, i) => {
+                    const labels = ['①', '②', '③', '④'];
+                    const userLabel = item.userAnswer >= 0 ? labels[item.userAnswer] + ' ' + item.choices[item.userAnswer] : '미응답';
+                    const correctLabel = labels[item.answer] + ' ' + item.choices[item.answer];
+                    return `
+                        <div class="review-item ${item.isCorrect ? '' : 'wrong'}">
+                            <div class="q-header">
+                                <span class="q-num">문항 ${i + 1}</span>
+                                <span class="q-status ${item.isCorrect ? 'correct' : 'incorrect'}">${item.isCorrect ? '정답' : '오답'}</span>
+                            </div>
+                            <div class="q-text">${item.question}</div>
+                            <div class="answer-info">
+                                ${!item.isCorrect ? `내 답: ${userLabel}<br>` : ''}
+                                정답: <span class="correct-answer">${correctLabel}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <button class="retry-btn" onclick="retryQuiz()">다시 풀기</button>
+        `;
+    }
+
+    function retryQuiz() {
+        document.getElementById('resultScreen').style.display = 'none';
+        document.getElementById('startScreen').style.display = 'block';
+    }
+    </script>
+</body>
+</html>
