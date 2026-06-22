@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D-Day 카운트다운 보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --card: #0f3460;
+  --text: #eaeaea;
+  --text-muted: #a0a0b0;
+  --accent: #e94560;
+  --border: #2a2a4a;
+  --shadow: rgba(0,0,0,0.4);
+  --cat-exam: #e94560;
+  --cat-event: #4a90d9;
+  --cat-vacation: #27ae60;
+  --cat-other: #7f8c8d;
+}
+
+.light-theme {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --text: #2c3e50;
+  --text-muted: #7f8c8d;
+  --accent: #e94560;
+  --border: #e0e0e0;
+  --shadow: rgba(0,0,0,0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header h1 span {
+  font-size: 1.8rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #d63851;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--border);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  background: var(--text-muted);
+  color: #fff;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  padding: 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px var(--shadow);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.card[data-category="exam"]::before { background: var(--cat-exam); }
+.card[data-category="event"]::before { background: var(--cat-event); }
+.card[data-category="vacation"]::before { background: var(--cat-vacation); }
+.card[data-category="other"]::before { background: var(--cat-other); }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.card-category {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.card[data-category="exam"] .card-category { background: var(--cat-exam); }
+.card[data-category="event"] .card-category { background: var(--cat-event); }
+.card[data-category="vacation"] .card-category { background: var(--cat-vacation); }
+.card[data-category="other"] .card-category { background: var(--cat-other); }
+
+.card-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.card:hover .card-actions {
+  opacity: 1;
+}
+
+.card-actions button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.card-actions button:hover {
+  color: var(--text);
+  background: var(--border);
+}
+
+.card-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.flip-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.flip-prefix {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-right: 4px;
+  color: var(--text-muted);
+}
+
+.flip-digit {
+  position: relative;
+  width: 48px;
+  height: 64px;
+  perspective: 300px;
+}
+
+.flip-digit-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.flip-digit .top,
+.flip-digit .bottom {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.flip-digit .top {
+  top: 0;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-end;
+}
+
+.flip-digit .top span {
+  transform: translateY(50%);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.flip-digit .bottom {
+  bottom: 0;
+  border-radius: 0 0 8px 8px;
+  border-top: none;
+  align-items: flex-start;
+}
+
+.flip-digit .bottom span {
+  transform: translateY(-50%);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.flip-digit .top-flip,
+.flip-digit .bottom-flip {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backface-visibility: hidden;
+}
+
+.flip-digit .top-flip {
+  top: 0;
+  border-radius: 8px 8px 0 0;
+  align-items: flex-end;
+  transform-origin: bottom;
+  animation: flipTop 0.6s ease-in forwards;
+  z-index: 2;
+}
+
+.flip-digit .top-flip span {
+  transform: translateY(50%);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.flip-digit .bottom-flip {
+  bottom: 0;
+  border-radius: 0 0 8px 8px;
+  align-items: flex-start;
+  transform-origin: top;
+  transform: rotateX(90deg);
+  animation: flipBottom 0.6s 0.3s ease-out forwards;
+  z-index: 2;
+}
+
+.flip-digit .bottom-flip span {
+  transform: translateY(-50%);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+@keyframes flipTop {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(-90deg); }
+}
+
+@keyframes flipBottom {
+  0% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+.card-done {
+  opacity: 0.6;
+}
+
+.card-done .flip-container {
+  display: none;
+}
+
+.done-badge {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--cat-vacation);
+  padding: 16px 0;
+}
+
+.card-done .done-badge {
+  display: flex;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 32px;
+  width: 90%;
+  max-width: 420px;
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+
+.modal h2 {
+  font-size: 1.3rem;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--accent);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-top: 12px;
+}
+
+/* Fullscreen mode */
+.fullscreen-mode .header {
+  padding: 12px 24px;
+}
+
+.fullscreen-mode .grid {
+  gap: 20px;
+  padding: 20px;
+}
+
+.fullscreen-mode .card-name {
+  font-size: 1.4rem;
+}
+
+.fullscreen-mode .flip-digit {
+  width: 64px;
+  height: 84px;
+}
+
+.fullscreen-mode .flip-digit .top span,
+.fullscreen-mode .flip-digit .bottom span,
+.fullscreen-mode .flip-digit .top-flip span,
+.fullscreen-mode .flip-digit .bottom-flip span {
+  font-size: 3.2rem;
+}
+
+.fullscreen-mode .flip-prefix {
+  font-size: 2.8rem;
+}
+
+.fullscreen-mode .done-badge {
+  font-size: 2.4rem;
+}
+
+/* TV display mode in fullscreen */
+body:fullscreen .header {
+  padding: 16px 40px;
+}
+
+body:fullscreen .grid {
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 28px;
+  padding: 28px 40px;
+}
+
+body:fullscreen .card-name {
+  font-size: 1.6rem;
+}
+
+body:fullscreen .flip-digit {
+  width: 72px;
+  height: 96px;
+}
+
+body:fullscreen .flip-digit .top span,
+body:fullscreen .flip-digit .bottom span,
+body:fullscreen .flip-digit .top-flip span,
+body:fullscreen .flip-digit .bottom-flip span {
+  font-size: 3.8rem;
+}
+
+body:fullscreen .flip-prefix {
+  font-size: 3.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 20px;
+  }
+
+  .header h1 {
+    font-size: 1.2rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .flip-digit {
+    width: 40px;
+    height: 54px;
+  }
+
+  .flip-digit .top span,
+  .flip-digit .bottom span,
+  .flip-digit .top-flip span,
+  .flip-digit .bottom-flip span {
+    font-size: 2rem;
+  }
+
+  .flip-prefix {
+    font-size: 1.6rem;
+  }
+
+  .modal {
+    padding: 24px;
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions .btn span.label {
+    display: none;
+  }
+}
+
+/* Separator between digits */
+.flip-separator {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  margin: 0 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>📅</span> D-Day 카운트다운</h1>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-icon" id="themeToggle" title="테마 전환">🌙</button>
+    <button class="btn btn-secondary" id="fullscreenBtn">
+      <span>⛶</span> <span class="label">전체화면</span>
+    </button>
+    <button class="btn btn-primary" id="addBtn">
+      <span>+</span> <span class="label">이벤트 추가</span>
+    </button>
+  </div>
+</div>
+
+<div class="grid" id="cardGrid"></div>
+
+<div class="empty-state" id="emptyState" style="display:none;">
+  <p style="font-size:3rem;">📅</p>
+  <p>등록된 이벤트가 없습니다</p>
+  <p style="font-size:0.9rem; margin-top:8px;">위의 "이벤트 추가" 버튼을 눌러 시작하세요</p>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">이벤트 추가</h2>
+    <div class="form-group">
+      <label for="eventName">이벤트 이름</label>
+      <input type="text" id="eventName" placeholder="예: 중간고사" maxlength="30">
+    </div>
+    <div class="form-group">
+      <label for="eventDate">날짜</label>
+      <input type="date" id="eventDate">
+    </div>
+    <div class="form-group">
+      <label for="eventCategory">카테고리</label>
+      <select id="eventCategory">
+        <option value="exam">시험</option>
+        <option value="event">행사</option>
+        <option value="vacation">방학</option>
+        <option value="other">기타</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="modalCancel">취소</button>
+      <button class="btn btn-primary" id="modalSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'dday-counter-events';
+const CATEGORY_LABELS = { exam: '시험', event: '행사', vacation: '방학', other: '기타' };
+
+let events = [];
+let editingId = null;
+let previousDigits = {};
+
+function loadEvents() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    events = JSON.parse(saved);
+  } else {
+    // Sample events
+    const today = new Date();
+    events = [
+      {
+        id: generateId(),
+        name: '기말고사',
+        date: formatDate(addDays(today, 14)),
+        category: 'exam'
+      },
+      {
+        id: generateId(),
+        name: '체육대회',
+        date: formatDate(addDays(today, 7)),
+        category: 'event'
+      },
+      {
+        id: generateId(),
+        name: '여름방학',
+        date: formatDate(addDays(today, 30)),
+        category: 'vacation'
+      }
+    ];
+    saveEvents();
+  }
+}
+
+function saveEvents() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function formatDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getDday(dateStr) {
+  const target = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+  return diff;
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardGrid');
+  const emptyState = document.getElementById('emptyState');
+
+  if (events.length === 0) {
+    grid.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  grid.style.display = 'grid';
+  emptyState.style.display = 'none';
+
+  // Sort: non-past events by nearest first, past events at end
+  const sorted = [...events].sort((a, b) => {
+    const da = getDday(a.date);
+    const db = getDday(b.date);
+    if (da < 0 && db >= 0) return 1;
+    if (da >= 0 && db < 0) return -1;
+    if (da < 0 && db < 0) return db - da;
+    return da - db;
+  });
+
+  // Limit to 8
+  const display = sorted.slice(0, 8);
+
+  grid.innerHTML = '';
+  display.forEach(event => {
+    const dday = getDday(event.date);
+    const isPast = dday < 0;
+    const isToday = dday === 0;
+
+    const card = document.createElement('div');
+    card.className = `card${isPast ? ' card-done' : ''}`;
+    card.dataset.category = event.category;
+    card.dataset.id = event.id;
+    card.onclick = () => openEditModal(event.id);
+
+    const ddayStr = isToday ? 'D-Day' : (dday > 0 ? `${dday}` : `+${Math.abs(dday)}`);
+    const digits = isToday ? ['D','a','y'] : String(Math.abs(dday)).padStart(Math.max(2, String(Math.abs(dday)).length), '0').split('');
+
+    const targetDate = new Date(event.date + 'T00:00:00');
+    const dateDisplay = `${targetDate.getFullYear()}. ${targetDate.getMonth()+1}. ${targetDate.getDate()}.`;
+
+    let flipHtml = '';
+    if (!isPast) {
+      const prefix = isToday ? '' : (dday > 0 ? 'D-' : 'D+');
+      flipHtml = `<div class="flip-container">
+        <span class="flip-prefix">${prefix}</span>
+        ${digits.map((d, i) => createFlipDigit(event.id, i, d)).join('')}
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="card-category">${CATEGORY_LABELS[event.category]}</span>
+        <div class="card-actions">
+          <button onclick="event.stopPropagation(); openEditModal('${event.id}')" title="수정">✏️</button>
+          <button onclick="event.stopPropagation(); deleteEvent('${event.id}')" title="삭제">🗑️</button>
+        </div>
+      </div>
+      <div class="card-name">${escapeHtml(event.name)}</div>
+      <div class="card-date">${dateDisplay}</div>
+      ${flipHtml}
+      <div class="done-badge">✅ 완료!</div>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  // Store current digits for flip detection
+  display.forEach(event => {
+    const dday = getDday(event.date);
+    if (dday >= 0) {
+      const isToday = dday === 0;
+      const digits = isToday ? 'Day' : String(dday).padStart(Math.max(2, String(dday).length), '0');
+      previousDigits[event.id] = digits;
+    }
+  });
+}
+
+function createFlipDigit(eventId, index, digit) {
+  const prevDigits = previousDigits[eventId] || '';
+  const prevDigit = prevDigits[index];
+  const shouldFlip = prevDigit !== undefined && prevDigit !== digit;
+
+  if (shouldFlip) {
+    return `<div class="flip-digit">
+      <div class="flip-digit-inner">
+        <div class="top"><span>${digit}</span></div>
+        <div class="bottom"><span>${digit}</span></div>
+        <div class="top-flip"><span>${prevDigit}</span></div>
+        <div class="bottom-flip"><span>${digit}</span></div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="flip-digit">
+    <div class="flip-digit-inner">
+      <div class="top"><span>${digit}</span></div>
+      <div class="bottom"><span>${digit}</span></div>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Modal controls
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '이벤트 추가';
+  document.getElementById('eventName').value = '';
+  document.getElementById('eventDate').value = '';
+  document.getElementById('eventCategory').value = 'exam';
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('eventName').focus();
+}
+
+function openEditModal(id) {
+  const event = events.find(e => e.id === id);
+  if (!event) return;
+
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '이벤트 수정';
+  document.getElementById('eventName').value = event.name;
+  document.getElementById('eventDate').value = event.date;
+  document.getElementById('eventCategory').value = event.category;
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('eventName').focus();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  editingId = null;
+}
+
+function saveEvent() {
+  const name = document.getElementById('eventName').value.trim();
+  const date = document.getElementById('eventDate').value;
+  const category = document.getElementById('eventCategory').value;
+
+  if (!name || !date) {
+    alert('이름과 날짜를 모두 입력해주세요.');
+    return;
+  }
+
+  if (editingId) {
+    const event = events.find(e => e.id === editingId);
+    if (event) {
+      event.name = name;
+      event.date = date;
+      event.category = category;
+    }
+  } else {
+    if (events.length >= 8) {
+      alert('최대 8개까지 등록할 수 있습니다.');
+      return;
+    }
+    events.push({ id: generateId(), name, date, category });
+  }
+
+  saveEvents();
+  renderCards();
+  closeModal();
+}
+
+function deleteEvent(id) {
+  if (!confirm('이 이벤트를 삭제하시겠습니까?')) return;
+  events = events.filter(e => e.id !== id);
+  saveEvents();
+  renderCards();
+}
+
+// Theme toggle
+function toggleTheme() {
+  document.body.classList.toggle('light-theme');
+  const isLight = document.body.classList.contains('light-theme');
+  localStorage.setItem('dday-theme', isLight ? 'light' : 'dark');
+  document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+}
+
+function loadTheme() {
+  const theme = localStorage.getItem('dday-theme');
+  if (theme === 'light') {
+    document.body.classList.add('light-theme');
+    document.getElementById('themeToggle').textContent = '☀️';
+  }
+}
+
+// Fullscreen
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.body.requestFullscreen().then(() => {
+      document.body.classList.add('fullscreen-mode');
+    }).catch(() => {
+      // Fallback: just add class
+      document.body.classList.add('fullscreen-mode');
+    });
+  } else {
+    document.exitFullscreen().then(() => {
+      document.body.classList.remove('fullscreen-mode');
+    });
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    document.body.classList.remove('fullscreen-mode');
+  }
+});
+
+// Update every minute
+function startTimer() {
+  setInterval(() => {
+    renderCards();
+  }, 60000);
+}
+
+// Check at midnight for day change
+function scheduleMiddnightCheck() {
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const ms = midnight - now;
+  setTimeout(() => {
+    renderCards();
+    scheduleMiddnightCheck();
+  }, ms + 1000);
+}
+
+// Event listeners
+document.getElementById('addBtn').addEventListener('click', openAddModal);
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+document.getElementById('modalCancel').addEventListener('click', closeModal);
+document.getElementById('modalSave').addEventListener('click', saveEvent);
+
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('modalOverlay').classList.contains('active')) {
+    saveEvent();
+  }
+});
+
+// Init
+loadTheme();
+loadEvents();
+renderCards();
+startTimer();
+scheduleMiddnightCheck();
+</script>
+</body>
+</html>
