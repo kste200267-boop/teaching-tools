@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>빈칸 채우기 퀴즈</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .score-box {
+            display: none;
+            background: #1976D2;
+            color: #fff;
+            text-align: center;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        .score-box.visible {
+            display: block;
+        }
+
+        .question-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.3s, border 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .question-card.correct {
+            border-color: #4CAF50;
+            background: #f1f8f1;
+        }
+
+        .question-card.wrong {
+            border-color: #F44336;
+            background: #fef1f0;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #1976D2;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .question-content {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .question-text .blank-wrapper {
+            display: inline-flex;
+            align-items: center;
+            vertical-align: baseline;
+        }
+
+        .question-text input {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            border: none;
+            border-bottom: 2px solid #1976D2;
+            background: transparent;
+            padding: 2px 8px;
+            width: 120px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .question-text input:focus {
+            border-bottom-color: #0D47A1;
+        }
+
+        .question-text input:disabled {
+            color: #333;
+        }
+
+        .result-icon {
+            display: none;
+            font-size: 1.2rem;
+            margin-left: 8px;
+            font-weight: 700;
+        }
+
+        .question-card.correct .result-icon {
+            display: inline;
+            color: #4CAF50;
+        }
+
+        .question-card.wrong .result-icon {
+            display: inline;
+            color: #F44336;
+        }
+
+        .correct-answer {
+            display: none;
+            margin-top: 10px;
+            padding: 8px 14px;
+            background: #FFEBEE;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #C62828;
+        }
+
+        .question-card.wrong .correct-answer {
+            display: block;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 14px 36px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-check {
+            background: #1976D2;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        .btn-check:hover {
+            background: #1565C0;
+            box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4);
+        }
+
+        .btn-reset {
+            background: #fff;
+            color: #1976D2;
+            border: 2px solid #1976D2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn-reset:hover {
+            background: #E3F2FD;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            header h1 {
+                font-size: 1.4rem;
+            }
+
+            .question-card {
+                padding: 16px 18px;
+            }
+
+            .question-text {
+                font-size: 0.95rem;
+            }
+
+            .question-text input {
+                width: 90px;
+                font-size: 0.9rem;
+            }
+
+            .btn {
+                padding: 12px 24px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>빈칸 채우기 퀴즈</h1>
+            <p>통합사회 1단원 - 통합적 관점</p>
+        </header>
+
+        <div class="score-box" id="scoreBox"></div>
+        <div id="quizArea"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-check" id="btnCheck" onclick="checkAnswers()">채점하기</button>
+            <button class="btn btn-reset" id="btnReset" onclick="resetQuiz()" style="display:none;">다시 풀기</button>
+        </div>
+    </div>
+
+    <script>
+    // ===== 여기에서 문항을 수정하세요 =====
+    const questions = [
+        {text: "___적 관점은 시간의 흐름에 따른 변화를 분석한다.", answer: "시간"},
+        {text: "통합적 관점은 시간적, 공간적, ___적, 윤리적 관점을 포함한다.", answer: "사회"},
+        {text: "___적 관점은 장소와 지역의 특성을 고려하여 현상을 이해한다.", answer: "공간"},
+        {text: "___적 관점은 옳고 그름, 바람직함의 기준으로 현상을 판단한다.", answer: "윤리"},
+        {text: "통합적 관점을 활용하면 사회 현상을 ___적으로 이해할 수 있다.", answer: "총체"},
+        {text: "사회적 관점은 정치, 경제, 사회, ___의 측면에서 현상을 분석한다.", answer: "문화"},
+        {text: "시간적 관점에서는 과거, 현재, ___의 변화를 탐구한다.", answer: "미래"},
+        {text: "공간적 관점은 자연환경과 ___환경 간의 관계를 파악한다.", answer: "인문"},
+        {text: "통합적 관점은 하나의 현상을 ___가지 관점에서 바라보는 것이다.", answer: "여러"},
+        {text: "윤리적 관점은 인간의 행위에 대한 가치 ___을 포함한다.", answer: "판단"}
+    ];
+    // ===== 수정 영역 끝 =====
+
+    function renderQuiz() {
+        const area = document.getElementById('quizArea');
+        area.innerHTML = '';
+
+        questions.forEach((q, i) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `card-${i}`;
+
+            // Split text by ___ to create segments with input
+            const parts = q.text.split('___');
+            let questionHTML = `<span class="question-number">${i + 1}</span>`;
+            questionHTML += `<span class="question-text">`;
+
+            for (let j = 0; j < parts.length; j++) {
+                questionHTML += parts[j];
+                if (j < parts.length - 1) {
+                    questionHTML += `<span class="blank-wrapper"><input type="text" id="input-${i}" autocomplete="off"></span>`;
+                }
+            }
+
+            questionHTML += `<span class="result-icon" id="icon-${i}"></span>`;
+            questionHTML += `</span>`;
+
+            card.innerHTML = `
+                <div class="question-content">${questionHTML}</div>
+                <div class="correct-answer" id="answer-${i}">정답: <strong>${q.answer}</strong></div>
+            `;
+
+            area.appendChild(card);
+        });
+    }
+
+    function checkAnswers() {
+        let score = 0;
+
+        questions.forEach((q, i) => {
+            const input = document.getElementById(`input-${i}`);
+            const card = document.getElementById(`card-${i}`);
+            const icon = document.getElementById(`icon-${i}`);
+            const userAnswer = input.value.trim().toLowerCase();
+            const correctAnswer = q.answer.trim().toLowerCase();
+
+            input.disabled = true;
+
+            if (userAnswer === correctAnswer) {
+                card.classList.add('correct');
+                icon.textContent = '✓';
+                score++;
+            } else {
+                card.classList.add('wrong');
+                icon.textContent = '✗';
+            }
+        });
+
+        const scoreBox = document.getElementById('scoreBox');
+        scoreBox.textContent = `점수: ${score} / ${questions.length}`;
+        scoreBox.classList.add('visible');
+
+        document.getElementById('btnCheck').disabled = true;
+        document.getElementById('btnReset').style.display = 'inline-block';
+    }
+
+    function resetQuiz() {
+        document.getElementById('scoreBox').classList.remove('visible');
+        document.getElementById('btnCheck').disabled = false;
+        document.getElementById('btnReset').style.display = 'none';
+        renderQuiz();
+        document.getElementById('input-0').focus();
+    }
+
+    // Initialize
+    renderQuiz();
+    </script>
+</body>
+</html>
