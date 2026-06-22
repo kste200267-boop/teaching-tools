@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모둠 점수판</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #1a1a2e;
+  color: #fff;
+  min-height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+header {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.controls button {
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.controls button:hover {
+  transform: scale(1.05);
+}
+
+.controls button:active {
+  transform: scale(0.95);
+}
+
+.btn-reset {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.btn-fullscreen {
+  background: #3498db;
+  color: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  width: 100%;
+  max-width: 1400px;
+  flex: 1;
+}
+
+.team-card {
+  background: #16213e;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 3px solid transparent;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.team-card.leading {
+  border-color: #f1c40f;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+}
+
+.crown {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.team-card.leading .crown {
+  opacity: 1;
+}
+
+.team-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  padding: 0.2rem 0.8rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+  text-align: center;
+  min-width: 80px;
+}
+
+.team-name:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.team-name:focus {
+  outline: 2px solid #fff;
+  background: rgba(255,255,255,0.15);
+}
+
+.score {
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 1;
+  margin: 0.5rem 0;
+  transition: transform 0.2s ease;
+}
+
+.score.animate {
+  animation: scorePopUp 0.3s ease;
+}
+
+@keyframes scorePopUp {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.score.animate-down {
+  animation: scorePopDown 0.3s ease;
+}
+
+@keyframes scorePopDown {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.8); }
+  100% { transform: scale(1); }
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.buttons button {
+  font-family: 'Noto Sans KR', sans-serif;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+  color: #fff;
+}
+
+.buttons button:hover {
+  transform: scale(1.1);
+}
+
+.buttons button:active {
+  transform: scale(0.9);
+}
+
+.btn-minus {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .score {
+    font-size: 4rem;
+  }
+}
+
+/* Fullscreen adjustments */
+:fullscreen body,
+::backdrop {
+  background: #1a1a2e;
+}
+
+:fullscreen .score {
+  font-size: 6rem;
+}
+
+:fullscreen .team-name {
+  font-size: 1.6rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>모둠 점수판</h1>
+  <div class="controls">
+    <button class="btn-reset" onclick="resetAll()">전체 초기화</button>
+    <button class="btn-fullscreen" onclick="toggleFullscreen()">전체화면</button>
+  </div>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<script>
+// ===== 여기에서 팀을 수정하세요 =====
+const teams = [
+  {name: "1모둠", color: "#FF6B6B"},
+  {name: "2모둠", color: "#4ECDC4"},
+  {name: "3모둠", color: "#45B7D1"},
+  {name: "4모둠", color: "#96E6A1"},
+  {name: "5모둠", color: "#DDA0DD"},
+  {name: "6모둠", color: "#F7DC6F"},
+];
+// ====================================
+
+const STORAGE_KEY = "scoreboard_data";
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.length === teams.length) return parsed;
+    }
+  } catch(e) {}
+  return teams.map(t => ({name: t.name, score: 0}));
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function getMaxScore() {
+  return Math.max(...state.map(s => s.score));
+}
+
+function render() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  const maxScore = getMaxScore();
+  const hasPositive = maxScore > 0;
+
+  state.forEach((team, i) => {
+    const card = document.createElement("div");
+    card.className = "team-card";
+    if (hasPositive && team.score === maxScore) {
+      card.classList.add("leading");
+    }
+    card.style.borderColor = (hasPositive && team.score === maxScore) ? teams[i].color : "transparent";
+    card.style.boxShadow = (hasPositive && team.score === maxScore) ? `0 0 20px ${teams[i].color}55` : "none";
+
+    card.innerHTML = `
+      <div class="crown">&#x1F451;</div>
+      <div class="team-name" contenteditable="true" data-index="${i}" style="color: ${teams[i].color}">${team.name}</div>
+      <div class="score" id="score-${i}" style="color: ${teams[i].color}">${team.score}</div>
+      <div class="buttons">
+        <button style="background: ${teams[i].color}; color: #1a1a2e;" onclick="changeScore(${i}, 1)">+1</button>
+        <button style="background: ${teams[i].color}; color: #1a1a2e;" onclick="changeScore(${i}, 2)">+2</button>
+        <button style="background: ${teams[i].color}; color: #1a1a2e;" onclick="changeScore(${i}, 5)">+5</button>
+        <button class="btn-minus" onclick="changeScore(${i}, -1)">-1</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Add event listeners for editable names
+  document.querySelectorAll(".team-name").forEach(el => {
+    el.addEventListener("blur", function() {
+      const idx = parseInt(this.dataset.index);
+      const newName = this.textContent.trim();
+      if (newName) {
+        state[idx].name = newName;
+        saveState();
+      } else {
+        this.textContent = state[idx].name;
+      }
+    });
+    el.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this.blur();
+      }
+    });
+  });
+}
+
+function changeScore(index, delta) {
+  state[index].score += delta;
+  saveState();
+
+  const scoreEl = document.getElementById(`score-${index}`);
+  if (scoreEl) {
+    scoreEl.textContent = state[index].score;
+    scoreEl.classList.remove("animate", "animate-down");
+    void scoreEl.offsetWidth; // force reflow
+    scoreEl.classList.add(delta > 0 ? "animate" : "animate-down");
+  }
+
+  // Update leading state without full re-render
+  updateLeading();
+}
+
+function updateLeading() {
+  const maxScore = getMaxScore();
+  const hasPositive = maxScore > 0;
+  const cards = document.querySelectorAll(".team-card");
+
+  cards.forEach((card, i) => {
+    const isLeading = hasPositive && state[i].score === maxScore;
+    card.classList.toggle("leading", isLeading);
+    card.style.borderColor = isLeading ? teams[i].color : "transparent";
+    card.style.boxShadow = isLeading ? `0 0 20px ${teams[i].color}55` : "none";
+  });
+}
+
+function resetAll() {
+  if (confirm("모든 팀의 점수를 초기화할까요?")) {
+    state = teams.map((t, i) => ({name: state[i].name, score: 0}));
+    saveState();
+    render();
+  }
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+// Initial render
+render();
+</script>
+</body>
+</html>
