@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OX 퀴즈 챌린지 - 5단원: 생활공간과 사회</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+.container {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+}
+/* Start Screen */
+#start-screen, #quiz-screen, #result-screen {
+  background: rgba(255,255,255,0.95);
+  border-radius: 24px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: slideUp 0.5s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+}
+.hidden { display: none !important; }
+.title {
+  font-size: 1.8em;
+  font-weight: 900;
+  color: #C62828;
+  margin-bottom: 10px;
+}
+.subtitle {
+  font-size: 1.1em;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+.unit-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #C62828, #E53935);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.best-score {
+  background: #FFF3E0;
+  border: 2px solid #FF9800;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 20px 0;
+  font-weight: 700;
+  color: #E65100;
+}
+.btn {
+  display: inline-block;
+  padding: 16px 48px;
+  font-size: 1.2em;
+  font-weight: 700;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+.btn:active { transform: translateY(0); }
+.btn-start {
+  background: linear-gradient(135deg, #C62828, #E53935);
+  color: white;
+}
+.btn-restart {
+  background: linear-gradient(135deg, #C62828, #E53935);
+  color: white;
+  margin-top: 20px;
+}
+/* Quiz Screen */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #C62828, #FF5252);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.question-count {
+  font-weight: 700;
+  color: #C62828;
+  font-size: 1.1em;
+}
+.timer {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4em;
+  font-weight: 900;
+  position: relative;
+}
+.timer-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.timer-ring circle {
+  fill: none;
+  stroke-width: 4;
+}
+.timer-ring .bg { stroke: #eee; }
+.timer-ring .fg {
+  stroke: #C62828;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-text {
+  position: relative;
+  z-index: 1;
+  color: #C62828;
+}
+.timer.warning .timer-text { color: #FF5252; animation: pulse 0.5s infinite; }
+.question-text {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.8;
+  margin: 30px 0;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+}
+.ox-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 30px;
+}
+.btn-ox {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 4px solid;
+  font-size: 3em;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.btn-ox:hover { transform: scale(1.1); }
+.btn-ox:active { transform: scale(0.95); }
+.btn-o {
+  background: rgba(21, 101, 192, 0.1);
+  border-color: #1565C0;
+  color: #1565C0;
+}
+.btn-x {
+  background: rgba(198, 40, 40, 0.1);
+  border-color: #C62828;
+  color: #C62828;
+}
+.btn-ox:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: scale(1) !important;
+}
+/* Feedback */
+.feedback {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 100;
+  animation: slideUp 0.3s ease;
+}
+.feedback-correct { background: rgba(46, 125, 50, 0.95); }
+.feedback-wrong { background: rgba(198, 40, 40, 0.95); }
+.feedback-icon { font-size: 5em; margin-bottom: 20px; }
+.feedback-text {
+  color: white;
+  font-size: 1.3em;
+  font-weight: 700;
+  max-width: 80%;
+  text-align: center;
+  line-height: 1.6;
+}
+.feedback-answer {
+  color: rgba(255,255,255,0.9);
+  font-size: 1em;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  max-width: 80%;
+  text-align: center;
+  line-height: 1.5;
+}
+/* Result Screen */
+.result-grade {
+  font-size: 4em;
+  font-weight: 900;
+  margin: 20px 0;
+}
+.grade-A { color: #2E7D32; }
+.grade-B { color: #1565C0; }
+.grade-C { color: #F57F17; }
+.grade-D { color: #C62828; }
+.result-score {
+  font-size: 2em;
+  font-weight: 700;
+  color: #333;
+  margin: 10px 0;
+}
+.result-message {
+  font-size: 1.1em;
+  color: #666;
+  margin: 15px 0;
+  line-height: 1.6;
+}
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 20px 0;
+}
+.stat-item {
+  text-align: center;
+}
+.stat-value {
+  font-size: 1.8em;
+  font-weight: 900;
+}
+.stat-label {
+  font-size: 0.85em;
+  color: #888;
+}
+.correct-color { color: #2E7D32; }
+.wrong-color { color: #C62828; }
+/* Particles */
+.particle {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: confetti 1s ease forwards;
+}
+@media (max-width: 480px) {
+  .title { font-size: 1.4em; }
+  .question-text { font-size: 1.05em; }
+  .btn-ox { width: 110px; height: 110px; font-size: 2.5em; }
+  #start-screen, #quiz-screen, #result-screen { padding: 30px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <div class="unit-badge">5단원</div>
+    <h1 class="title">OX 퀴즈 챌린지</h1>
+    <p class="subtitle">생활공간과 사회<br>100문항 중 랜덤 15문항 도전!</p>
+    <div class="best-score hidden" id="best-score-display"></div>
+    <div style="margin-top:10px;">
+      <button class="btn btn-start" onclick="startQuiz()">도전 시작!</button>
+    </div>
+    <p style="margin-top:20px; color:#999; font-size:0.85em;">문항당 15초 / 총 15문항</p>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div id="quiz-screen" class="hidden">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="quiz-header">
+      <span class="question-count" id="question-count">1 / 15</span>
+      <div class="timer" id="timer">
+        <svg class="timer-ring" viewBox="0 0 60 60">
+          <circle class="bg" cx="30" cy="30" r="26"/>
+          <circle class="fg" id="timer-circle" cx="30" cy="30" r="26"/>
+        </svg>
+        <span class="timer-text" id="timer-text">15</span>
+      </div>
+    </div>
+    <div class="question-text" id="question-text"></div>
+    <div class="ox-buttons">
+      <button class="btn-ox btn-o" id="btn-o" onclick="answer(true)">O</button>
+      <button class="btn-ox btn-x" id="btn-x" onclick="answer(false)">X</button>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result-screen" class="hidden">
+    <div class="unit-badge">결과 발표</div>
+    <div class="result-grade" id="result-grade"></div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-stats">
+      <div class="stat-item">
+        <div class="stat-value correct-color" id="stat-correct">0</div>
+        <div class="stat-label">정답</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value wrong-color" id="stat-wrong">0</div>
+        <div class="stat-label">오답</div>
+      </div>
+    </div>
+    <div class="result-message" id="result-message"></div>
+    <div class="best-score hidden" id="best-score-result"></div>
+    <button class="btn btn-restart" onclick="startQuiz()">다시 도전!</button>
+  </div>
+</div>
+
+<!-- Feedback overlay -->
+<div class="feedback hidden" id="feedback"></div>
+
+<script>
+// ===== 100 QUESTIONS =====
+const questions = [
+  // 산업화와 도시화 (20문항)
+  {q: "산업화란 1차 산업 중심 사회에서 2·3차 산업 중심 사회로 변화하는 과정이다.", a: true},
+  {q: "이촌향도 현상은 도시에서 농촌으로 인구가 이동하는 것을 의미한다.", a: false},
+  {q: "도시화율이 높은 선진국일수록 도시 인구의 증가 속도가 빠르다.", a: false},
+  {q: "종주 도시형 도시 체계에서는 가장 큰 도시와 그 다음 도시 간 인구 격차가 크다.", a: true},
+  {q: "교외화는 도시 중심부의 인구가 도시 외곽이나 주변 지역으로 이동하는 현상이다.", a: true},
+  {q: "우리나라의 도시화는 1960년대 이후 급속하게 진행되었다.", a: true},
+  {q: "역도시화는 도시 인구가 증가하여 도시가 더욱 확대되는 현상이다.", a: false},
+  {q: "도시화의 가속화 단계에서는 이촌향도 현상이 활발하게 나타난다.", a: true},
+  {q: "슬럼화는 도시 내부의 특정 지역이 노후화되면서 쇠퇴하는 현상이다.", a: true},
+  {q: "산업 혁명은 18세기 후반 영국에서 시작되어 도시화를 촉진하였다.", a: true},
+  {q: "우리나라는 현재 도시화의 초기 단계에 해당한다.", a: false},
+  {q: "도시 내부 구조에서 접근성이 가장 좋은 곳은 도심(CBD)이다.", a: true},
+  {q: "대도시 주변에 형성된 위성 도시는 대도시의 기능을 분담한다.", a: true},
+  {q: "도시화 과정에서 주택 부족, 교통 혼잡, 환경 오염 등의 문제가 발생할 수 있다.", a: true},
+  {q: "탈산업화 사회에서는 제조업보다 서비스업의 비중이 높아진다.", a: true},
+  {q: "선진국의 도시화율은 대체로 50% 미만이다.", a: false},
+  {q: "도시에서는 농촌에 비해 익명성이 높고 2차적 인간관계가 발달한다.", a: true},
+  {q: "우리나라의 수도권 집중 현상은 균형 발전에 긍정적인 영향을 준다.", a: false},
+  {q: "공업화 초기에는 경공업 중심으로 발전하다가 점차 중화학 공업으로 전환된다.", a: true},
+  {q: "도시화의 종착 단계에서는 도시화율의 변화가 거의 없다.", a: true},
+
+  // 교통·통신의 발달과 정보화 (25문항)
+  {q: "시공간 압축이란 교통·통신의 발달로 실제 거리는 변하지 않지만 심리적 거리가 줄어드는 현상이다.", a: true},
+  {q: "교통의 발달은 지역 간 접근성을 높여 생활권을 확대시킨다.", a: true},
+  {q: "정보화 사회에서는 지식과 정보가 핵심 생산 요소가 된다.", a: true},
+  {q: "디지털 격차(정보 격차)는 정보 접근 능력의 차이로 인한 사회적 불평등을 의미한다.", a: true},
+  {q: "교통의 발달로 모든 지역이 균등하게 발전하게 된다.", a: false},
+  {q: "SNS의 발달은 사회적 관계망을 확대하고 정보 공유를 촉진한다.", a: true},
+  {q: "전자 상거래의 발달로 소비자의 공간적 제약이 감소하였다.", a: true},
+  {q: "재택근무의 확산은 교통·통신 발달과 무관하다.", a: false},
+  {q: "정보화 사회에서는 제조업 종사자의 비율이 가장 높다.", a: false},
+  {q: "KTX 개통으로 수도권과 지방 간 통근이 가능해진 것은 시공간 압축의 사례이다.", a: true},
+  {q: "인터넷의 발달은 전통 시장의 경쟁력을 자동으로 높여준다.", a: false},
+  {q: "빅데이터와 인공지능 기술은 정보화 사회의 핵심 기술에 해당한다.", a: true},
+  {q: "정보화 사회에서 개인 정보 보호 문제는 중요한 사회적 쟁점이다.", a: true},
+  {q: "교통 발달은 도시의 통근권을 축소시키는 역할을 한다.", a: false},
+  {q: "유비쿼터스란 언제 어디서나 네트워크에 접속할 수 있는 환경을 말한다.", a: true},
+  {q: "정보 사회에서는 수평적·쌍방향 의사소통이 가능해진다.", a: true},
+  {q: "사이버 공간에서의 활동은 현실 공간에 아무런 영향을 미치지 않는다.", a: false},
+  {q: "스마트 팜은 정보 통신 기술을 농업에 접목한 사례이다.", a: true},
+  {q: "교통의 발달로 배후지가 넓어지면 중심지의 기능이 강화될 수 있다.", a: true},
+  {q: "가짜 뉴스의 확산은 정보화 사회의 부정적 측면 중 하나이다.", a: true},
+  {q: "모든 세대가 디지털 기기를 동등하게 활용할 수 있으므로 디지털 격차는 존재하지 않는다.", a: false},
+  {q: "온라인 플랫폼 노동의 증가는 정보화에 따른 새로운 고용 형태이다.", a: true},
+  {q: "원격 의료 서비스는 의료 접근성이 낮은 지역의 문제를 완화할 수 있다.", a: true},
+  {q: "교통 발달 이전에는 지역의 자급자족적 경제 구조가 일반적이었다.", a: true},
+  {q: "SNS를 통한 사회 운동 참여 확대는 정보화 사회의 긍정적 측면이다.", a: true},
+
+  // 과학기술과 윤리 (15문항)
+  {q: "인공지능(AI)의 발달은 일부 직업의 소멸과 새로운 직업의 등장을 동시에 가져온다.", a: true},
+  {q: "과학 기술은 항상 인류에게 긍정적인 결과만을 가져다준다.", a: false},
+  {q: "유전자 조작 기술(GMO)은 식량 문제 해결에 기여할 수 있으나 안전성 논란이 있다.", a: true},
+  {q: "개인 정보 수집과 활용에는 정보 주체의 동의가 필요하다.", a: true},
+  {q: "자율주행 자동차 사고 시 책임 소재 문제는 과학기술 윤리의 쟁점이다.", a: true},
+  {q: "생명 공학 기술의 발전은 윤리적 논의 없이 무제한으로 허용되어야 한다.", a: false},
+  {q: "과학 기술의 양면성이란 같은 기술이 긍정적·부정적 결과를 모두 초래할 수 있다는 의미이다.", a: true},
+  {q: "원자력 에너지는 온실가스 배출이 적지만 방사능 누출 위험이라는 양면성을 가진다.", a: true},
+  {q: "CCTV 확대 설치는 범죄 예방에 도움이 되나 사생활 침해 논란이 있다.", a: true},
+  {q: "AI가 내린 판단에 대한 최종 책임은 AI 자체에 있다.", a: false},
+  {q: "과학 기술 발전에 대한 사회적 합의와 규제는 불필요하다.", a: false},
+  {q: "딥페이크 기술의 악용은 정보 사회의 윤리적 문제에 해당한다.", a: true},
+  {q: "사물인터넷(IoT)은 편리함을 제공하지만 해킹 위험이라는 양면성이 있다.", a: true},
+  {q: "과학 기술의 혜택이 모든 사람에게 공평하게 돌아가는 것이 사회 정의에 부합한다.", a: true},
+  {q: "기술 결정론은 기술이 사회 변화를 일방적으로 결정한다는 관점이다.", a: true},
+
+  // 지역의 공간 변화 (20문항)
+  {q: "빨대 효과란 교통망 개설로 오히려 주변 지역의 인구와 소비가 대도시로 빨려가는 현상이다.", a: true},
+  {q: "젠트리피케이션은 낙후된 지역에 중산층이 유입되면서 기존 저소득층이 밀려나는 현상이다.", a: true},
+  {q: "역세권은 철도역을 중심으로 형성된 상업·주거 밀집 지역을 뜻한다.", a: true},
+  {q: "도시 재생은 낡은 건물을 모두 철거하고 새로 짓는 재개발만을 의미한다.", a: false},
+  {q: "스마트시티는 정보통신기술(ICT)을 활용하여 도시 문제를 해결하는 도시이다.", a: true},
+  {q: "고속도로 개통은 항상 연결된 모든 지역의 발전을 가져온다.", a: false},
+  {q: "도시 재생 뉴딜 사업은 지역 주민의 참여를 중시한다.", a: true},
+  {q: "대형 마트의 진출은 지역 내 전통 시장의 경쟁력을 약화시킬 수 있다.", a: true},
+  {q: "숲세권, 맥세권 등의 신조어는 입지와 생활 편의에 대한 관심을 반영한다.", a: true},
+  {q: "도시 스프롤 현상은 도시가 무질서하게 외곽으로 확산되는 것을 의미한다.", a: true},
+  {q: "지역 축제와 장소 마케팅은 지역 활성화 전략에 해당한다.", a: true},
+  {q: "젠트리피케이션은 원주민에게 항상 긍정적인 영향만 준다.", a: false},
+  {q: "컴팩트 시티는 도시의 기능을 집약하여 이동 거리를 줄이는 도시 계획 개념이다.", a: true},
+  {q: "빨대 효과는 지역 균형 발전에 긍정적인 영향을 미친다.", a: false},
+  {q: "도시 내 용도 지역제는 토지 이용을 계획적으로 관리하기 위한 제도이다.", a: true},
+  {q: "공유 경제(카셰어링, 공유 오피스 등)는 공간 이용의 효율성을 높인다.", a: true},
+  {q: "주거 지역과 공업 지역을 분리하는 것은 도시 계획의 원칙 중 하나이다.", a: true},
+  {q: "도시 열섬 현상은 도시 내부 온도가 주변 지역보다 높게 나타나는 현상이다.", a: true},
+  {q: "마을 만들기 사업은 하향식(top-down) 방식으로만 추진된다.", a: false},
+  {q: "교통 결절점에는 상업 기능이 발달하기 쉽다.", a: true},
+
+  // 인구 문제와 공간 변화 (20문항)
+  {q: "저출산 현상은 생산 가능 인구 감소와 경제 성장 둔화를 초래할 수 있다.", a: true},
+  {q: "고령화 사회란 65세 이상 인구 비율이 14% 이상인 사회를 말한다.", a: false},
+  {q: "우리나라는 세계에서 가장 빠른 속도로 고령화가 진행되고 있는 국가 중 하나이다.", a: true},
+  {q: "인구의 수도권 집중은 지방의 인구 감소와 지역 소멸 위기를 심화시킨다.", a: true},
+  {q: "합계 출산율이 2.1명 이하이면 장기적으로 인구가 감소한다.", a: true},
+  {q: "고령 사회는 65세 이상 인구 비율이 7% 이상인 사회이다.", a: false},
+  {q: "인구 고령화는 사회 복지 비용 증가와 노동력 부족 문제를 야기할 수 있다.", a: true},
+  {q: "지방 소멸 위기 지역은 주로 청년 인구의 유출이 심각한 지역이다.", a: true},
+  {q: "귀농·귀촌 인구의 증가는 농촌 지역 인구 감소를 완화하는 데 기여할 수 있다.", a: true},
+  {q: "수도권 집중 현상은 주택 가격 상승, 교통 혼잡 등 수도권 내부 문제도 유발한다.", a: true},
+  {q: "출산 장려 정책만으로 저출산 문제를 완전히 해결할 수 있다.", a: false},
+  {q: "우리나라의 합계 출산율은 OECD 국가 중 가장 낮은 수준이다.", a: true},
+  {q: "고령화로 인해 실버 산업(노인 관련 산업)이 성장하고 있다.", a: true},
+  {q: "인구 감소 지역에서는 학교 통폐합, 의료 시설 축소 등의 문제가 발생한다.", a: true},
+  {q: "다문화 가정의 증가는 한국 사회의 인구 구성 변화를 보여주는 현상이다.", a: true},
+  {q: "인구 피라미드가 역삼각형에 가까울수록 고령화가 심한 사회이다.", a: true},
+  {q: "지방 분권은 수도권 집중 문제를 완화하기 위한 대안 중 하나이다.", a: true},
+  {q: "베이비붐 세대의 은퇴는 고령 인구 급증의 한 원인이다.", a: true},
+  {q: "인구 절벽이란 생산 가능 인구가 급격히 감소하는 현상을 의미한다.", a: true},
+  {q: "외국인 노동자 유입은 인구 감소 사회에서 노동력 부족을 보완하는 역할을 할 수 있다.", a: true}
+];
+
+// ===== GAME STATE =====
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let timer = null;
+let timeLeft = 15;
+const TOTAL_PER_ROUND = 15;
+const TIME_LIMIT = 15;
+const STORAGE_KEY = 'quiz-unit5-space-best';
+
+// ===== AUDIO (Web Audio API) =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+}
+function playCorrect() {
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  o.type = 'sine'; o.frequency.setValueAtTime(880, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+  o.start(); o.stop(audioCtx.currentTime + 0.3);
+}
+function playWrong() {
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  o.type = 'square'; o.frequency.setValueAtTime(200, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+  o.start(); o.stop(audioCtx.currentTime + 0.4);
+}
+
+// ===== UTILITIES =====
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function getBestScore() {
+  return parseInt(localStorage.getItem(STORAGE_KEY)) || 0;
+}
+function setBestScore(s) {
+  localStorage.setItem(STORAGE_KEY, s);
+}
+
+// ===== SCREENS =====
+function showScreen(id) {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ===== INIT =====
+function init() {
+  const best = getBestScore();
+  if (best > 0) {
+    const el = document.getElementById('best-score-display');
+    el.textContent = `🏆 최고 기록: ${best} / ${TOTAL_PER_ROUND}`;
+    el.classList.remove('hidden');
+  }
+}
+
+// ===== START QUIZ =====
+function startQuiz() {
+  currentQuestions = shuffle(questions).slice(0, TOTAL_PER_ROUND);
+  currentIndex = 0;
+  score = 0;
+  showScreen('quiz-screen');
+  showQuestion();
+}
+
+// ===== SHOW QUESTION =====
+function showQuestion() {
+  const q = currentQuestions[currentIndex];
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('question-count').textContent = `${currentIndex + 1} / ${TOTAL_PER_ROUND}`;
+  document.getElementById('progress-bar').style.width = `${((currentIndex) / TOTAL_PER_ROUND) * 100}%`;
+  document.getElementById('btn-o').disabled = false;
+  document.getElementById('btn-x').disabled = false;
+  startTimer();
+}
+
+// ===== TIMER =====
+function startTimer() {
+  clearInterval(timer);
+  timeLeft = TIME_LIMIT;
+  updateTimerDisplay();
+  const circumference = 2 * Math.PI * 26;
+  const circle = document.getElementById('timer-circle');
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = 0;
+
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    const offset = circumference * (1 - timeLeft / TIME_LIMIT);
+    circle.style.strokeDashoffset = offset;
+
+    if (timeLeft <= 5) {
+      document.getElementById('timer').classList.add('warning');
+    }
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      handleTimeout();
+    }
+  }, 1000);
+}
+function updateTimerDisplay() {
+  document.getElementById('timer-text').textContent = timeLeft;
+  if (timeLeft > 5) {
+    document.getElementById('timer').classList.remove('warning');
+  }
+}
+function handleTimeout() {
+  document.getElementById('btn-o').disabled = true;
+  document.getElementById('btn-x').disabled = true;
+  const correct = currentQuestions[currentIndex].a;
+  showFeedback(false, correct);
+}
+
+// ===== ANSWER =====
+function answer(userAnswer) {
+  clearInterval(timer);
+  document.getElementById('btn-o').disabled = true;
+  document.getElementById('btn-x').disabled = true;
+  const correct = currentQuestions[currentIndex].a;
+  const isCorrect = (userAnswer === correct);
+  if (isCorrect) score++;
+  showFeedback(isCorrect, correct);
+}
+
+// ===== FEEDBACK =====
+function showFeedback(isCorrect, correctAnswer) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback ' + (isCorrect ? 'feedback-correct' : 'feedback-wrong');
+  fb.classList.remove('hidden');
+
+  if (isCorrect) {
+    playCorrect();
+    fb.innerHTML = `
+      <div class="feedback-icon">✅</div>
+      <div class="feedback-text">정답입니다!</div>
+    `;
+    spawnParticles();
+  } else {
+    playWrong();
+    fb.innerHTML = `
+      <div class="feedback-icon">❌</div>
+      <div class="feedback-text">오답!</div>
+      <div class="feedback-answer">정답: ${correctAnswer ? 'O' : 'X'}</div>
+    `;
+  }
+
+  setTimeout(() => {
+    fb.classList.add('hidden');
+    currentIndex++;
+    if (currentIndex < TOTAL_PER_ROUND) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }, isCorrect ? 1200 : 2000);
+}
+
+// ===== PARTICLES =====
+function spawnParticles() {
+  const colors = ['#C62828','#FF5252','#FF8A80','#FFD54F','#4CAF50','#2196F3'];
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = (50 + (Math.random()-0.5)*40) + '%';
+    p.style.top = (50 + (Math.random()-0.5)*30) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = (6 + Math.random()*8) + 'px';
+    p.style.height = p.style.width;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1000);
+  }
+}
+
+// ===== RESULT =====
+function showResult() {
+  showScreen('result-screen');
+  const pct = score / TOTAL_PER_ROUND;
+  let grade, gradeClass, message;
+  if (pct >= 0.9) {
+    grade = 'A'; gradeClass = 'grade-A';
+    message = '축하합니다! 생활공간과 사회 전문가입니다! 🎉';
+  } else if (pct >= 0.7) {
+    grade = 'B'; gradeClass = 'grade-B';
+    message = '잘했어요! 조금만 더 공부하면 완벽! 💪';
+  } else if (pct >= 0.5) {
+    grade = 'C'; gradeClass = 'grade-C';
+    message = '괜찮아요! 복습 후 다시 도전해 보세요! 📚';
+  } else {
+    grade = 'D'; gradeClass = 'grade-D';
+    message = '아쉬워요! 교과서를 다시 읽고 도전! 🔥';
+  }
+
+  document.getElementById('result-grade').textContent = grade;
+  document.getElementById('result-grade').className = 'result-grade ' + gradeClass;
+  document.getElementById('result-score').textContent = `${score} / ${TOTAL_PER_ROUND}`;
+  document.getElementById('stat-correct').textContent = score;
+  document.getElementById('stat-wrong').textContent = TOTAL_PER_ROUND - score;
+  document.getElementById('result-message').textContent = message;
+
+  // Best score
+  const best = getBestScore();
+  const bestEl = document.getElementById('best-score-result');
+  if (score > best) {
+    setBestScore(score);
+    bestEl.textContent = `🎊 새로운 최고 기록! ${score} / ${TOTAL_PER_ROUND}`;
+    bestEl.classList.remove('hidden');
+  } else if (best > 0) {
+    bestEl.textContent = `🏆 최고 기록: ${best} / ${TOTAL_PER_ROUND}`;
+    bestEl.classList.remove('hidden');
+  } else {
+    bestEl.classList.add('hidden');
+  }
+}
+
+// Init on load
+init();
+</script>
+</body>
+</html>
