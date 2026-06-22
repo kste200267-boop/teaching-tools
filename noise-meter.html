@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교실 소음 측정기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+/* Flash overlay */
+.flash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+    z-index: 1000;
+}
+
+.flash-overlay.active {
+    animation: flash 0.5s ease-in-out infinite;
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* Warning message */
+.warning-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: 900;
+    color: #ff4444;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+    z-index: 1001;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-align: center;
+}
+
+.warning-message.active {
+    opacity: 1;
+    animation: pulse-warning 1s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Main display area */
+.main-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+    padding: 20px 0;
+}
+
+/* Gauge */
+.gauge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.gauge-wrapper {
+    position: relative;
+    width: 80px;
+    height: 400px;
+    background: #0d0d1a;
+    border-radius: 40px;
+    border: 3px solid #333;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 30px rgba(0,0,0,0.3);
+}
+
+.gauge-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    border-radius: 0 0 37px 37px;
+    transition: height 0.1s ease-out;
+    background: linear-gradient(to top, #00ff88, #00ff88 33%, #ffdd00 33%, #ffdd00 66%, #ff4444 66%, #ff4444);
+}
+
+.gauge-marks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.gauge-mark {
+    position: absolute;
+    right: 5px;
+    font-size: 0.65rem;
+    color: #888;
+    transform: translateY(50%);
+}
+
+.threshold-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #ff0000;
+    box-shadow: 0 0 10px #ff0000;
+    transition: bottom 0.3s;
+    z-index: 5;
+}
+
+.threshold-label {
+    position: absolute;
+    right: -30px;
+    top: -10px;
+    font-size: 0.6rem;
+    color: #ff4444;
+    white-space: nowrap;
+}
+
+/* Info panel */
+.info-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.db-display {
+    font-size: 5rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    color: #00ff88;
+    text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+    transition: color 0.2s;
+}
+
+.db-label {
+    font-size: 1.2rem;
+    color: #888;
+    margin-top: 5px;
+}
+
+.emoji-display {
+    font-size: 5rem;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+.status-text {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #aaa;
+    text-align: center;
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-start {
+    background: #00ff88;
+    color: #1a1a2e;
+}
+
+.btn-start:hover {
+    background: #00cc6a;
+    transform: scale(1.05);
+}
+
+.btn-stop {
+    background: #ff4444;
+    color: #fff;
+}
+
+.btn-stop:hover {
+    background: #cc3333;
+    transform: scale(1.05);
+}
+
+.btn-stop:disabled,
+.btn-start:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.slider-group label {
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.slider-group input[type="range"] {
+    width: 150px;
+    accent-color: #00ff88;
+}
+
+.slider-value {
+    font-size: 0.8rem;
+    color: #00ff88;
+    font-weight: 500;
+}
+
+/* History graph */
+.history-section {
+    width: 100%;
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.history-title {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.history-canvas-wrapper {
+    width: 100%;
+    height: 100px;
+    position: relative;
+}
+
+#historyCanvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    background: #0d0d1a;
+}
+
+/* Permission denied */
+.permission-denied {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(255, 68, 68, 0.1);
+    border: 2px solid #ff4444;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+.permission-denied h2 {
+    color: #ff4444;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.permission-denied p {
+    color: #ccc;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    h1 { font-size: 1.4rem; }
+    .main-display {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .gauge-wrapper {
+        width: 60px;
+        height: 250px;
+    }
+    .db-display { font-size: 3.5rem; }
+    .emoji-display { font-size: 3.5rem; }
+    .warning-message { font-size: 2rem; }
+    .controls { gap: 10px; }
+    .btn { padding: 10px 20px; font-size: 1rem; }
+    .slider-group input[type="range"] { width: 120px; }
+}
+
+/* TV mode - extra large */
+@media (min-width: 1200px) {
+    .container { max-width: 1200px; }
+    h1 { font-size: 2.5rem; }
+    .gauge-wrapper { width: 100px; height: 500px; }
+    .db-display { font-size: 7rem; }
+    .emoji-display { font-size: 7rem; }
+    .warning-message { font-size: 4rem; }
+}
+
+@media (min-width: 1800px) {
+    .gauge-wrapper { width: 120px; height: 600px; }
+    .db-display { font-size: 9rem; }
+    .emoji-display { font-size: 9rem; }
+    .warning-message { font-size: 5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="warning-message" id="warningMessage">조용히 해주세요!</div>
+
+<div class="container">
+    <h1>교실 소음 측정기</h1>
+
+    <div class="permission-denied" id="permissionDenied">
+        <h2>마이크 접근 불가</h2>
+        <p>
+            소음 측정을 위해 마이크 권한이 필요합니다.<br>
+            브라우저 설정에서 마이크 접근을 허용해 주세요.<br><br>
+            <strong>해결 방법:</strong><br>
+            1. 주소창 왼쪽의 자물쇠/정보 아이콘 클릭<br>
+            2. '마이크' 권한을 '허용'으로 변경<br>
+            3. 페이지를 새로고침
+        </p>
+    </div>
+
+    <div class="main-display" id="mainDisplay">
+        <div class="gauge-container">
+            <div class="gauge-wrapper">
+                <div class="gauge-fill" id="gaugeFill"></div>
+                <div class="gauge-marks">
+                    <span class="gauge-mark" style="bottom: 0%;">0</span>
+                    <span class="gauge-mark" style="bottom: 25%;">25</span>
+                    <span class="gauge-mark" style="bottom: 50%;">50</span>
+                    <span class="gauge-mark" style="bottom: 75%;">75</span>
+                    <span class="gauge-mark" style="bottom: 100%;">100</span>
+                </div>
+                <div class="threshold-line" id="thresholdLine">
+                    <span class="threshold-label">한계</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div>
+                <div class="db-display" id="dbDisplay">--</div>
+                <div class="db-label">dB (근사값)</div>
+            </div>
+            <div class="emoji-display" id="emojiDisplay">😊</div>
+            <div class="status-text" id="statusText">시작 버튼을 눌러주세요</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-start" id="btnStart" onclick="startMeter()">시작</button>
+        <button class="btn btn-stop" id="btnStop" onclick="stopMeter()" disabled>정지</button>
+
+        <div class="slider-group">
+            <label>한계 수준</label>
+            <input type="range" id="thresholdSlider" min="20" max="90" value="70" oninput="updateThreshold(this.value)">
+            <span class="slider-value" id="thresholdValue">70 dB</span>
+        </div>
+
+        <div class="slider-group">
+            <label>감도 조절</label>
+            <input type="range" id="sensitivitySlider" min="1" max="5" value="3" step="0.5" oninput="updateSensitivity(this.value)">
+            <span class="slider-value" id="sensitivityValue">3.0x</span>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <div class="history-title">최근 60초 기록</div>
+        <div class="history-canvas-wrapper">
+            <canvas id="historyCanvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+// State
+let audioContext = null;
+let analyser = null;
+let microphone = null;
+let stream = null;
+let animationId = null;
+let isRunning = false;
+let threshold = 70;
+let sensitivity = 3.0;
+let exceedStartTime = null;
+let warningActive = false;
+let history = [];
+let lastHistoryTime = 0;
+
+// Audio context for alert sound
+let alertOscillator = null;
+let alertGain = null;
+
+// Elements
+const gaugeFill = document.getElementById('gaugeFill');
+const dbDisplay = document.getElementById('dbDisplay');
+const emojiDisplay = document.getElementById('emojiDisplay');
+const statusText = document.getElementById('statusText');
+const flashOverlay = document.getElementById('flashOverlay');
+const warningMessage = document.getElementById('warningMessage');
+const thresholdLine = document.getElementById('thresholdLine');
+const btnStart = document.getElementById('btnStart');
+const btnStop = document.getElementById('btnStop');
+const historyCanvas = document.getElementById('historyCanvas');
+const mainDisplay = document.getElementById('mainDisplay');
+const permissionDenied = document.getElementById('permissionDenied');
+
+// Initialize canvas
+function initCanvas() {
+    const wrapper = historyCanvas.parentElement;
+    historyCanvas.width = wrapper.clientWidth * window.devicePixelRatio;
+    historyCanvas.height = wrapper.clientHeight * window.devicePixelRatio;
+}
+
+window.addEventListener('resize', initCanvas);
+initCanvas();
+
+// Update threshold display
+function updateThreshold(val) {
+    threshold = parseInt(val);
+    document.getElementById('thresholdValue').textContent = val + ' dB';
+    thresholdLine.style.bottom = (val / 100 * 100) + '%';
+}
+
+// Update sensitivity
+function updateSensitivity(val) {
+    sensitivity = parseFloat(val);
+    document.getElementById('sensitivityValue').textContent = val + 'x';
+}
+
+// Initialize threshold line position
+updateThreshold(threshold);
+
+// Start meter
+async function startMeter() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.8;
+
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+
+        isRunning = true;
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        statusText.textContent = '측정 중...';
+        permissionDenied.style.display = 'none';
+        mainDisplay.style.display = 'flex';
+
+        history = [];
+        lastHistoryTime = Date.now();
+
+        updateMeter();
+    } catch (err) {
+        console.error('Microphone access error:', err);
+        permissionDenied.style.display = 'block';
+    }
+}
+
+// Stop meter
+function stopMeter() {
+    isRunning = false;
+
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+
+    if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+    }
+
+    stopAlertSound();
+
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+    statusText.textContent = '정지됨';
+    dbDisplay.textContent = '--';
+    gaugeFill.style.height = '0%';
+    emojiDisplay.textContent = '😊';
+    flashOverlay.classList.remove('active');
+    warningMessage.classList.remove('active');
+    exceedStartTime = null;
+    warningActive = false;
+}
+
+// Calculate dB from audio data
+function getVolume() {
+    const bufferLength = analyser.fftSize;
+    const dataArray = new Float32Array(bufferLength);
+    analyser.getFloatTimeDomainData(dataArray);
+
+    let sum = 0;
+    for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i] * dataArray[i];
+    }
+    const rms = Math.sqrt(sum / bufferLength);
+
+    // Convert to approximate dB scale with sensitivity
+    let db = 20 * Math.log10(rms + 0.0001);
+    // Normalize: typical mic RMS of -60 to 0 maps to ~30-100 dB room equivalent
+    db = Math.max(0, (db + 60) * sensitivity * 0.55);
+    db = Math.min(100, db);
+
+    return db;
+}
+
+// Get emoji based on level
+function getEmoji(level) {
+    if (level < 25) return '😊';
+    if (level < 50) return '😐';
+    if (level < 75) return '😰';
+    return '🤯';
+}
+
+// Get color based on level
+function getColor(level) {
+    if (level < 33) return '#00ff88';
+    if (level < 66) return '#ffdd00';
+    return '#ff4444';
+}
+
+// Play alert sound
+function playAlertSound() {
+    if (alertOscillator) return;
+
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        alertOscillator = ctx.createOscillator();
+        alertGain = ctx.createGain();
+
+        alertOscillator.type = 'sine';
+        alertOscillator.frequency.value = 800;
+        alertGain.gain.value = 0.1;
+
+        alertOscillator.connect(alertGain);
+        alertGain.connect(ctx.destination);
+        alertOscillator.start();
+
+        // Beep pattern
+        const now = ctx.currentTime;
+        alertGain.gain.setValueAtTime(0.1, now);
+        alertGain.gain.setValueAtTime(0, now + 0.15);
+        alertGain.gain.setValueAtTime(0.1, now + 0.3);
+        alertGain.gain.setValueAtTime(0, now + 0.45);
+
+        setTimeout(() => stopAlertSound(), 500);
+    } catch(e) {}
+}
+
+// Stop alert sound
+function stopAlertSound() {
+    if (alertOscillator) {
+        try {
+            alertOscillator.stop();
+        } catch(e) {}
+        alertOscillator = null;
+        alertGain = null;
+    }
+}
+
+// Draw history graph
+function drawHistory() {
+    const ctx = historyCanvas.getContext('2d');
+    const w = historyCanvas.width;
+    const h = historyCanvas.height;
+    const dpr = window.devicePixelRatio || 1;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (history.length < 2) return;
+
+    // Draw threshold line
+    const threshY = h - (threshold / 100) * h;
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.lineWidth = 1 * dpr;
+    ctx.setLineDash([5 * dpr, 5 * dpr]);
+    ctx.beginPath();
+    ctx.moveTo(0, threshY);
+    ctx.lineTo(w, threshY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw line graph
+    ctx.lineWidth = 2 * dpr;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    const step = w / (60 - 1); // 60 data points
+
+    ctx.beginPath();
+    for (let i = 0; i < history.length; i++) {
+        const x = (i / (60 - 1)) * w;
+        const y = h - (history[i] / 100) * h;
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+
+    // Gradient stroke
+    const gradient = ctx.createLinearGradient(0, h, 0, 0);
+    gradient.addColorStop(0, '#00ff88');
+    gradient.addColorStop(0.5, '#ffdd00');
+    gradient.addColorStop(1, '#ff4444');
+    ctx.strokeStyle = gradient;
+    ctx.stroke();
+
+    // Fill below
+    ctx.lineTo((history.length - 1) / (60 - 1) * w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+
+    const fillGradient = ctx.createLinearGradient(0, h, 0, 0);
+    fillGradient.addColorStop(0, 'rgba(0, 255, 136, 0.05)');
+    fillGradient.addColorStop(0.5, 'rgba(255, 221, 0, 0.05)');
+    fillGradient.addColorStop(1, 'rgba(255, 68, 68, 0.1)');
+    ctx.fillStyle = fillGradient;
+    ctx.fill();
+}
+
+// Main update loop
+function updateMeter() {
+    if (!isRunning) return;
+
+    const level = getVolume();
+    const dbValue = Math.round(level);
+
+    // Update gauge
+    gaugeFill.style.height = level + '%';
+
+    // Update dB display
+    dbDisplay.textContent = dbValue;
+    dbDisplay.style.color = getColor(level);
+    dbDisplay.style.textShadow = `0 0 30px ${getColor(level)}80`;
+
+    // Update emoji
+    emojiDisplay.textContent = getEmoji(level);
+
+    // Update status
+    if (level < 33) {
+        statusText.textContent = '조용한 교실';
+        statusText.style.color = '#00ff88';
+    } else if (level < 66) {
+        statusText.textContent = '적당한 소음';
+        statusText.style.color = '#ffdd00';
+    } else {
+        statusText.textContent = '시끄러움!';
+        statusText.style.color = '#ff4444';
+    }
+
+    // Threshold check
+    if (level >= threshold) {
+        flashOverlay.classList.add('active');
+
+        if (!exceedStartTime) {
+            exceedStartTime = Date.now();
+        } else if (Date.now() - exceedStartTime >= 3000 && !warningActive) {
+            warningActive = true;
+            warningMessage.classList.add('active');
+            playAlertSound();
+        }
+    } else {
+        flashOverlay.classList.remove('active');
+        exceedStartTime = null;
+        if (warningActive) {
+            warningActive = false;
+            warningMessage.classList.remove('active');
+        }
+    }
+
+    // History - record once per second
+    const now = Date.now();
+    if (now - lastHistoryTime >= 1000) {
+        history.push(level);
+        if (history.length > 60) {
+            history.shift();
+        }
+        lastHistoryTime = now;
+        drawHistory();
+    }
+
+    animationId = requestAnimationFrame(updateMeter);
+}
+</script>
+</body>
+</html>
