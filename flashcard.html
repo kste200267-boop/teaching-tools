@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>플래시카드 암기 도구</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #333;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+  color: white;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.progress {
+  font-size: 0.95rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.card-container {
+  perspective: 1200px;
+  width: 100%;
+  max-width: 400px;
+  height: 260px;
+  margin-bottom: 28px;
+  cursor: pointer;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 16px;
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: white;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.card-front {
+  background: white;
+}
+
+.card-front .label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #5C6BC0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.card-front .term {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  background: #f8f9ff;
+  border: 2px solid #5C6BC0;
+}
+
+.card-back .label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #5C6BC0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.card-back .definition {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #333;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.hint {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.8rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.buttons {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-know {
+  background: #4CAF50;
+  color: white;
+  box-shadow: 0 4px 12px rgba(76,175,80,0.3);
+}
+
+.btn-know:hover {
+  background: #43A047;
+  box-shadow: 0 6px 16px rgba(76,175,80,0.4);
+}
+
+.btn-dont-know {
+  background: #FF5252;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255,82,82,0.3);
+}
+
+.btn-dont-know:hover {
+  background: #E53935;
+  box-shadow: 0 6px 16px rgba(255,82,82,0.4);
+}
+
+/* Completion screen */
+.complete-screen {
+  display: none;
+  text-align: center;
+  color: white;
+  animation: fadeIn 0.5s ease;
+}
+
+.complete-screen.active {
+  display: block;
+}
+
+.complete-screen .emoji {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.complete-screen h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.complete-screen p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.complete-screen .time {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-top: 16px;
+  background: rgba(255,255,255,0.15);
+  padding: 12px 24px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.btn-restart {
+  margin-top: 32px;
+  padding: 14px 40px;
+  background: white;
+  color: #5C6BC0;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-restart:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.study-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.study-area.hidden {
+  display: none;
+}
+
+/* Swipe indicator */
+.swipe-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.swipe-indicator.left {
+  left: 20px;
+  color: #FF5252;
+  background: rgba(255,82,82,0.1);
+}
+
+.swipe-indicator.right {
+  right: 20px;
+  color: #4CAF50;
+  background: rgba(76,175,80,0.1);
+}
+
+.swipe-indicator.visible {
+  opacity: 1;
+}
+
+/* Card slide animation */
+.card-container.slide-right {
+  animation: slideRight 0.4s ease forwards;
+}
+
+.card-container.slide-left {
+  animation: slideLeft 0.4s ease forwards;
+}
+
+@keyframes slideRight {
+  to {
+    transform: translateX(120%) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+@keyframes slideLeft {
+  to {
+    transform: translateX(-120%) rotate(-15deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile swipe hint */
+@media (max-width: 600px) {
+  .card-container {
+    height: 240px;
+  }
+  .card-front .term {
+    font-size: 1.5rem;
+  }
+  .card-back .definition {
+    font-size: 1rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>플래시카드 암기 도구</h1>
+  <p class="progress" id="progress">15장 중 0장 완료</p>
+</div>
+
+<div class="study-area" id="studyArea">
+  <div class="card-container" id="cardContainer">
+    <div class="card" id="card">
+      <div class="card-face card-front">
+        <span class="label">용어</span>
+        <span class="term" id="frontText"></span>
+      </div>
+      <div class="card-face card-back">
+        <span class="label">뜻</span>
+        <span class="definition" id="backText"></span>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint" id="hint">카드를 탭하면 뒤집힙니다</p>
+
+  <div class="buttons">
+    <button class="btn btn-dont-know" id="btnDontKnow">몰라요 ✗</button>
+    <button class="btn btn-know" id="btnKnow">알아요 ✓</button>
+  </div>
+</div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="emoji">🎉</div>
+  <h2>축하합니다!</h2>
+  <p>모든 카드를 완료했습니다.</p>
+  <div class="time" id="totalTime">소요 시간: 0분 0초</div>
+  <br>
+  <button class="btn-restart" id="btnRestart">다시 시작</button>
+</div>
+
+<script>
+// ===== 여기에서 카드를 수정하세요 =====
+const cards = [
+  {front: "GDP", back: "국내총생산. 한 나라 안에서 일정 기간 생산된 재화와 서비스의 시장 가치 합계"},
+  {front: "주관적 행복", back: "개인이 스스로 느끼는 삶의 만족도와 긍정적 감정의 정도"},
+  {front: "객관적 행복", back: "소득, 건강, 교육 등 객관적 지표로 측정할 수 있는 삶의 질"},
+  {front: "삶의 질", back: "물질적 조건뿐 아니라 정신적·사회적 만족감을 포함한 삶 전반의 수준"},
+  {front: "행복 지수", back: "한 사회 구성원의 행복 정도를 수치화한 지표 (예: 세계행복보고서)"},
+  {front: "쾌락주의적 관점", back: "감각적 즐거움과 고통의 부재를 행복으로 보는 관점 (에피쿠로스)"},
+  {front: "덕 윤리적 관점", back: "덕을 갖추고 도덕적으로 실천하는 삶이 행복이라는 관점 (아리스토텔레스)"},
+  {front: "물질적 조건", back: "소득, 주거, 식량 등 생존과 편의를 위한 경제적·물리적 자원"},
+  {front: "정신적 조건", back: "자아실현, 심리적 안정, 긍정적 정서 등 내면의 만족 요소"},
+  {front: "관계적 조건", back: "가족, 친구, 공동체 등 타인과의 유대가 행복에 미치는 영향"},
+  {front: "사회적 조건", back: "복지 제도, 안전, 자유, 평등 등 사회 구조가 행복에 미치는 요인"},
+  {front: "도덕적 실천", back: "옳고 그름을 판단하고 선한 행위를 실천하는 것이 행복과 연결된다는 관점"},
+  {front: "에피쿠로스", back: "고대 그리스 철학자. 정신적 쾌락(아타락시아)을 참된 행복으로 봄"},
+  {front: "아리스토텔레스", back: "고대 그리스 철학자. 이성에 따른 덕의 실현(에우다이모니아)을 행복으로 봄"},
+  {front: "에우다이모니아", back: "아리스토텔레스의 행복 개념. 덕을 발휘하며 이성적으로 사는 최고선의 상태"}
+];
+// ===== 카드 수정 끝 =====
+
+// State
+let deck = [];
+let currentIndex = 0;
+let completed = 0;
+let totalCards = cards.length;
+let startTime = null;
+let isFlipped = false;
+
+// Shuffle
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Init
+function init() {
+  deck = shuffle(cards.map((c, i) => ({...c, id: i})));
+  currentIndex = 0;
+  completed = 0;
+  startTime = Date.now();
+  isFlipped = false;
+  document.getElementById('studyArea').classList.remove('hidden');
+  document.getElementById('completeScreen').classList.remove('active');
+  updateProgress();
+  showCard();
+}
+
+function updateProgress() {
+  document.getElementById('progress').textContent = `${totalCards}장 중 ${completed}장 완료`;
+}
+
+function showCard() {
+  if (deck.length === 0) {
+    showComplete();
+    return;
+  }
+  const card = deck[currentIndex % deck.length];
+  document.getElementById('frontText').textContent = card.front;
+  document.getElementById('backText').textContent = card.back;
+
+  // Reset flip
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+
+  // Reset container
+  const container = document.getElementById('cardContainer');
+  container.classList.remove('slide-right', 'slide-left');
+  container.style.opacity = '1';
+  container.style.transform = 'none';
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped');
+}
+
+function markKnown() {
+  animateAndNext('right', true);
+}
+
+function markUnknown() {
+  animateAndNext('left', false);
+}
+
+function animateAndNext(direction, remove) {
+  const container = document.getElementById('cardContainer');
+  container.classList.add(direction === 'right' ? 'slide-right' : 'slide-left');
+
+  setTimeout(() => {
+    if (remove) {
+      deck.splice(currentIndex % deck.length, 1);
+      completed++;
+      updateProgress();
+    } else {
+      // Move to end
+      const card = deck.splice(currentIndex % deck.length, 1)[0];
+      deck.push(card);
+    }
+
+    if (deck.length === 0) {
+      showComplete();
+    } else {
+      currentIndex = currentIndex % deck.length;
+      showCard();
+    }
+  }, 350);
+}
+
+function showComplete() {
+  document.getElementById('studyArea').classList.add('hidden');
+  document.getElementById('completeScreen').classList.add('active');
+
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  document.getElementById('totalTime').textContent = `소요 시간: ${minutes}분 ${seconds}초`;
+}
+
+// Event listeners
+document.getElementById('card').addEventListener('click', flipCard);
+document.getElementById('btnKnow').addEventListener('click', markKnown);
+document.getElementById('btnDontKnow').addEventListener('click', markUnknown);
+document.getElementById('btnRestart').addEventListener('click', init);
+
+// Swipe support
+let touchStartX = 0;
+let touchStartY = 0;
+let isSwiping = false;
+
+const cardContainer = document.getElementById('cardContainer');
+
+cardContainer.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  isSwiping = true;
+}, {passive: true});
+
+cardContainer.addEventListener('touchmove', (e) => {
+  if (!isSwiping) return;
+  const deltaX = e.touches[0].clientX - touchStartX;
+  const deltaY = e.touches[0].clientY - touchStartY;
+
+  // Only horizontal swipe
+  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30) {
+    cardContainer.style.transform = `translateX(${deltaX * 0.5}px) rotate(${deltaX * 0.03}deg)`;
+    cardContainer.style.opacity = Math.max(0.5, 1 - Math.abs(deltaX) / 400);
+  }
+}, {passive: true});
+
+cardContainer.addEventListener('touchend', (e) => {
+  if (!isSwiping) return;
+  isSwiping = false;
+  const deltaX = e.changedTouches[0].clientX - touchStartX;
+
+  if (Math.abs(deltaX) > 100) {
+    if (deltaX > 0) {
+      markKnown();
+    } else {
+      markUnknown();
+    }
+  } else {
+    // Snap back
+    cardContainer.style.transform = 'none';
+    cardContainer.style.opacity = '1';
+  }
+}, {passive: true});
+
+// Keyboard support
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    flipCard();
+  } else if (e.key === 'ArrowRight') {
+    markKnown();
+  } else if (e.key === 'ArrowLeft') {
+    markUnknown();
+  }
+});
+
+// Start
+init();
+</script>
+</body>
+</html>
