@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수요-공급 시뮬레이션</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #ffffff;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #FF8F00;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.graph-container {
+  width: 100%;
+  background: #fafafa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.info-box {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 16px 24px;
+  background: #FFF8E1;
+  border: 2px solid #FF8F00;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.info-box span {
+  white-space: nowrap;
+}
+
+.info-box .value {
+  font-weight: 700;
+  color: #FF8F00;
+  font-size: 1.2rem;
+}
+
+.controls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 12px;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.slider-group label {
+  min-width: 110px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+.slider-group input[type="range"] {
+  flex: 1;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ddd;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: #FF8F00;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.slider-group input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: #FF8F00;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.slider-value {
+  min-width: 60px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.btn-reset {
+  align-self: center;
+  padding: 12px 32px;
+  background: #FF8F00;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-reset:hover {
+  background: #E65100;
+}
+
+.btn-reset:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+  h1 {
+    font-size: 1.4rem;
+  }
+  .slider-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .slider-group label {
+    text-align: left;
+    min-width: auto;
+  }
+  .slider-value {
+    text-align: left;
+  }
+  .info-box {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .graph-container {
+    padding: 10px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>수요-공급 시뮬레이션</h1>
+  <p class="subtitle">슬라이더를 움직여 균형가격과 균형거래량의 변화를 관찰하세요</p>
+
+  <div class="graph-container">
+    <svg id="graph" viewBox="0 0 700 500" preserveAspectRatio="xMidYMid meet">
+      <!-- Background grid -->
+      <defs>
+        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse" x="80" y="0">
+          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#eee" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect x="80" y="20" width="580" height="420" fill="url(#grid)"/>
+
+      <!-- Axes -->
+      <line x1="80" y1="440" x2="680" y2="440" stroke="#333" stroke-width="2"/>
+      <line x1="80" y1="440" x2="80" y2="20" stroke="#333" stroke-width="2"/>
+
+      <!-- Axis arrows -->
+      <polygon points="680,440 670,435 670,445" fill="#333"/>
+      <polygon points="80,20 75,30 85,30" fill="#333"/>
+
+      <!-- Axis labels -->
+      <text x="400" y="480" text-anchor="middle" font-size="15" font-weight="500" fill="#333" font-family="'Noto Sans KR', sans-serif">거래량 (개)</text>
+      <text x="30" y="230" text-anchor="middle" font-size="15" font-weight="500" fill="#333" font-family="'Noto Sans KR', sans-serif" transform="rotate(-90, 30, 230)">가격 (원)</text>
+
+      <!-- Y-axis ticks -->
+      <g id="y-ticks"></g>
+      <!-- X-axis ticks -->
+      <g id="x-ticks"></g>
+
+      <!-- Supply curve -->
+      <line id="supply-curve" x1="0" y1="0" x2="0" y2="0" stroke="#E53935" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- Demand curve -->
+      <line id="demand-curve" x1="0" y1="0" x2="0" y2="0" stroke="#1E88E5" stroke-width="3.5" stroke-linecap="round"/>
+
+      <!-- Equilibrium dotted lines -->
+      <line id="eq-line-x" x1="0" y1="0" x2="0" y2="0" stroke="#FF8F00" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <line id="eq-line-y" x1="0" y1="0" x2="0" y2="0" stroke="#FF8F00" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+      <!-- Equilibrium point -->
+      <circle id="eq-point" cx="0" cy="0" r="8" fill="#FF8F00" stroke="#fff" stroke-width="2"/>
+
+      <!-- Curve labels -->
+      <text id="label-demand" x="0" y="0" font-size="16" font-weight="700" fill="#1E88E5" font-family="'Noto Sans KR', sans-serif">수요곡선 D</text>
+      <text id="label-supply" x="0" y="0" font-size="16" font-weight="700" fill="#E53935" font-family="'Noto Sans KR', sans-serif">공급곡선 S</text>
+
+      <!-- Equilibrium label -->
+      <text id="label-eq" x="0" y="0" font-size="13" font-weight="500" fill="#FF8F00" font-family="'Noto Sans KR', sans-serif">균형점 E</text>
+    </svg>
+  </div>
+
+  <div class="info-box">
+    <span>균형가격 = <span class="value" id="eq-price">5,000원</span></span>
+    <span>균형거래량 = <span class="value" id="eq-quantity">50개</span></span>
+  </div>
+
+  <div class="controls">
+    <div class="slider-group">
+      <label for="slider-income">소비자 소득</label>
+      <input type="range" id="slider-income" min="-50" max="50" value="0" step="1">
+      <span class="slider-value" id="val-income">0</span>
+    </div>
+    <div class="slider-group">
+      <label for="slider-cost">생산 비용</label>
+      <input type="range" id="slider-cost" min="-50" max="50" value="0" step="1">
+      <span class="slider-value" id="val-cost">0</span>
+    </div>
+    <div class="slider-group">
+      <label for="slider-tax">세금</label>
+      <input type="range" id="slider-tax" min="0" max="50" value="0" step="1">
+      <span class="slider-value" id="val-tax">0</span>
+    </div>
+    <button class="btn-reset" onclick="resetSliders()">초기화</button>
+  </div>
+</div>
+
+<script>
+// ===== 시뮬레이션 파라미터 =====
+const config = {
+  priceRange: [0, 10000],  // Y축 범위 (원)
+  quantityRange: [0, 100], // X축 범위 (개)
+  demandSlope: -50,        // 수요 기울기
+  supplySlope: 50,         // 공급 기울기
+  baseEquilibrium: {price: 5000, quantity: 50},
+};
+
+// Graph area coordinates
+const graphArea = {
+  left: 80,
+  right: 660,
+  top: 20,
+  bottom: 440
+};
+
+const gWidth = graphArea.right - graphArea.left;
+const gHeight = graphArea.bottom - graphArea.top;
+
+// Animation state
+let currentState = {
+  demandShift: 0,
+  supplyShift: 0,
+  taxShift: 0
+};
+let targetState = {
+  demandShift: 0,
+  supplyShift: 0,
+  taxShift: 0
+};
+let animating = false;
+
+// Convert data to SVG coordinates
+function quantityToX(q) {
+  return graphArea.left + (q / config.quantityRange[1]) * gWidth;
+}
+
+function priceToY(p) {
+  return graphArea.bottom - (p / config.priceRange[1]) * gHeight;
+}
+
+// Draw axis ticks
+function drawTicks() {
+  const yTicks = document.getElementById('y-ticks');
+  const xTicks = document.getElementById('x-ticks');
+  let yHTML = '';
+  let xHTML = '';
+
+  for (let p = 0; p <= 10000; p += 2000) {
+    const y = priceToY(p);
+    yHTML += `<line x1="75" y1="${y}" x2="80" y2="${y}" stroke="#333" stroke-width="1.5"/>`;
+    yHTML += `<text x="70" y="${y + 4}" text-anchor="end" font-size="11" fill="#666" font-family="'Noto Sans KR', sans-serif">${(p/1000).toFixed(0)}천</text>`;
+  }
+
+  for (let q = 0; q <= 100; q += 20) {
+    const x = quantityToX(q);
+    xHTML += `<line x1="${x}" y1="440" x2="${x}" y2="445" stroke="#333" stroke-width="1.5"/>`;
+    xHTML += `<text x="${x}" y="460" text-anchor="middle" font-size="11" fill="#666" font-family="'Noto Sans KR', sans-serif">${q}</text>`;
+  }
+
+  yTicks.innerHTML = yHTML;
+  xTicks.innerHTML = xHTML;
+}
+
+// Calculate demand: P = (baseEqPrice - demandSlope * baseEqQ + demandShift) + demandSlope * Q
+// Demand line: when Q=0, P = intercept_d; when P=0, Q = -intercept_d / demandSlope
+// Supply line: when Q=0, P = intercept_s; when P=0, Q = -intercept_s / supplySlope
+function getDemandIntercept(shift) {
+  // Demand: P = a_d + slope_d * Q
+  // At base equilibrium: 5000 = a_d + (-50)*50 => a_d = 5000 + 2500 = 7500
+  // Shift increases intercept (demand moves right = higher quantity at same price)
+  return 7500 + shift * 50;
+}
+
+function getSupplyIntercept(shift, tax) {
+  // Supply: P = a_s + slope_s * Q
+  // At base equilibrium: 5000 = a_s + 50*50 => a_s = 5000 - 2500 = 2500
+  // Cost increase shifts supply up (higher price at same quantity)
+  // Tax also shifts supply up
+  return 2500 + shift * 50 + tax * 50;
+}
+
+function calculateEquilibrium(demandShift, supplyShift, taxShift) {
+  const a_d = getDemandIntercept(demandShift);
+  const a_s = getSupplyIntercept(supplyShift, taxShift);
+  const slope_d = config.demandSlope;
+  const slope_s = config.supplySlope;
+
+  // Equilibrium: a_d + slope_d * Q = a_s + slope_s * Q
+  // Q = (a_d - a_s) / (slope_s - slope_d)
+  const eqQ = (a_d - a_s) / (slope_s - slope_d);
+  const eqP = a_d + slope_d * eqQ;
+
+  return { price: eqP, quantity: eqQ };
+}
+
+function getCurveEndpoints(demandShift, supplyShift, taxShift) {
+  const a_d = getDemandIntercept(demandShift);
+  const a_s = getSupplyIntercept(supplyShift, taxShift);
+  const slope_d = config.demandSlope;
+  const slope_s = config.supplySlope;
+
+  // Demand curve endpoints (clipped to graph area)
+  // At Q=0: P = a_d
+  // At Q=100: P = a_d + slope_d * 100
+  const dP0 = a_d;
+  const dP100 = a_d + slope_d * 100;
+
+  // Supply curve endpoints
+  const sP0 = a_s;
+  const sP100 = a_s + slope_s * 100;
+
+  return {
+    demand: {
+      x1: quantityToX(0), y1: priceToY(Math.max(0, Math.min(10000, dP0))),
+      x2: quantityToX(100), y2: priceToY(Math.max(0, Math.min(10000, dP100)))
+    },
+    supply: {
+      x1: quantityToX(0), y1: priceToY(Math.max(0, Math.min(10000, sP0))),
+      x2: quantityToX(100), y2: priceToY(Math.max(0, Math.min(10000, sP100)))
+    }
+  };
+}
+
+function updateGraph(state) {
+  const { demandShift, supplyShift, taxShift } = state;
+  const endpoints = getCurveEndpoints(demandShift, supplyShift, taxShift);
+  const eq = calculateEquilibrium(demandShift, supplyShift, taxShift);
+
+  // Update curves
+  const demandLine = document.getElementById('demand-curve');
+  demandLine.setAttribute('x1', endpoints.demand.x1);
+  demandLine.setAttribute('y1', endpoints.demand.y1);
+  demandLine.setAttribute('x2', endpoints.demand.x2);
+  demandLine.setAttribute('y2', endpoints.demand.y2);
+
+  const supplyLine = document.getElementById('supply-curve');
+  supplyLine.setAttribute('x1', endpoints.supply.x1);
+  supplyLine.setAttribute('y1', endpoints.supply.y1);
+  supplyLine.setAttribute('x2', endpoints.supply.x2);
+  supplyLine.setAttribute('y2', endpoints.supply.y2);
+
+  // Update equilibrium point
+  const eqX = quantityToX(Math.max(0, Math.min(100, eq.quantity)));
+  const eqY = priceToY(Math.max(0, Math.min(10000, eq.price)));
+
+  const eqPoint = document.getElementById('eq-point');
+  eqPoint.setAttribute('cx', eqX);
+  eqPoint.setAttribute('cy', eqY);
+
+  // Dotted lines
+  const eqLineX = document.getElementById('eq-line-x');
+  eqLineX.setAttribute('x1', eqX);
+  eqLineX.setAttribute('y1', eqY);
+  eqLineX.setAttribute('x2', eqX);
+  eqLineX.setAttribute('y2', graphArea.bottom);
+
+  const eqLineY = document.getElementById('eq-line-y');
+  eqLineY.setAttribute('x1', graphArea.left);
+  eqLineY.setAttribute('y1', eqY);
+  eqLineY.setAttribute('x2', eqX);
+  eqLineY.setAttribute('y2', eqY);
+
+  // Curve labels
+  const labelDemand = document.getElementById('label-demand');
+  labelDemand.setAttribute('x', endpoints.demand.x2 - 20);
+  labelDemand.setAttribute('y', endpoints.demand.y2 - 10);
+
+  const labelSupply = document.getElementById('label-supply');
+  labelSupply.setAttribute('x', endpoints.supply.x2 - 20);
+  labelSupply.setAttribute('y', endpoints.supply.y2 - 10);
+
+  // Equilibrium label
+  const labelEq = document.getElementById('label-eq');
+  labelEq.setAttribute('x', eqX + 14);
+  labelEq.setAttribute('y', eqY - 14);
+
+  // Update info box
+  const displayPrice = Math.max(0, Math.round(eq.price));
+  const displayQuantity = Math.max(0, Math.round(eq.quantity * 10) / 10);
+
+  document.getElementById('eq-price').textContent = displayPrice.toLocaleString() + '원';
+  document.getElementById('eq-quantity').textContent = displayQuantity.toFixed(0) + '개';
+}
+
+// Animation loop
+function animate() {
+  const ease = 0.15;
+  let needsUpdate = false;
+
+  ['demandShift', 'supplyShift', 'taxShift'].forEach(key => {
+    const diff = targetState[key] - currentState[key];
+    if (Math.abs(diff) > 0.01) {
+      currentState[key] += diff * ease;
+      needsUpdate = true;
+    } else {
+      currentState[key] = targetState[key];
+    }
+  });
+
+  updateGraph(currentState);
+
+  if (needsUpdate) {
+    requestAnimationFrame(animate);
+  } else {
+    animating = false;
+  }
+}
+
+function startAnimation() {
+  if (!animating) {
+    animating = true;
+    requestAnimationFrame(animate);
+  }
+}
+
+// Slider event handlers
+const sliderIncome = document.getElementById('slider-income');
+const sliderCost = document.getElementById('slider-cost');
+const sliderTax = document.getElementById('slider-tax');
+
+const valIncome = document.getElementById('val-income');
+const valCost = document.getElementById('val-cost');
+const valTax = document.getElementById('val-tax');
+
+function onSliderChange() {
+  const income = parseInt(sliderIncome.value);
+  const cost = parseInt(sliderCost.value);
+  const tax = parseInt(sliderTax.value);
+
+  valIncome.textContent = (income > 0 ? '+' : '') + income;
+  valCost.textContent = (cost > 0 ? '+' : '') + cost;
+  valTax.textContent = (tax > 0 ? '+' : '') + tax;
+
+  targetState.demandShift = income;
+  targetState.supplyShift = cost;
+  targetState.taxShift = tax;
+
+  startAnimation();
+}
+
+sliderIncome.addEventListener('input', onSliderChange);
+sliderCost.addEventListener('input', onSliderChange);
+sliderTax.addEventListener('input', onSliderChange);
+
+function resetSliders() {
+  sliderIncome.value = 0;
+  sliderCost.value = 0;
+  sliderTax.value = 0;
+  onSliderChange();
+}
+
+// Initial draw
+drawTicks();
+updateGraph(currentState);
+</script>
+</body>
+</html>
