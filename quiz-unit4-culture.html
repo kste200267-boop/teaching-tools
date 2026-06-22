@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통합사회 4단원: 문화와 다양성 OX 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.container {
+  max-width: 600px;
+  width: 100%;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(239,108,0,0.15);
+  overflow: hidden;
+}
+.header {
+  background: linear-gradient(135deg, #EF6C00, #FF8F00);
+  color: #fff;
+  padding: 24px;
+  text-align: center;
+}
+.header h1 { font-size: 1.4rem; font-weight: 900; }
+.header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+.content { padding: 24px; }
+
+/* Start Screen */
+#startScreen { text-align: center; }
+#startScreen h2 { font-size: 1.5rem; color: #EF6C00; margin-bottom: 12px; }
+#startScreen p { color: #555; margin-bottom: 8px; line-height: 1.6; }
+.best-score {
+  background: #FFF3E0;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 16px 0;
+  font-weight: 700;
+  color: #EF6C00;
+}
+.start-btn {
+  background: linear-gradient(135deg, #EF6C00, #FF8F00);
+  color: #fff;
+  border: none;
+  padding: 16px 48px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.start-btn:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(239,108,0,0.4); }
+.start-btn:active { transform: scale(0.95); }
+
+/* Quiz Screen */
+#quizScreen { display: none; }
+.progress-bar-container {
+  background: #f0f0f0;
+  border-radius: 10px;
+  height: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #EF6C00, #FF8F00);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.quiz-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.question-count { font-weight: 700; color: #EF6C00; }
+.timer {
+  background: #FFF3E0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  color: #EF6C00;
+  font-size: 1.1rem;
+  transition: color 0.3s, background 0.3s;
+}
+.timer.danger { background: #FFCDD2; color: #D32F2F; animation: pulse 0.5s infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+.question-box {
+  background: #FAFAFA;
+  border: 2px solid #FFE0B2;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.question-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.6;
+}
+
+.ox-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+.ox-btn {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 4px solid;
+  font-size: 3rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.ox-btn:active { transform: scale(0.9); }
+.btn-o {
+  background: #E3F2FD;
+  border-color: #1976D2;
+  color: #1976D2;
+}
+.btn-o:hover { background: #BBDEFB; transform: scale(1.08); box-shadow: 0 8px 20px rgba(25,118,210,0.3); }
+.btn-x {
+  background: #FCE4EC;
+  border-color: #D32F2F;
+  color: #D32F2F;
+}
+.btn-x:hover { background: #F8BBD0; transform: scale(1.08); box-shadow: 0 8px 20px rgba(211,47,47,0.3); }
+
+/* Feedback */
+.feedback {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.feedback.show { opacity: 1; pointer-events: auto; }
+.feedback-correct { background: rgba(76,175,80,0.95); }
+.feedback-wrong { background: rgba(211,47,47,0.92); }
+.feedback-icon { font-size: 5rem; animation: bounceIn 0.4s; }
+.feedback-text { color: #fff; font-size: 1.2rem; font-weight: 700; margin-top: 12px; text-align: center; padding: 0 20px; }
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Result Screen */
+#resultScreen { display: none; text-align: center; }
+.result-grade {
+  font-size: 4rem;
+  font-weight: 900;
+  margin: 16px 0;
+  animation: bounceIn 0.6s;
+}
+.grade-a { color: #EF6C00; }
+.grade-b { color: #FF8F00; }
+.grade-c { color: #FFA726; }
+.grade-d { color: #999; }
+.result-score { font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 8px; }
+.result-message { color: #666; margin-bottom: 20px; line-height: 1.6; }
+.result-details { background: #FFF3E0; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.result-details p { margin: 4px 0; color: #555; }
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .container { border-radius: 16px; }
+  .header { padding: 16px; }
+  .header h1 { font-size: 1.1rem; }
+  .content { padding: 16px; }
+  .ox-btn { width: 110px; height: 110px; font-size: 2.5rem; }
+  .question-text { font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>4단원: 문화와 다양성</h1>
+    <p>통합사회 OX 퀴즈 챌린지</p>
+  </div>
+  <div class="content">
+    <!-- Start Screen -->
+    <div id="startScreen">
+      <h2>OX 퀴즈 도전!</h2>
+      <p>100문항 중 랜덤 15문항이 출제됩니다.<br>제한시간 15초 안에 O 또는 X를 선택하세요!</p>
+      <div class="best-score" id="bestScoreDisplay">최고 기록: --</div>
+      <button class="start-btn" onclick="startQuiz()">도전 시작!</button>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen">
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="quiz-info">
+        <span class="question-count" id="questionCount">1 / 15</span>
+        <span class="timer" id="timer">15</span>
+      </div>
+      <div class="question-box">
+        <p class="question-text" id="questionText"></p>
+      </div>
+      <div class="ox-buttons">
+        <button class="ox-btn btn-o" onclick="answer(true)">O</button>
+        <button class="ox-btn btn-x" onclick="answer(false)">X</button>
+      </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="resultScreen">
+      <h2 style="color:#EF6C00;">퀴즈 완료!</h2>
+      <div class="result-grade" id="resultGrade"></div>
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-message" id="resultMessage"></div>
+      <div class="result-details" id="resultDetails"></div>
+      <button class="start-btn" onclick="startQuiz()">다시 도전</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Overlay -->
+<div class="feedback feedback-correct" id="feedbackCorrect">
+  <div class="feedback-icon">&#10004;</div>
+  <div class="feedback-text">정답입니다!</div>
+</div>
+<div class="feedback feedback-wrong" id="feedbackWrong">
+  <div class="feedback-icon">&#10008;</div>
+  <div class="feedback-text" id="wrongText">오답! 정답은 O입니다.</div>
+</div>
+
+<script>
+// ===== 100 Questions: 통합사회 4단원 문화와 다양성 =====
+const allQuestions = [
+  // 문화의 의미와 특징 (10문항)
+  {q: "문화는 선천적으로 타고나는 것이다.", a: false},
+  {q: "문화는 세대 간 전승되며 축적되는 특성을 가진다.", a: true},
+  {q: "넓은 의미의 문화는 인간이 만든 모든 생활 양식을 포함한다.", a: true},
+  {q: "문화의 공유성이란 한 사회 구성원들이 공통적으로 가지는 생활 양식을 의미한다.", a: true},
+  {q: "문화는 한번 형성되면 변하지 않는 고정불변의 성격을 띤다.", a: false},
+  {q: "좁은 의미의 문화는 교양이나 예술 활동 등 세련된 것을 의미한다.", a: true},
+  {q: "문화의 총체성이란 문화의 각 요소가 서로 독립적으로 존재함을 의미한다.", a: false},
+  {q: "본능적 행동인 신생아의 울음은 문화에 해당한다.", a: false},
+  {q: "문화의 변동성은 시간이 흐르면서 문화가 변화할 수 있음을 의미한다.", a: true},
+  {q: "젓가락 사용법을 학습하는 것은 문화의 학습성을 보여주는 사례이다.", a: true},
+
+  // 문화를 이해하는 태도 (15문항)
+  {q: "자문화중심주의는 자기 문화를 기준으로 다른 문화를 평가하는 태도이다.", a: true},
+  {q: "문화 사대주의는 자국 문화의 정체성을 강화하는 데 기여한다.", a: false},
+  {q: "문화 상대주의는 각 문화를 그 사회의 맥락에서 이해하려는 태도이다.", a: true},
+  {q: "자문화중심주의는 국제적 고립을 초래할 수 있다.", a: true},
+  {q: "문화 사대주의는 다른 사회의 문화를 우월하다고 여기는 태도이다.", a: true},
+  {q: "문화 상대주의의 입장에서는 인류의 보편적 가치마저 부정해야 한다.", a: false},
+  {q: "극단적 문화 상대주의는 인권 침해 행위까지 용인할 위험이 있다.", a: true},
+  {q: "자문화중심주의는 자문화의 발전을 저해하는 요인이 될 수 있다.", a: true},
+  {q: "문화 사대주의는 문화적 주체성을 상실하게 만들 수 있다.", a: true},
+  {q: "타 문화를 배울 점이 있다고 인정하는 것은 반드시 문화 사대주의에 해당한다.", a: false},
+  {q: "문화 상대주의에서는 문화 간 우열을 가리지 않는다.", a: true},
+  {q: "자문화중심주의는 집단 내부의 결속력을 높이는 긍정적 기능도 있다.", a: true},
+  {q: "문화를 이해하는 태도 중 문화 상대주의가 가장 바람직한 태도로 평가된다.", a: true},
+  {q: "모든 문화는 나름의 가치와 의미를 가지므로, 다른 문화를 함부로 비하해서는 안 된다.", a: true},
+  {q: "문화 사대주의는 선진국의 문화를 무비판적으로 수용하는 태도를 포함한다.", a: true},
+
+  // 다양한 문화권 (20문항)
+  {q: "동아시아 문화권은 유교의 영향을 크게 받았다.", a: true},
+  {q: "동남아시아에는 불교, 이슬람교, 기독교 등 다양한 종교가 공존한다.", a: true},
+  {q: "서남아시아(중동) 문화권은 주로 힌두교의 영향을 받았다.", a: false},
+  {q: "유럽 문화권은 그리스-로마 문명과 기독교의 영향을 크게 받았다.", a: true},
+  {q: "아프리카는 단일한 문화를 가진 동질적 대륙이다.", a: false},
+  {q: "라틴아메리카 문화는 원주민 문화와 에스파냐/포르투갈 문화가 융합된 특징이 있다.", a: true},
+  {q: "인도 문화권에서 카스트 제도는 힌두교와 밀접한 관련이 있다.", a: true},
+  {q: "이슬람 문화권에서 라마단 기간의 금식은 종교적 의무이다.", a: true},
+  {q: "동아시아 문화권에서 한자는 공통적 문화 요소로 작용하였다.", a: true},
+  {q: "건조 기후 지역의 주민들이 긴 옷을 입는 것은 종교적 이유만으로 설명된다.", a: false},
+  {q: "동남아시아의 수상 가옥은 고온다습한 기후에 적응한 결과이다.", a: true},
+  {q: "유럽에서 르네상스는 인간 중심의 문화 발전에 기여하였다.", a: true},
+  {q: "북아메리카 문화권은 앵글로색슨계 이민자들의 영향을 크게 받았다.", a: true},
+  {q: "서남아시아 문화권에서 이슬람교의 5가지 의무를 '오행'이라고 한다.", a: false},
+  {q: "아프리카의 문화 다양성은 수백 개의 언어와 민족 집단에서 확인된다.", a: true},
+  {q: "오세아니아 원주민 문화에서 자연과의 조화를 중시하는 세계관이 나타난다.", a: true},
+  {q: "동아시아에서 젓가락 사용 문화는 문화의 공유성을 보여주는 사례이다.", a: true},
+  {q: "지중해식 기후 지역에서 올리브, 포도 재배 문화가 발달한 것은 자연환경의 영향이다.", a: true},
+  {q: "이슬람 문화권에서 돼지고기를 금기시하는 것은 경제적 이유 때문이다.", a: false},
+  {q: "같은 종교를 공유하더라도 지역에 따라 문화적 차이가 나타날 수 있다.", a: true},
+
+  // 문화 변동 (15문항)
+  {q: "발명이란 기존에 없던 새로운 문화 요소를 만들어내는 것이다.", a: true},
+  {q: "발견이란 이미 존재하지만 알려지지 않았던 것을 찾아내는 것이다.", a: true},
+  {q: "직접 전파란 매개체 없이 사람 간 직접 접촉으로 문화가 전해지는 것이다.", a: true},
+  {q: "문화 접변은 서로 다른 문화 체계가 장기간 접촉하여 변화하는 현상이다.", a: true},
+  {q: "문화 동화는 두 문화가 결합하여 새로운 제3의 문화를 만드는 것이다.", a: false},
+  {q: "문화 융합은 두 문화가 결합하여 기존과 다른 새로운 문화가 나타나는 것이다.", a: true},
+  {q: "문화 동화는 한 문화가 다른 문화에 흡수되어 정체성을 잃는 현상이다.", a: true},
+  {q: "자극 전파란 문화의 아이디어만 전달되어 새로운 형태로 나타나는 것이다.", a: true},
+  {q: "스마트폰의 발명은 문화 변동의 내재적 요인에 해당한다.", a: true},
+  {q: "외래 문화의 유입은 문화 변동의 외재적 요인에 해당한다.", a: true},
+  {q: "문화 지체란 물질문화의 변동 속도에 비해 비물질문화의 변동이 느린 현상이다.", a: true},
+  {q: "한류(K-pop)의 확산은 간접 전파의 사례에 해당한다.", a: true},
+  {q: "문화 병존은 서로 다른 두 문화가 한 사회에 함께 존재하는 현상이다.", a: true},
+  {q: "강제적 문화 접변의 사례로 일제 강점기 조선어 사용 금지를 들 수 있다.", a: true},
+  {q: "문화 변동은 항상 문화 발전을 의미한다.", a: false},
+
+  // 문화 다양성과 보편 윤리 (15문항)
+  {q: "문화 다양성은 인류의 창의성과 발전에 기여한다.", a: true},
+  {q: "유네스코는 문화 다양성 보호를 위한 협약을 채택하였다.", a: true},
+  {q: "보편 윤리는 시대와 사회를 초월하여 인류 모두에게 적용되는 가치이다.", a: true},
+  {q: "문화 다양성 존중은 인권 침해 관행까지 허용해야 함을 의미한다.", a: false},
+  {q: "명예살인은 문화 상대주의 관점에서 존중받아야 하는 문화이다.", a: false},
+  {q: "여성 할례(FGM)는 보편 윤리에 위배되는 관행이다.", a: true},
+  {q: "세계인권선언은 보편 윤리의 대표적 사례이다.", a: true},
+  {q: "문화 다양성 존중과 보편 윤리 사이에는 갈등이 발생할 수 있다.", a: true},
+  {q: "아동 노동은 해당 사회의 문화라면 존중해야 한다.", a: false},
+  {q: "관용은 다른 문화를 이해하고 인정하는 태도를 의미한다.", a: true},
+  {q: "인간의 존엄성은 문화적 차이에 관계없이 보장되어야 하는 보편 가치이다.", a: true},
+  {q: "문화 다양성 보호는 소수 문화의 소멸을 방지하는 데 기여한다.", a: true},
+  {q: "세계화는 문화 다양성을 항상 증가시킨다.", a: false},
+  {q: "생물 다양성과 마찬가지로 문화 다양성도 인류 생존에 중요한 자원이다.", a: true},
+  {q: "보편 윤리는 특정 종교나 국가의 가치관에 기반해야 한다.", a: false},
+
+  // 다문화 사회의 갈등과 해결 방안 (15문항)
+  {q: "다문화 사회란 하나의 사회 안에 여러 문화가 공존하는 사회를 말한다.", a: true},
+  {q: "동화주의 정책은 이주민의 고유 문화를 유지하도록 돕는 정책이다.", a: false},
+  {q: "샐러드볼 이론은 다양한 문화가 고유성을 유지하며 공존하는 모델이다.", a: true},
+  {q: "용광로(멜팅팟) 이론은 다양한 문화가 녹아 하나의 새로운 문화를 형성하는 모델이다.", a: true},
+  {q: "다문화 사회에서 문화 간 갈등의 원인에는 편견과 차별이 포함된다.", a: true},
+  {q: "다문화 교육은 소수 문화 집단에게만 필요한 교육이다.", a: false},
+  {q: "한국은 단일민족 국가라는 인식이 다문화 수용성을 저해할 수 있다.", a: true},
+  {q: "다문화 정책에서 사회 통합과 문화적 다양성 존중은 양립할 수 없다.", a: false},
+  {q: "이주 노동자에 대한 차별은 사회 통합을 저해하는 요인이다.", a: true},
+  {q: "다문화 사회에서 상호 문화 이해 교육은 갈등 해소에 도움이 된다.", a: true},
+  {q: "결혼 이민자의 한국어 교육 지원은 사회 통합 정책의 일환이다.", a: true},
+  {q: "다문화 사회의 갈등은 법적 제도 마련만으로 완전히 해결할 수 있다.", a: false},
+  {q: "문화적 편견은 주로 타 문화에 대한 무지와 경험 부족에서 비롯된다.", a: true},
+  {q: "반다문화주의는 이민자 증가에 대한 원주민의 불안감에서 비롯되기도 한다.", a: true},
+  {q: "다문화 사회에서 시민의 역할은 다양성을 인정하고 차별에 반대하는 것이다.", a: true},
+
+  // 대중문화와 미디어 (10문항)
+  {q: "대중문화는 대중 매체를 통해 대량으로 생산되고 소비되는 문화이다.", a: true},
+  {q: "대중 매체는 여론을 형성하고 사회적 의제를 설정하는 기능을 한다.", a: true},
+  {q: "미디어 리터러시란 미디어 정보를 비판적으로 분석하고 활용하는 능력이다.", a: true},
+  {q: "대중문화는 항상 사회에 긍정적 영향만 미친다.", a: false},
+  {q: "뉴미디어의 등장으로 대중은 문화의 생산자이자 소비자가 될 수 있다.", a: true},
+  {q: "대중문화의 상업성은 문화의 획일화를 초래할 수 있다.", a: true},
+  {q: "SNS를 통한 문화 전파는 전파 속도를 가속화하였다.", a: true},
+  {q: "문화 산업은 경제적 가치만 창출할 뿐 사회적 영향력은 없다.", a: false},
+  {q: "대중문화에 대한 비판적 수용 자세가 필요하다.", a: true},
+  {q: "알고리즘 기반 추천 시스템은 문화적 다양성을 제한할 수 있다.", a: true}
+];
+
+// ===== Game Logic =====
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let timerInterval = null;
+let timeLeft = 15;
+let isAnswered = false;
+
+// Audio context for sounds
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function playSound(correct) {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  if (correct) {
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.value = 0.3;
+    osc.start();
+    osc.frequency.linearRampToValueAtTime(1320, audioCtx.currentTime + 0.1);
+    osc.stop(audioCtx.currentTime + 0.2);
+  } else {
+    osc.frequency.value = 220;
+    osc.type = 'square';
+    gain.gain.value = 0.2;
+    osc.start();
+    osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+    osc.stop(audioCtx.currentTime + 0.35);
+  }
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getBestScore() {
+  return parseInt(localStorage.getItem('quiz_unit4_best') || '0');
+}
+function setBestScore(s) {
+  if (s > getBestScore()) localStorage.setItem('quiz_unit4_best', s);
+}
+
+function updateBestScoreDisplay() {
+  const best = getBestScore();
+  document.getElementById('bestScoreDisplay').textContent =
+    best > 0 ? `최고 기록: ${best} / 15` : '최고 기록: --';
+}
+
+function startQuiz() {
+  currentQuestions = shuffle(allQuestions).slice(0, 15);
+  currentIndex = 0;
+  score = 0;
+  isAnswered = false;
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  isAnswered = false;
+  const q = currentQuestions[currentIndex];
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('questionCount').textContent = `${currentIndex + 1} / 15`;
+  document.getElementById('progressBar').style.width = `${((currentIndex) / 15) * 100}%`;
+
+  // Enable buttons
+  document.querySelectorAll('.ox-btn').forEach(btn => {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  });
+
+  // Timer
+  timeLeft = 15;
+  document.getElementById('timer').textContent = timeLeft;
+  document.getElementById('timer').classList.remove('danger');
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').textContent = timeLeft;
+    if (timeLeft <= 5) document.getElementById('timer').classList.add('danger');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      timeUp();
+    }
+  }, 1000);
+}
+
+function timeUp() {
+  if (isAnswered) return;
+  isAnswered = true;
+  disableButtons();
+  const correct = currentQuestions[currentIndex].a;
+  showFeedback(false, correct);
+}
+
+function answer(userAnswer) {
+  if (isAnswered) return;
+  isAnswered = true;
+  clearInterval(timerInterval);
+  disableButtons();
+
+  const correctAnswer = currentQuestions[currentIndex].a;
+  const isCorrect = userAnswer === correctAnswer;
+  if (isCorrect) score++;
+  showFeedback(isCorrect, correctAnswer);
+}
+
+function disableButtons() {
+  document.querySelectorAll('.ox-btn').forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  });
+}
+
+function showFeedback(isCorrect, correctAnswer) {
+  playSound(isCorrect);
+  if (isCorrect) {
+    const el = document.getElementById('feedbackCorrect');
+    el.classList.add('show');
+    setTimeout(() => {
+      el.classList.remove('show');
+      nextQuestion();
+    }, 1000);
+  } else {
+    const el = document.getElementById('feedbackWrong');
+    document.getElementById('wrongText').textContent =
+      `오답! 정답은 ${correctAnswer ? 'O' : 'X'}입니다.`;
+    el.classList.add('show');
+    setTimeout(() => {
+      el.classList.remove('show');
+      nextQuestion();
+    }, 1500);
+  }
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= 15) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  clearInterval(timerInterval);
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'block';
+
+  setBestScore(score);
+  const best = getBestScore();
+
+  let grade, gradeClass, message;
+  if (score >= 14) {
+    grade = 'A+'; gradeClass = 'grade-a';
+    message = '완벽에 가까운 실력! 문화와 다양성의 달인입니다!';
+  } else if (score >= 12) {
+    grade = 'A'; gradeClass = 'grade-a';
+    message = '훌륭합니다! 문화에 대한 깊은 이해를 갖추고 있네요!';
+  } else if (score >= 10) {
+    grade = 'B'; gradeClass = 'grade-b';
+    message = '좋은 실력입니다! 조금만 더 공부하면 A등급도 가능해요!';
+  } else if (score >= 7) {
+    grade = 'C'; gradeClass = 'grade-c';
+    message = '기본기는 있어요! 틀린 부분을 다시 복습해보세요!';
+  } else {
+    grade = 'D'; gradeClass = 'grade-d';
+    message = '아직 갈 길이 멀어요. 교과서를 다시 읽고 도전해보세요!';
+  }
+
+  document.getElementById('resultGrade').textContent = grade;
+  document.getElementById('resultGrade').className = `result-grade ${gradeClass}`;
+  document.getElementById('resultScore').textContent = `${score} / 15 정답`;
+  document.getElementById('resultMessage').textContent = message;
+  document.getElementById('resultDetails').innerHTML = `
+    <p>정답률: ${Math.round((score/15)*100)}%</p>
+    <p>최고 기록: ${best} / 15</p>
+  `;
+}
+
+// Init
+updateBestScoreDisplay();
+</script>
+</body>
+</html>
