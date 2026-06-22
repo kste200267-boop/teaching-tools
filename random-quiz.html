@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>랜덤 퀴즈 뽑기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --purple-dark: #4a0e78;
+  --purple-mid: #7b2d9e;
+  --purple-light: #a855f7;
+  --magenta: #e040a0;
+  --magenta-light: #f472b6;
+  --gold: #fbbf24;
+  --bg-dark: #1a0030;
+  --bg-card: #2d1050;
+  --text: #fff;
+  --text-muted: #c4b5fd;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Screens */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ====== SETUP SCREEN ====== */
+#setup-screen {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+#setup-screen h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--purple-light), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+.section-label {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--magenta-light);
+}
+
+textarea {
+  width: 100%;
+  min-height: 260px;
+  background: var(--bg-card);
+  border: 2px solid var(--purple-mid);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Noto Sans KR', monospace;
+  font-size: 0.9rem;
+  padding: 14px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+textarea:focus { border-color: var(--magenta); }
+
+.format-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.setting-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.setting-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--magenta);
+  height: 6px;
+}
+
+.range-value {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.timer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: #555;
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-switch.on { background: var(--magenta); }
+
+.toggle-switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-switch.on .knob { transform: translateX(22px); }
+
+/* Big button */
+.start-btn {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 30px auto 0;
+  padding: 18px 40px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: white;
+  background: linear-gradient(135deg, var(--purple-mid), var(--magenta));
+  border: none;
+  border-radius: 60px;
+  cursor: pointer;
+  box-shadow: 0 6px 30px rgba(224, 64, 160, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 40px rgba(224, 64, 160, 0.6);
+}
+
+.start-btn:active { transform: scale(0.97); }
+
+.start-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+/* ====== GACHA ANIMATION SCREEN ====== */
+#gacha-screen {
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, var(--purple-mid) 0%, var(--bg-dark) 70%);
+  position: relative;
+}
+
+.gacha-machine {
+  position: relative;
+  width: 220px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.capsule-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.capsule {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #f59e0b, var(--magenta));
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.6), inset 0 -10px 20px rgba(0,0,0,0.3);
+  animation: capsuleBounce 0.6s ease-in-out infinite alternate;
+  position: relative;
+}
+
+.capsule::after {
+  content: '?';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+@keyframes capsuleBounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-20px) scale(1.05); }
+}
+
+.gacha-text {
+  margin-top: 30px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold);
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Particles */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Slot spinning numbers */
+.slot-numbers {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  opacity: 0;
+}
+
+/* ====== QUIZ DISPLAY SCREEN ====== */
+#quiz-screen {
+  padding: 20px;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.quiz-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+}
+
+.quiz-progress {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.quiz-progress .current {
+  color: var(--gold);
+  font-size: 1.6rem;
+}
+
+.timer-display {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--magenta-light);
+  min-width: 80px;
+  text-align: center;
+}
+
+.timer-display.warning { color: #ef4444; animation: timerPulse 0.5s infinite; }
+
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.quiz-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+.question-card {
+  background: var(--bg-card);
+  border: 3px solid var(--purple-mid);
+  border-radius: 24px;
+  padding: 50px 40px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 50px rgba(123, 45, 158, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: cardAppear 0.5s ease-out;
+}
+
+@keyframes cardAppear {
+  0% { transform: scale(0.8) rotateY(10deg); opacity: 0; }
+  100% { transform: scale(1) rotateY(0); opacity: 1; }
+}
+
+.question-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--purple-light), var(--magenta), var(--gold));
+}
+
+.question-number {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--magenta-light);
+  margin-bottom: 20px;
+}
+
+.question-text {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  line-height: 1.5;
+  color: var(--text);
+  word-break: keep-all;
+}
+
+.answer-area {
+  margin-top: 30px;
+  min-height: 60px;
+}
+
+.answer-text {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--gold);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+.answer-text.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-btn {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), #f59e0b);
+  color: var(--bg-dark);
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.reveal-btn:hover { transform: scale(1.05); }
+.reveal-btn.hidden { display: none; }
+
+.quiz-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: 2px solid var(--purple-light);
+  background: transparent;
+  color: var(--purple-light);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--purple-light);
+  color: white;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn.primary {
+  background: linear-gradient(135deg, var(--purple-mid), var(--magenta));
+  border-color: transparent;
+  color: white;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover { border-color: white; color: white; }
+
+/* Progress bar */
+.progress-bar-container {
+  width: 100%;
+  max-width: 600px;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  margin: 10px auto;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple-light), var(--magenta));
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* ====== CONFETTI ====== */
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -20px;
+  animation: confettiFall 3s linear forwards;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+  #setup-screen { padding: 16px; }
+  #setup-screen h1 { font-size: 1.6rem; }
+  textarea { min-height: 180px; font-size: 0.8rem; }
+  .question-card { padding: 30px 20px; }
+  .quiz-footer { gap: 10px; }
+  .nav-btn { padding: 12px 20px; font-size: 0.95rem; }
+}
+
+@media (min-width: 1400px) {
+  .question-text { font-size: 3.2rem; }
+  .answer-text { font-size: 2.4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen active">
+  <h1>랜덤 퀴즈 뽑기</h1>
+  <p class="subtitle">문제은행에서 랜덤으로 문제를 뽑아 교실 TV에 표시합니다</p>
+
+  <div class="section-label">문제 은행</div>
+  <textarea id="question-bank" placeholder="문제 | 정답 형식으로 한 줄에 하나씩 입력하세요&#10;예: 통합적 관점에 포함되는 4가지 관점은? | 시간적, 공간적, 사회적, 윤리적"></textarea>
+  <p class="format-hint">형식: 문제 | 정답 (정답 없이 문제만 입력해도 됩니다)</p>
+
+  <div class="settings-row">
+    <div class="setting-group">
+      <label>뽑을 문제 수</label>
+      <input type="range" id="count-slider" min="1" max="20" value="5">
+      <div class="range-value"><span id="count-value">5</span>문제</div>
+    </div>
+    <div class="setting-group">
+      <label>문제당 제한시간 (초)</label>
+      <div class="timer-toggle">
+        <div class="toggle-switch" id="timer-toggle">
+          <div class="knob"></div>
+        </div>
+        <span id="timer-status">OFF</span>
+      </div>
+      <input type="range" id="timer-slider" min="5" max="120" value="30" style="margin-top:10px;">
+      <div class="range-value"><span id="timer-value">30</span>초</div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="start-btn">문제 뽑기!</button>
+</div>
+
+<!-- GACHA ANIMATION SCREEN -->
+<div id="gacha-screen" class="screen">
+  <div class="gacha-machine">
+    <div class="capsule-container">
+      <div class="capsule" id="capsule"></div>
+    </div>
+    <div class="gacha-text">문제를 뽑는 중...</div>
+  </div>
+</div>
+
+<!-- QUIZ DISPLAY SCREEN -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-header">
+    <button class="back-btn" id="back-btn">처음으로</button>
+    <div class="quiz-progress">
+      <span class="current" id="current-num">1</span> / <span id="total-num">5</span>
+    </div>
+    <div class="timer-display" id="timer-display"></div>
+  </div>
+  <div class="progress-bar-container">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+  <div class="quiz-body">
+    <div class="question-card" id="question-card">
+      <div class="question-number" id="question-number">Q1</div>
+      <div class="question-text" id="question-text"></div>
+      <div class="answer-area">
+        <button class="reveal-btn" id="reveal-btn">정답 보기</button>
+        <div class="answer-text" id="answer-text"></div>
+      </div>
+    </div>
+  </div>
+  <div class="quiz-footer">
+    <button class="nav-btn" id="prev-btn">이전 문제</button>
+    <button class="nav-btn primary" id="next-btn">다음 문제</button>
+  </div>
+</div>
+
+<script>
+// ====== STATE ======
+let questions = [];
+let selectedQuestions = [];
+let currentIndex = 0;
+let timerEnabled = false;
+let timerSeconds = 30;
+let timerInterval = null;
+let remainingTime = 0;
+
+// ====== SAMPLE DATA ======
+const sampleData = `통합적 관점에 포함되는 4가지 관점은? | 시간적, 공간적, 사회적, 윤리적
+시간적 관점이란? | 과거-현재-미래의 변화를 분석하는 관점
+공간적 관점이란? | 지리적 위치와 환경이 사회현상에 미치는 영향을 분석하는 관점
+사회적 관점이란? | 정치·경제·사회·문화적 맥락에서 현상을 이해하는 관점
+윤리적 관점이란? | 옳고 그름, 가치판단의 기준으로 현상을 평가하는 관점
+자연환경이 인간 생활에 미치는 영향 2가지를 서술하시오 | 기후에 따른 의식주 차이, 지형에 따른 산업 발달 차이
+인간과 자연의 바람직한 관계를 설명하는 관점은? | 생태 지속가능성 관점(환경과 조화)
+행복의 의미를 동양 사상에서 어떻게 보는가? | 유교: 인의예지, 불교: 해탈, 도가: 무위자연
+행복한 삶을 위한 조건 3가지는? | 경제적 안정, 민주주의, 도덕적 실천
+질 높은 정주 환경이란? | 안전하고 쾌적하며 편리한 생활을 가능하게 하는 거주 환경
+통합사회에서 '통합'의 의미는? | 여러 학문 분야의 관점을 종합하여 사회현상을 이해하는 것
+삶의 질을 측정하는 지표 2가지는? | 1인당 국민소득(GDP), 인간개발지수(HDI)
+인간개발지수(HDI)에 포함되는 3가지 요소는? | 소득, 교육, 건강(기대수명)
+시간적 관점에서 본 도시 발달 과정 예시는? | 농경사회 마을 → 산업혁명 도시화 → 현대 메가시티
+공간적 관점에서 본 기후와 문화의 관계 예시는? | 열대지역의 개방적 가옥구조, 한대지역의 폐쇄적 가옥구조
+사회적 관점에서 본 빈부격차 원인은? | 경제 구조, 교육 기회 불평등, 사회 제도의 차이
+윤리적 관점에서 환경 문제를 볼 때 핵심 질문은? | 미래 세대에 대한 책임을 다하고 있는가?
+지속가능한 발전의 3가지 축은? | 경제 성장, 사회 통합, 환경 보전
+세계화가 우리 삶에 미치는 긍정적 영향 2가지는? | 문화 교류 확대, 경제적 기회 증가
+다문화 사회에서 필요한 자세 2가지는? | 문화 상대주의적 태도, 관용과 공존의 자세`;
+
+// ====== DOM ELEMENTS ======
+const setupScreen = document.getElementById('setup-screen');
+const gachaScreen = document.getElementById('gacha-screen');
+const quizScreen = document.getElementById('quiz-screen');
+const textarea = document.getElementById('question-bank');
+const countSlider = document.getElementById('count-slider');
+const countValue = document.getElementById('count-value');
+const timerToggle = document.getElementById('timer-toggle');
+const timerStatus = document.getElementById('timer-status');
+const timerSlider = document.getElementById('timer-slider');
+const timerValueEl = document.getElementById('timer-value');
+const startBtn = document.getElementById('start-btn');
+const questionCard = document.getElementById('question-card');
+const questionNumber = document.getElementById('question-number');
+const questionText = document.getElementById('question-text');
+const answerText = document.getElementById('answer-text');
+const revealBtn = document.getElementById('reveal-btn');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const backBtn = document.getElementById('back-btn');
+const currentNum = document.getElementById('current-num');
+const totalNum = document.getElementById('total-num');
+const timerDisplay = document.getElementById('timer-display');
+const progressFill = document.getElementById('progress-fill');
+
+// ====== INIT ======
+function init() {
+  const saved = localStorage.getItem('randomQuizBank');
+  textarea.value = saved || sampleData;
+
+  const savedCount = localStorage.getItem('randomQuizCount');
+  if (savedCount) {
+    countSlider.value = savedCount;
+    countValue.textContent = savedCount;
+  }
+
+  const savedTimer = localStorage.getItem('randomQuizTimer');
+  if (savedTimer === 'true') {
+    timerEnabled = true;
+    timerToggle.classList.add('on');
+    timerStatus.textContent = 'ON';
+  }
+
+  const savedTimerVal = localStorage.getItem('randomQuizTimerVal');
+  if (savedTimerVal) {
+    timerSlider.value = savedTimerVal;
+    timerValueEl.textContent = savedTimerVal;
+    timerSeconds = parseInt(savedTimerVal);
+  }
+}
+
+// ====== EVENT LISTENERS ======
+countSlider.addEventListener('input', () => {
+  countValue.textContent = countSlider.value;
+});
+
+timerSlider.addEventListener('input', () => {
+  timerValueEl.textContent = timerSlider.value;
+  timerSeconds = parseInt(timerSlider.value);
+});
+
+timerToggle.addEventListener('click', () => {
+  timerEnabled = !timerEnabled;
+  timerToggle.classList.toggle('on');
+  timerStatus.textContent = timerEnabled ? 'ON' : 'OFF';
+});
+
+startBtn.addEventListener('click', startQuiz);
+prevBtn.addEventListener('click', goPrev);
+nextBtn.addEventListener('click', goNext);
+revealBtn.addEventListener('click', revealAnswer);
+backBtn.addEventListener('click', goBack);
+
+// ====== PARSE QUESTIONS ======
+function parseQuestions(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  return lines.map(line => {
+    const parts = line.split('|');
+    return {
+      question: parts[0].trim(),
+      answer: parts.length > 1 ? parts.slice(1).join('|').trim() : null
+    };
+  });
+}
+
+// ====== START QUIZ ======
+function startQuiz() {
+  questions = parseQuestions(textarea.value);
+  if (questions.length === 0) {
+    alert('문제를 입력해주세요!');
+    return;
+  }
+
+  // Save to localStorage
+  localStorage.setItem('randomQuizBank', textarea.value);
+  localStorage.setItem('randomQuizCount', countSlider.value);
+  localStorage.setItem('randomQuizTimer', timerEnabled.toString());
+  localStorage.setItem('randomQuizTimerVal', timerSlider.value.toString());
+
+  const count = Math.min(parseInt(countSlider.value), questions.length);
+
+  // Shuffle and pick
+  const shuffled = [...questions].sort(() => Math.random() - 0.5);
+  selectedQuestions = shuffled.slice(0, count);
+  currentIndex = 0;
+
+  // Show gacha animation
+  showScreen(gachaScreen);
+  playGachaAnimation(count);
+}
+
+// ====== GACHA ANIMATION ======
+function playGachaAnimation(count) {
+  const capsule = document.getElementById('capsule');
+  createParticles();
+
+  // Slot machine number effect
+  let slotInterval = setInterval(() => {
+    capsule.style.background = `linear-gradient(${Math.random()*360}deg, var(--gold), ${getRandomColor()}, var(--magenta))`;
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(slotInterval);
+    capsule.style.background = 'linear-gradient(135deg, var(--gold), #f59e0b, var(--magenta))';
+
+    // Explosion effect
+    createExplosion();
+
+    setTimeout(() => {
+      showScreen(quizScreen);
+      displayQuestion();
+      spawnConfetti();
+    }, 800);
+  }, 2200);
+}
+
+function getRandomColor() {
+  const colors = ['#a855f7', '#e040a0', '#fbbf24', '#34d399', '#60a5fa', '#f472b6'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function createParticles() {
+  const container = gachaScreen;
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = `${50 + (Math.random() - 0.5) * 40}%`;
+    particle.style.top = `${50 + (Math.random() - 0.5) * 40}%`;
+    particle.style.background = getRandomColor();
+    particle.style.animation = `particleFloat ${1 + Math.random()}s ease-out forwards`;
+    container.appendChild(particle);
+    setTimeout(() => particle.remove(), 2000);
+  }
+}
+
+function createExplosion() {
+  const container = gachaScreen;
+  for (let i = 0; i < 30; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    const angle = (i / 30) * Math.PI * 2;
+    const distance = 80 + Math.random() * 120;
+    particle.style.left = '50%';
+    particle.style.top = '50%';
+    particle.style.background = getRandomColor();
+    particle.style.transition = 'all 0.8s ease-out';
+    particle.style.opacity = '1';
+    container.appendChild(particle);
+
+    requestAnimationFrame(() => {
+      particle.style.left = `calc(50% + ${Math.cos(angle) * distance}px)`;
+      particle.style.top = `calc(50% + ${Math.sin(angle) * distance}px)`;
+      particle.style.opacity = '0';
+      particle.style.transform = `scale(0)`;
+    });
+
+    setTimeout(() => particle.remove(), 1000);
+  }
+}
+
+function spawnConfetti() {
+  const colors = ['#a855f7', '#e040a0', '#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#fff'];
+  for (let i = 0; i < 40; i++) {
+    setTimeout(() => {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (6 + Math.random() * 8) + 'px';
+      piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 4000);
+    }, i * 50);
+  }
+}
+
+// ====== DISPLAY QUESTION ======
+function displayQuestion() {
+  const q = selectedQuestions[currentIndex];
+  questionNumber.textContent = `Q${currentIndex + 1}`;
+  questionText.textContent = q.question;
+  currentNum.textContent = currentIndex + 1;
+  totalNum.textContent = selectedQuestions.length;
+
+  // Progress bar
+  progressFill.style.width = `${((currentIndex + 1) / selectedQuestions.length) * 100}%`;
+
+  // Answer
+  answerText.textContent = q.answer || '';
+  answerText.classList.remove('visible');
+  if (q.answer) {
+    revealBtn.classList.remove('hidden');
+  } else {
+    revealBtn.classList.add('hidden');
+  }
+
+  // Navigation
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.textContent = currentIndex === selectedQuestions.length - 1 ? '완료' : '다음 문제';
+
+  // Timer
+  stopTimer();
+  if (timerEnabled) {
+    startTimer();
+  } else {
+    timerDisplay.textContent = '';
+  }
+
+  // Re-trigger animation
+  questionCard.style.animation = 'none';
+  questionCard.offsetHeight; // force reflow
+  questionCard.style.animation = 'cardAppear 0.5s ease-out';
+}
+
+// ====== TIMER ======
+function startTimer() {
+  remainingTime = timerSeconds;
+  timerDisplay.textContent = remainingTime;
+  timerDisplay.classList.remove('warning');
+
+  timerInterval = setInterval(() => {
+    remainingTime--;
+    timerDisplay.textContent = remainingTime;
+
+    if (remainingTime <= 5) {
+      timerDisplay.classList.add('warning');
+    }
+
+    if (remainingTime <= 0) {
+      stopTimer();
+      timerDisplay.textContent = '종료!';
+      // Auto reveal answer
+      if (selectedQuestions[currentIndex].answer) {
+        answerText.classList.add('visible');
+        revealBtn.classList.add('hidden');
+      }
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerDisplay.classList.remove('warning');
+}
+
+// ====== NAVIGATION ======
+function goPrev() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    displayQuestion();
+  }
+}
+
+function goNext() {
+  if (currentIndex < selectedQuestions.length - 1) {
+    currentIndex++;
+    displayQuestion();
+  } else {
+    // Quiz complete
+    stopTimer();
+    spawnConfetti();
+    if (confirm('퀴즈가 끝났습니다! 처음으로 돌아갈까요?')) {
+      goBack();
+    }
+  }
+}
+
+function revealAnswer() {
+  answerText.classList.add('visible');
+  revealBtn.classList.add('hidden');
+}
+
+function goBack() {
+  stopTimer();
+  currentIndex = 0;
+  showScreen(setupScreen);
+}
+
+// ====== SCREEN MANAGEMENT ======
+function showScreen(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  screen.classList.add('active');
+}
+
+// ====== KEYBOARD SHORTCUTS ======
+document.addEventListener('keydown', (e) => {
+  if (!quizScreen.classList.contains('active')) return;
+
+  switch(e.key) {
+    case 'ArrowRight':
+    case ' ':
+      e.preventDefault();
+      goNext();
+      break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      goPrev();
+      break;
+    case 'Enter':
+      e.preventDefault();
+      revealAnswer();
+      break;
+    case 'Escape':
+      goBack();
+      break;
+  }
+});
+
+// ====== PARTICLE ANIMATION STYLE ======
+const style = document.createElement('style');
+style.textContent = `
+@keyframes particleFloat {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0) translateY(-50px); opacity: 0; }
+}`;
+document.head.appendChild(style);
+
+// ====== START ======
+init();
+</script>
+</body>
+</html>
