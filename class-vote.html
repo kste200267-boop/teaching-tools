@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교실 투표</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --text: #1a1a2e;
+  --text-sub: #555;
+  --border: #e0e0e0;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --accent: #4361ee;
+}
+
+[data-theme="dark"] {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --text: #f0f0f0;
+  --text-sub: #aaa;
+  --border: #333;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --accent: #7b8cff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.header-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.theme-toggle {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Setup Mode */
+.setup-panel {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+
+.setup-panel h2 {
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  color: var(--accent);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  transition: border 0.3s;
+}
+
+.form-group input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.choices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.choice-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.choice-row input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.choice-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.choice-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.btn-remove-choice {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #ff4757;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.btn-remove-choice:hover {
+  transform: scale(1.1);
+}
+
+.btn-add-choice {
+  padding: 10px 20px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-add-choice:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.option-row label {
+  font-weight: 400;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-start {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4361ee, #7b2ff7);
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+}
+
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5);
+}
+
+/* Voting Mode */
+.voting-panel {
+  display: none;
+}
+
+.question-display {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.vote-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.vote-btn {
+  padding: 28px 20px;
+  border: none;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.3s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.vote-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.vote-btn:active {
+  transform: scale(0.97);
+}
+
+.vote-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.vote-btn .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transform: scale(0);
+  animation: ripple-anim 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-anim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Chart */
+.chart-section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.chart-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  color: var(--text-sub);
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chart-label {
+  width: 100px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: right;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-bar-wrapper {
+  flex: 1;
+  background: var(--bg);
+  border-radius: 12px;
+  height: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-bar {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  min-width: 0;
+}
+
+.chart-bar span {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+.chart-count {
+  width: 60px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Results */
+.results-panel {
+  display: none;
+}
+
+.winner-announcement {
+  text-align: center;
+  padding: 30px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.winner-announcement h2 {
+  font-size: 1.2rem;
+  color: var(--text-sub);
+  margin-bottom: 10px;
+}
+
+.winner-announcement .winner-name {
+  font-size: 2.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.winner-announcement .winner-votes {
+  font-size: 1.2rem;
+  color: var(--text-sub);
+  margin-top: 8px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btn-end {
+  padding: 16px 32px;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-end:hover {
+  transform: translateY(-2px);
+}
+
+.btn-end.primary {
+  background: #ff4757;
+  color: #fff;
+}
+
+.btn-end.secondary {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+
+.btn-new {
+  padding: 16px 32px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4361ee, #7b2ff7);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+}
+
+.btn-new:hover {
+  transform: translateY(-2px);
+}
+
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Total votes display */
+.total-votes {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--text-sub);
+  margin-top: 12px;
+}
+
+.total-votes strong {
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  header h1 { font-size: 1.4rem; }
+  .question-display { font-size: 1.3rem; padding: 16px; }
+  .vote-buttons { grid-template-columns: 1fr; gap: 12px; }
+  .vote-btn { padding: 22px 16px; font-size: 1.3rem; }
+  .chart-label { width: 70px; font-size: 0.85rem; }
+  .winner-announcement .winner-name { font-size: 1.8rem; }
+  .btn-group { flex-direction: column; }
+  .setup-panel { padding: 20px; }
+}
+
+/* TV mode — larger everything */
+@media (min-width: 1200px) {
+  .container { max-width: 1100px; }
+  .question-display { font-size: 2.4rem; }
+  .vote-btn { font-size: 1.8rem; padding: 36px; }
+  .chart-bar-wrapper { height: 56px; }
+  .chart-label { font-size: 1.2rem; width: 140px; }
+  .chart-count { font-size: 1.3rem; }
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>&#x1F5F3;&#xFE0F; &#xAD50;&#xC2E4; &#xD22C;&#xD45C;</h1>
+    <div class="header-controls">
+      <button class="theme-toggle" onclick="toggleTheme()" title="다크모드 전환">&#x1F319;</button>
+    </div>
+  </header>
+
+  <!-- SETUP MODE -->
+  <div id="setupPanel" class="setup-panel">
+    <h2>&#xD22C;&#xD45C; &#xC124;&#xC815;</h2>
+    <div class="form-group">
+      <label for="questionInput">&#xD22C;&#xD45C; &#xC9C8;&#xBB38;</label>
+      <input type="text" id="questionInput" placeholder="&#xC608;: &#xCCB4;&#xD5D8;&#xD559;&#xC2B5; &#xC7A5;&#xC18C;&#xB85C; &#xC5B4;&#xB514;&#xAC00; &#xC88B;&#xC744;&#xAE4C;&#xC694;?">
+    </div>
+    <div class="form-group">
+      <label>&#xC120;&#xD0DD;&#xC9C0; (2~6&#xAC1C;)</label>
+      <div id="choicesList" class="choices-list"></div>
+      <button class="btn-add-choice" onclick="addChoice()">+ &#xC120;&#xD0DD;&#xC9C0; &#xCD94;&#xAC00;</button>
+    </div>
+    <div class="option-row">
+      <label>
+        <input type="checkbox" id="oneVoteMode">
+        1&#xC778; 1&#xD45C; &#xBAA8;&#xB4DC; (&#xD55C; &#xBC88;&#xB9CC; &#xD22C;&#xD45C; &#xAC00;&#xB2A5;)
+      </label>
+    </div>
+    <button class="btn-start" onclick="startVoting()">&#xD22C;&#xD45C; &#xC2DC;&#xC791;!</button>
+  </div>
+
+  <!-- VOTING MODE -->
+  <div id="votingPanel" class="voting-panel">
+    <div class="question-display" id="questionDisplay"></div>
+    <div class="vote-buttons" id="voteButtons"></div>
+    <div class="chart-section">
+      <h3>&#xC2E4;&#xC2DC;&#xAC04; &#xACB0;&#xACFC;</h3>
+      <div class="chart-bars" id="chartBars"></div>
+      <div class="total-votes">&#xCD1D; &#xD22C;&#xD45C;&#xC218;: <strong id="totalVotes">0</strong></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn-end primary" onclick="endVoting()">&#xD22C;&#xD45C; &#xC885;&#xB8CC;</button>
+    </div>
+  </div>
+
+  <!-- RESULTS MODE -->
+  <div id="resultsPanel" class="results-panel">
+    <div class="question-display" id="resultQuestion"></div>
+    <div class="winner-announcement" id="winnerBox">
+      <h2>&#x1F3C6; &#xCD5C;&#xC885; &#xACB0;&#xACFC;</h2>
+      <div class="winner-name" id="winnerName"></div>
+      <div class="winner-votes" id="winnerVotes"></div>
+    </div>
+    <div class="chart-section">
+      <h3>&#xCD5C;&#xC885; &#xACB0;&#xACFC;</h3>
+      <div class="chart-bars" id="resultChartBars"></div>
+      <div class="total-votes">&#xCD1D; &#xD22C;&#xD45C;&#xC218;: <strong id="resultTotalVotes">0</strong></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn-new" onclick="newVote()">&#xC0C8; &#xD22C;&#xD45C; &#xB9CC;&#xB4E4;&#xAE30;</button>
+    </div>
+  </div>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+const COLORS = ['#4361ee','#f72585','#4cc9f0','#f77f00','#06d6a0','#9b5de5'];
+const STORAGE_KEY = 'classVoteData';
+
+let state = {
+  mode: 'setup', // setup, voting, results
+  question: '',
+  choices: [],
+  votes: [],
+  oneVoteMode: false,
+  hasVoted: false
+};
+
+// Init
+function init() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      state = JSON.parse(saved);
+      if (state.mode === 'voting') {
+        showVotingMode();
+      } else if (state.mode === 'results') {
+        showResultsMode();
+      } else {
+        showSetupMode();
+      }
+    } catch(e) {
+      showSetupMode();
+    }
+  } else {
+    showSetupMode();
+  }
+
+  // Theme
+  const theme = localStorage.getItem('voteTheme');
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// Theme
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('voteTheme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('voteTheme', 'dark');
+  }
+}
+
+// Setup Mode
+function showSetupMode() {
+  state.mode = 'setup';
+  document.getElementById('setupPanel').style.display = 'block';
+  document.getElementById('votingPanel').style.display = 'none';
+  document.getElementById('resultsPanel').style.display = 'none';
+
+  if (state.choices.length === 0) {
+    state.choices = ['', ''];
+    state.votes = [0, 0];
+  }
+  renderChoices();
+  document.getElementById('questionInput').value = state.question || '';
+  document.getElementById('oneVoteMode').checked = state.oneVoteMode;
+}
+
+function renderChoices() {
+  const list = document.getElementById('choicesList');
+  list.innerHTML = '';
+  state.choices.forEach((choice, i) => {
+    const row = document.createElement('div');
+    row.className = 'choice-row';
+    row.innerHTML = `
+      <span class="choice-num" style="background:${COLORS[i % COLORS.length]}">${i+1}</span>
+      <input type="text" value="${escapeHtml(choice)}" placeholder="선택지 ${i+1}" oninput="updateChoice(${i}, this.value)">
+      ${state.choices.length > 2 ? `<button class="btn-remove-choice" onclick="removeChoice(${i})">&#xD7;</button>` : ''}
+    `;
+    list.appendChild(row);
+  });
+}
+
+function updateChoice(idx, val) {
+  state.choices[idx] = val;
+}
+
+function addChoice() {
+  if (state.choices.length >= 6) {
+    alert('선택지는 최대 6개까지 가능합니다.');
+    return;
+  }
+  state.choices.push('');
+  state.votes.push(0);
+  renderChoices();
+}
+
+function removeChoice(idx) {
+  if (state.choices.length <= 2) return;
+  state.choices.splice(idx, 1);
+  state.votes.splice(idx, 1);
+  renderChoices();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Start Voting
+function startVoting() {
+  const question = document.getElementById('questionInput').value.trim();
+  if (!question) {
+    alert('투표 질문을 입력해주세요!');
+    return;
+  }
+
+  const filledChoices = state.choices.map(c => c.trim()).filter(c => c);
+  if (filledChoices.length < 2) {
+    alert('선택지를 2개 이상 입력해주세요!');
+    return;
+  }
+
+  state.question = question;
+  state.choices = filledChoices;
+  state.votes = new Array(filledChoices.length).fill(0);
+  state.oneVoteMode = document.getElementById('oneVoteMode').checked;
+  state.hasVoted = false;
+  state.mode = 'voting';
+  saveState();
+  showVotingMode();
+}
+
+function showVotingMode() {
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('votingPanel').style.display = 'block';
+  document.getElementById('resultsPanel').style.display = 'none';
+
+  document.getElementById('questionDisplay').textContent = state.question;
+  renderVoteButtons();
+  renderChart('chartBars', 'totalVotes');
+}
+
+function renderVoteButtons() {
+  const container = document.getElementById('voteButtons');
+  container.innerHTML = '';
+  state.choices.forEach((choice, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'vote-btn';
+    btn.style.background = `linear-gradient(135deg, ${COLORS[i % COLORS.length]}, ${adjustColor(COLORS[i % COLORS.length], -30)})`;
+    btn.textContent = choice;
+    btn.onclick = (e) => castVote(i, e);
+
+    if (state.oneVoteMode && state.hasVoted) {
+      btn.classList.add('disabled');
+    }
+    container.appendChild(btn);
+  });
+}
+
+function castVote(idx, event) {
+  if (state.oneVoteMode && state.hasVoted) return;
+
+  state.votes[idx]++;
+
+  if (state.oneVoteMode) {
+    state.hasVoted = true;
+    localStorage.setItem('classVoteHasVoted', 'true');
+    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('disabled'));
+  }
+
+  // Ripple effect
+  const btn = event.currentTarget;
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (event.clientX - rect.left - size/2) + 'px';
+  ripple.style.top = (event.clientY - rect.top - size/2) + 'px';
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+
+  saveState();
+  renderChart('chartBars', 'totalVotes');
+}
+
+function renderChart(containerId, totalId) {
+  const container = document.getElementById(containerId);
+  const total = state.votes.reduce((a, b) => a + b, 0);
+  const max = Math.max(...state.votes, 1);
+
+  container.innerHTML = '';
+  state.choices.forEach((choice, i) => {
+    const pct = total > 0 ? (state.votes[i] / total * 100) : 0;
+    const barWidth = total > 0 ? (state.votes[i] / max * 100) : 0;
+
+    const row = document.createElement('div');
+    row.className = 'chart-row';
+    row.innerHTML = `
+      <div class="chart-label">${escapeHtml(choice)}</div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-bar" style="width:${barWidth}%;background:${COLORS[i % COLORS.length]}">
+          <span>${pct.toFixed(1)}%</span>
+        </div>
+      </div>
+      <div class="chart-count">${state.votes[i]}</div>
+    `;
+    container.appendChild(row);
+  });
+
+  document.getElementById(totalId).textContent = total;
+}
+
+// End Voting
+function endVoting() {
+  if (!confirm('투표를 종료하시겠습니까?')) return;
+  state.mode = 'results';
+  saveState();
+  showResultsMode();
+}
+
+function showResultsMode() {
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('votingPanel').style.display = 'none';
+  document.getElementById('resultsPanel').style.display = 'block';
+
+  document.getElementById('resultQuestion').textContent = state.question;
+  renderChart('resultChartBars', 'resultTotalVotes');
+
+  // Find winner
+  const maxVotes = Math.max(...state.votes);
+  const winnerIdx = state.votes.indexOf(maxVotes);
+  const total = state.votes.reduce((a, b) => a + b, 0);
+  const pct = total > 0 ? (maxVotes / total * 100).toFixed(1) : 0;
+
+  document.getElementById('winnerName').textContent = state.choices[winnerIdx];
+  document.getElementById('winnerVotes').textContent = `${maxVotes}표 (${pct}%)`;
+
+  // Confetti
+  launchConfetti();
+}
+
+// New Vote
+function newVote() {
+  state = {
+    mode: 'setup',
+    question: '',
+    choices: ['', ''],
+    votes: [0, 0],
+    oneVoteMode: false,
+    hasVoted: false
+  };
+  localStorage.removeItem('classVoteHasVoted');
+  saveState();
+  showSetupMode();
+}
+
+// Confetti
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const confettiColors = ['#f72585','#4361ee','#4cc9f0','#f77f00','#06d6a0','#ffd200','#ff4757'];
+
+  for (let i = 0; i < 80; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    confetti.style.width = (Math.random() * 10 + 6) + 'px';
+    confetti.style.height = (Math.random() * 10 + 6) + 'px';
+    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    confetti.style.animationDelay = (Math.random() * 1.5) + 's';
+    container.appendChild(confetti);
+  }
+
+  setTimeout(() => { container.innerHTML = ''; }, 5000);
+}
+
+// Utility
+function adjustColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3), 16) + amount;
+  let g = parseInt(hex.slice(3,5), 16) + amount;
+  let b = parseInt(hex.slice(5,7), 16) + amount;
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+// Initialize
+init();
+</script>
+</body>
+</html>
