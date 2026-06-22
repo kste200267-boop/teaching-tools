@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학생 뽑기 룰렛</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+h1 {
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Input Section */
+.input-section {
+  background: rgba(255,255,255,0.95);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.input-section label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.input-section textarea {
+  width: 100%;
+  height: 100px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+
+.input-section textarea:focus {
+  outline: none;
+  border-color: #764ba2;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+}
+
+.btn-clear {
+  background: #f44336;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+}
+
+/* Wheel Section */
+.wheel-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.wheel-wrapper {
+  position: relative;
+  width: 340px;
+  height: 340px;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-top: 36px solid #ff4757;
+  z-index: 10;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
+}
+
+canvas#wheel {
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px #fff, 0 0 0 12px rgba(0,0,0,0.1), 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.btn-spin {
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  color: #fff;
+  font-size: 1.4rem;
+  padding: 16px 48px;
+  border-radius: 50px;
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+  letter-spacing: 2px;
+}
+
+.btn-spin:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-respin {
+  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+  display: none;
+}
+
+/* Result */
+.result-section {
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-name {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.result-name.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* History */
+.history-section {
+  background: rgba(255,255,255,0.9);
+  border-radius: 16px;
+  padding: 16px 20px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.history-section h3 {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.history-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.history-item {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  h1 { font-size: 1.6rem; }
+  .wheel-wrapper { width: 280px; height: 280px; }
+  canvas#wheel { width: 280px; height: 280px; }
+  .result-name { font-size: 2rem; }
+  .btn-spin { font-size: 1.2rem; padding: 14px 36px; }
+}
+</style>
+</head>
+<body>
+
+<h1>학생 뽑기 룰렛</h1>
+
+<div class="container">
+  <div class="input-section">
+    <label>학생 이름 입력 (줄바꿈 또는 쉼표로 구분)</label>
+    <textarea id="namesInput" placeholder="예: 김민준&#10;이서윤&#10;박지호&#10;최예린"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-save" onclick="saveNames()">저장</button>
+      <button class="btn btn-clear" onclick="clearNames()">초기화</button>
+    </div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="wheel-wrapper">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheel" width="680" height="680"></canvas>
+    </div>
+    <div class="result-section">
+      <div class="result-name" id="resultName"></div>
+    </div>
+    <button class="btn btn-spin" id="btnSpin" onclick="spinWheel()">돌리기!</button>
+    <button class="btn btn-respin" id="btnRespin" onclick="spinWheel()">한 명 더!</button>
+  </div>
+
+  <div class="history-section">
+    <h3>뽑기 기록 (최근 5명)</h3>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+// State
+let students = [];
+let currentRotation = 0;
+let isSpinning = false;
+let history = [];
+
+// Audio context for sound effects
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playTick() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 800;
+    osc.type = 'square';
+    gain.gain.value = 0.05;
+    osc.start();
+    osc.stop(ctx.currentTime + 0.03);
+  } catch(e) {}
+}
+
+function playDing() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 1200;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.8);
+
+    // Second harmonic
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.frequency.value = 1800;
+    osc2.type = 'sine';
+    gain2.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc2.start(ctx.currentTime + 0.05);
+    osc2.stop(ctx.currentTime + 0.6);
+  } catch(e) {}
+}
+
+// Wheel colors
+const COLORS = [
+  '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff',
+  '#5f27cd', '#01a3a4', '#f368e0', '#ff9f43', '#ee5a24',
+  '#0abde3', '#10ac84', '#341f97', '#c44569', '#f78fb3',
+  '#3dc1d3', '#e77f67', '#778beb', '#cf6a87', '#786fa6'
+];
+
+// Canvas
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+const radius = canvas.width / 2 - 10;
+
+function drawWheel(rotation) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (students.length === 0) {
+    // Empty state
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fill();
+    ctx.fillStyle = '#999';
+    ctx.font = 'bold 28px "Noto Sans KR", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('이름을 입력하세요', centerX, centerY);
+    return;
+  }
+
+  const sliceAngle = (Math.PI * 2) / students.length;
+
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.rotate(rotation);
+  ctx.translate(-centerX, -centerY);
+
+  for (let i = 0; i < students.length; i++) {
+    const startAngle = i * sliceAngle;
+    const endAngle = startAngle + sliceAngle;
+
+    // Draw slice
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw text
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(startAngle + sliceAngle / 2);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+
+    const fontSize = students.length > 16 ? 16 : students.length > 10 ? 20 : 24;
+    ctx.font = `bold ${fontSize}px "Noto Sans KR", sans-serif`;
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 3;
+    ctx.fillText(students[i], radius - 20, 0);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function spinWheel() {
+  if (isSpinning || students.length === 0) return;
+
+  isSpinning = true;
+  document.getElementById('btnSpin').disabled = true;
+  document.getElementById('btnRespin').style.display = 'none';
+
+  const resultEl = document.getElementById('resultName');
+  resultEl.classList.remove('show');
+
+  // Calculate spin
+  const extraSpins = 5 + Math.random() * 5; // 5-10 full rotations
+  const targetSlice = Math.floor(Math.random() * students.length);
+  const sliceAngle = (Math.PI * 2) / students.length;
+
+  // The pointer is at top (270 degrees / -90 degrees / 3*PI/2)
+  // We need the target slice's center to align with the top
+  const targetAngle = -(targetSlice * sliceAngle + sliceAngle / 2) + Math.PI * 1.5;
+  const totalRotation = extraSpins * Math.PI * 2 + targetAngle - (currentRotation % (Math.PI * 2));
+
+  const finalRotation = currentRotation + totalRotation;
+  const duration = 4000 + Math.random() * 2000; // 4-6 seconds
+  const startTime = performance.now();
+  const startRotation = currentRotation;
+
+  let lastTickAngle = startRotation;
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Cubic ease out
+    const eased = 1 - Math.pow(1 - progress, 3);
+    currentRotation = startRotation + totalRotation * eased;
+
+    drawWheel(currentRotation);
+
+    // Tick sound
+    const angleDiff = Math.abs(currentRotation - lastTickAngle);
+    if (angleDiff > sliceAngle * 0.8) {
+      playTick();
+      lastTickAngle = currentRotation;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Done!
+      currentRotation = finalRotation;
+      drawWheel(currentRotation);
+      isSpinning = false;
+      document.getElementById('btnSpin').disabled = false;
+
+      // Show result
+      const selectedName = students[targetSlice];
+      resultEl.textContent = selectedName;
+      resultEl.classList.add('show');
+
+      playDing();
+      showConfetti();
+
+      // Update history
+      history.unshift(selectedName);
+      if (history.length > 5) history.pop();
+      renderHistory();
+
+      // Show respin button
+      document.getElementById('btnRespin').style.display = 'inline-block';
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function showConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+
+  const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#01a3a4', '#f368e0', '#ff9f43'];
+
+  for (let i = 0; i < 80; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.width = (Math.random() * 10 + 6) + 'px';
+    confetti.style.height = (Math.random() * 10 + 6) + 'px';
+    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+    confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+    container.appendChild(confetti);
+  }
+
+  setTimeout(() => { container.innerHTML = ''; }, 4000);
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  history.forEach((name, i) => {
+    const item = document.createElement('span');
+    item.className = 'history-item';
+    item.textContent = `${i + 1}. ${name}`;
+    list.appendChild(item);
+  });
+}
+
+function parseNames(text) {
+  return text
+    .split(/[\n,]+/)
+    .map(n => n.trim())
+    .filter(n => n.length > 0);
+}
+
+function saveNames() {
+  const textarea = document.getElementById('namesInput');
+  students = parseNames(textarea.value);
+  if (students.length === 0) {
+    alert('학생 이름을 1명 이상 입력해주세요.');
+    return;
+  }
+  localStorage.setItem('roulette_students', JSON.stringify(students));
+  drawWheel(currentRotation);
+  history = [];
+  renderHistory();
+  document.getElementById('btnRespin').style.display = 'none';
+  document.getElementById('resultName').classList.remove('show');
+}
+
+function clearNames() {
+  if (!confirm('모든 이름을 삭제할까요?')) return;
+  document.getElementById('namesInput').value = '';
+  students = [];
+  localStorage.removeItem('roulette_students');
+  drawWheel(0);
+  currentRotation = 0;
+  history = [];
+  renderHistory();
+  document.getElementById('btnRespin').style.display = 'none';
+  document.getElementById('resultName').classList.remove('show');
+}
+
+// Init
+function init() {
+  const saved = localStorage.getItem('roulette_students');
+  if (saved) {
+    try {
+      students = JSON.parse(saved);
+      document.getElementById('namesInput').value = students.join('\n');
+    } catch(e) {
+      students = [];
+    }
+  }
+  drawWheel(currentRotation);
+  renderHistory();
+}
+
+init();
+</script>
+</body>
+</html>
