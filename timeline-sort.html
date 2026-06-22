@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>타임라인 순서 맞추기 게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #FFF8E1;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #E65100;
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #F57C00;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.instructions {
+  background: #FFF;
+  border-left: 4px solid #F57C00;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  color: #555;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.timeline-container {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 14px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #F57C00, #FFB74D);
+  border-radius: 2px;
+}
+
+.card-slot {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.slot-number {
+  position: absolute;
+  left: -26px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  background: #F57C00;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.event-card {
+  background: #FFF;
+  border: 2px solid #FFE0B2;
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  position: relative;
+}
+
+.event-card:active {
+  cursor: grabbing;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(245,124,0,0.2);
+}
+
+.event-card.dragging {
+  opacity: 0.5;
+  border-color: #F57C00;
+}
+
+.event-card.drag-over {
+  border-color: #F57C00;
+  border-style: dashed;
+  background: #FFF3E0;
+}
+
+.event-card .event-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+}
+
+.event-card .event-detail {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.event-card .event-year {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: #F57C00;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.event-card .event-year.revealed {
+  opacity: 1;
+}
+
+.event-card.correct {
+  border-color: #4CAF50;
+  background: #E8F5E9;
+}
+
+.event-card.correct .event-year {
+  opacity: 1;
+  color: #2E7D32;
+}
+
+.event-card.wrong {
+  border-color: #F44336;
+  background: #FFEBEE;
+}
+
+.event-card.wrong .event-year {
+  opacity: 1;
+  color: #C62828;
+}
+
+.event-card .arrow-hint {
+  display: none;
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #F44336;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.event-card.wrong .arrow-hint {
+  display: block;
+}
+
+.btn-area {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 25px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-check {
+  background: #F57C00;
+  color: white;
+}
+
+.btn-check:hover {
+  background: #E65100;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245,124,0,0.3);
+}
+
+.btn-retry {
+  background: #FFF;
+  color: #F57C00;
+  border: 2px solid #F57C00;
+  display: none;
+}
+
+.btn-retry:hover {
+  background: #FFF3E0;
+}
+
+.btn-retry.show {
+  display: inline-block;
+}
+
+.score-box {
+  display: none;
+  text-align: center;
+  margin-top: 20px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.score-box.show {
+  display: block;
+}
+
+.score-box .score-number {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #F57C00;
+}
+
+.score-box .score-label {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.score-box .score-message {
+  margin-top: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Touch-friendly: larger hit area on mobile */
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  h1 { font-size: 1.3rem; }
+  .event-card { padding: 12px 14px; }
+  .event-card .event-name { font-size: 0.9rem; }
+  .btn { padding: 10px 22px; font-size: 0.9rem; }
+}
+
+.drag-handle {
+  display: inline-block;
+  margin-right: 8px;
+  color: #CCC;
+  font-size: 1.2rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>타임라인 순서 맞추기</h1>
+  <p class="subtitle">카드를 드래그하여 시간순으로 정렬하세요</p>
+
+  <div class="instructions">
+    💡 카드를 위아래로 드래그하여 오래된 사건부터 최근 사건 순으로 배치하세요.
+  </div>
+
+  <div class="timeline-container" id="timeline">
+    <div class="timeline-line"></div>
+    <!-- Cards generated by JS -->
+  </div>
+
+  <div class="btn-area">
+    <button class="btn btn-check" id="btnCheck" onclick="checkOrder()">채점하기</button>
+    <button class="btn btn-retry" id="btnRetry" onclick="retry()">다시 하기</button>
+  </div>
+
+  <div class="score-box" id="scoreBox">
+    <div class="score-number" id="scoreNumber">0/8</div>
+    <div class="score-label">맞은 개수</div>
+    <div class="score-message" id="scoreMessage"></div>
+  </div>
+</div>
+
+<script>
+// ===== 타임라인 데이터 수정 =====
+// 아래 배열을 원하는 주제로 변경하세요.
+// event: 사건 이름, year: 연도(정렬 기준), detail: 부가 설명
+const timelineData = [
+  { event: "강화도 조약", year: 1876, detail: "조선 최초의 근대적 조약" },
+  { event: "갑오개혁", year: 1894, detail: "근대적 제도 개혁 시도" },
+  { event: "3·1 운동", year: 1919, detail: "일제 강점기 최대 독립운동" },
+  { event: "광주 학생 항일 운동", year: 1929, detail: "학생 주도 항일 시위" },
+  { event: "8·15 광복", year: 1945, detail: "일제로부터의 해방" },
+  { event: "4·19 혁명", year: 1960, detail: "이승만 독재 정권 타도" },
+  { event: "5·18 민주화 운동", year: 1980, detail: "광주 시민의 민주화 항쟁" },
+  { event: "6월 민주 항쟁", year: 1987, detail: "직선제 개헌 쟁취" }
+];
+// ===== 타임라인 데이터 수정 끝 =====
+
+let cards = [];
+let draggedIndex = null;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function init() {
+  cards = shuffle(timelineData.map((item, i) => ({ ...item, originalIndex: i })));
+  render();
+  document.getElementById('btnRetry').classList.remove('show');
+  document.getElementById('scoreBox').classList.remove('show');
+  document.getElementById('btnCheck').style.display = 'inline-block';
+}
+
+function render() {
+  const container = document.getElementById('timeline');
+  container.innerHTML = '<div class="timeline-line"></div>';
+
+  cards.forEach((card, index) => {
+    const slot = document.createElement('div');
+    slot.className = 'card-slot';
+
+    const number = document.createElement('div');
+    number.className = 'slot-number';
+    number.textContent = index + 1;
+
+    const cardEl = document.createElement('div');
+    cardEl.className = 'event-card';
+    cardEl.draggable = true;
+    cardEl.dataset.index = index;
+
+    cardEl.innerHTML = `
+      <span class="drag-handle">⠿</span>
+      <span class="event-name">${card.event}</span>
+      <div class="event-detail">${card.detail}</div>
+      <div class="event-year">${card.year}</div>
+      <div class="arrow-hint"></div>
+    `;
+
+    // Drag events
+    cardEl.addEventListener('dragstart', handleDragStart);
+    cardEl.addEventListener('dragend', handleDragEnd);
+    cardEl.addEventListener('dragover', handleDragOver);
+    cardEl.addEventListener('dragenter', handleDragEnter);
+    cardEl.addEventListener('dragleave', handleDragLeave);
+    cardEl.addEventListener('drop', handleDrop);
+
+    // Touch events for mobile
+    cardEl.addEventListener('touchstart', handleTouchStart, { passive: false });
+    cardEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+    cardEl.addEventListener('touchend', handleTouchEnd);
+
+    slot.appendChild(number);
+    slot.appendChild(cardEl);
+    container.appendChild(slot);
+  });
+}
+
+function handleDragStart(e) {
+  draggedIndex = parseInt(e.target.closest('.event-card').dataset.index);
+  e.target.closest('.event-card').classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  e.target.closest('.event-card').classList.remove('dragging');
+  document.querySelectorAll('.event-card').forEach(c => c.classList.remove('drag-over'));
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+  e.preventDefault();
+  const card = e.target.closest('.event-card');
+  if (card) card.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  const card = e.target.closest('.event-card');
+  if (card) card.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const targetCard = e.target.closest('.event-card');
+  if (!targetCard) return;
+
+  const targetIndex = parseInt(targetCard.dataset.index);
+  if (draggedIndex === targetIndex) return;
+
+  // Swap cards
+  const temp = cards[draggedIndex];
+  cards.splice(draggedIndex, 1);
+  cards.splice(targetIndex, 0, temp);
+
+  render();
+}
+
+// Touch handling for mobile
+let touchStartY = 0;
+let touchCard = null;
+let touchClone = null;
+
+function handleTouchStart(e) {
+  const card = e.target.closest('.event-card');
+  if (!card) return;
+
+  touchCard = card;
+  draggedIndex = parseInt(card.dataset.index);
+  touchStartY = e.touches[0].clientY;
+
+  // Create visual clone
+  touchClone = card.cloneNode(true);
+  touchClone.style.position = 'fixed';
+  touchClone.style.zIndex = '1000';
+  touchClone.style.opacity = '0.8';
+  touchClone.style.width = card.offsetWidth + 'px';
+  touchClone.style.pointerEvents = 'none';
+  touchClone.style.transform = 'scale(1.05)';
+  touchClone.style.boxShadow = '0 8px 25px rgba(245,124,0,0.3)';
+  document.body.appendChild(touchClone);
+
+  const rect = card.getBoundingClientRect();
+  touchClone.style.left = rect.left + 'px';
+  touchClone.style.top = rect.top + 'px';
+
+  card.style.opacity = '0.3';
+}
+
+function handleTouchMove(e) {
+  if (!touchClone) return;
+  e.preventDefault();
+
+  const touch = e.touches[0];
+  const rect = touchCard.getBoundingClientRect();
+  touchClone.style.top = (touch.clientY - rect.height / 2) + 'px';
+
+  // Find card under touch
+  const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+  document.querySelectorAll('.event-card').forEach(c => c.classList.remove('drag-over'));
+
+  for (const el of elements) {
+    const card = el.closest('.event-card');
+    if (card && card !== touchCard) {
+      card.classList.add('drag-over');
+      break;
+    }
+  }
+}
+
+function handleTouchEnd(e) {
+  if (!touchClone) return;
+
+  const touch = e.changedTouches[0];
+  const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+
+  let targetIndex = null;
+  for (const el of elements) {
+    const card = el.closest('.event-card');
+    if (card && card !== touchCard) {
+      targetIndex = parseInt(card.dataset.index);
+      break;
+    }
+  }
+
+  // Cleanup
+  touchClone.remove();
+  touchClone = null;
+  if (touchCard) touchCard.style.opacity = '1';
+  touchCard = null;
+  document.querySelectorAll('.event-card').forEach(c => c.classList.remove('drag-over'));
+
+  if (targetIndex !== null && draggedIndex !== targetIndex) {
+    const temp = cards[draggedIndex];
+    cards.splice(draggedIndex, 1);
+    cards.splice(targetIndex, 0, temp);
+    render();
+  }
+}
+
+function checkOrder() {
+  const correctOrder = [...timelineData].sort((a, b) => a.year - b.year);
+  let score = 0;
+
+  const cardEls = document.querySelectorAll('.event-card');
+
+  cards.forEach((card, index) => {
+    const cardEl = cardEls[index];
+    const yearEl = cardEl.querySelector('.event-year');
+    const arrowEl = cardEl.querySelector('.arrow-hint');
+    yearEl.classList.add('revealed');
+
+    if (card.year === correctOrder[index].year) {
+      cardEl.classList.add('correct');
+      score++;
+    } else {
+      cardEl.classList.add('wrong');
+      // Find where this card should be
+      const correctPos = correctOrder.findIndex(c => c.year === card.year) + 1;
+      arrowEl.textContent = `→ ${correctPos}번`;
+    }
+  });
+
+  // Show score
+  document.getElementById('scoreNumber').textContent = `${score}/${timelineData.length}`;
+
+  let message = '';
+  if (score === timelineData.length) message = '🎉 완벽합니다!';
+  else if (score >= 6) message = '👏 거의 다 맞았어요!';
+  else if (score >= 4) message = '💪 조금만 더 노력해봐요!';
+  else message = '📚 다시 한번 도전해보세요!';
+
+  document.getElementById('scoreMessage').textContent = message;
+  document.getElementById('scoreBox').classList.add('show');
+  document.getElementById('btnRetry').classList.add('show');
+  document.getElementById('btnCheck').style.display = 'none';
+
+  // Disable dragging
+  cardEls.forEach(c => {
+    c.draggable = false;
+    c.style.cursor = 'default';
+  });
+}
+
+function retry() {
+  init();
+}
+
+// Initialize
+init();
+</script>
+</body>
+</html>
