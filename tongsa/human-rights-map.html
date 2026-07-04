@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세계 인권 문제 지도 탐험 · 통합사회2 Ⅰ 인권 보장과 헌법</title>
+<style>
+  :root{
+    --primary:#3A7D44; --primary-d:#2b5e33; --primary-l:#6fa86f;
+    --bg:#f4f8f4; --surface:#fff; --ink:#1e2a1f; --sub:#5f6b60;
+    --gold:#e0a526; --terra:#c9683d; --trust:#2e6fb7;
+    --ocean:#d5e6ea; --land:#c7d6c5; --land-h:#a9c3a6;
+    --line:#e4ebe2; --shadow:0 6px 20px rgba(40,60,40,.09);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#eef4ee;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .pill{display:inline-block;background:#e9f2ec;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.warn{background:#f7e3e2;color:#b23c38}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+  .feat{background:#f6faf6;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:13px;text-align:center}
+  .feat .emo{font-size:24px}
+  .feat .nm{font-weight:800;margin-top:2px;color:var(--primary-d)}
+  .feat .ds{color:var(--sub);font-size:12px;margin-top:2px;line-height:1.45}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--gold);color:#4a3608}
+  .btn.terra{background:var(--terra);color:#fff}
+  .btn.ghost{background:#e9efe8;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* 지도(권역 타일 그리드) */
+  .mapwrap{background:linear-gradient(160deg,#dcebef,var(--ocean));border-radius:14px;padding:10px;border:1px solid var(--line)}
+  .maptip{font-size:12.5px;font-weight:700;color:#3a5a63;text-align:center;margin:2px 0 9px}
+  #worldmap{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;touch-action:manipulation}
+  #worldmap .region{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    min-height:120px;padding:14px 8px;border:2px solid #fff;border-radius:14px;background:var(--land);
+    cursor:pointer;text-align:center;box-shadow:0 2px 7px rgba(40,60,40,.10);transition:transform .18s,background .3s,border-color .3s;
+    font-family:inherit;-webkit-appearance:none;appearance:none}
+  #worldmap .region:hover{background:var(--land-h);transform:translateY(-3px)}
+  #worldmap .region:active{transform:translateY(0)}
+  #worldmap .region.explored{background:var(--primary-l);border-color:var(--primary-l)}
+  #worldmap .region.done{background:var(--primary);border-color:var(--primary-d)}
+  #worldmap .region.pulse{animation:pulse .5s}
+  @keyframes pulse{0%{filter:brightness(1.55)}100%{filter:brightness(1)}}
+  #worldmap .region .remo{font-size:34px;line-height:1}
+  #worldmap .region .rnm{font:800 15.5px "Malgun Gothic",sans-serif;color:#20331d;letter-spacing:-.2px}
+  #worldmap .region.explored .rnm,#worldmap .region.done .rnm{color:#fff}
+  #worldmap .region .rbadge{font-size:11.5px;font-weight:800;padding:2px 10px;border-radius:999px;background:#fff;color:var(--primary-d)}
+  #worldmap .region.explored .rbadge{background:#eafaef;color:var(--primary-d)}
+  #worldmap .region.done .rbadge{background:var(--gold);color:#4a3608}
+  #worldmap .region .rchk{position:absolute;top:6px;right:9px;font-size:19px;line-height:1}
+  @media(max-width:680px){#worldmap{grid-template-columns:repeat(2,1fr);gap:8px}
+    #worldmap .region{min-height:104px}#worldmap .region .remo{font-size:30px}}
+  .mapstat{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:var(--sub);margin:10px 2px 4px}
+  .progress{height:9px;background:#e6ede5;border-radius:99px;overflow:hidden;margin:4px 0 6px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:width .4s}
+  #regionPanel{margin-top:12px}
+  .panelhead{font-weight:800;font-size:16px;color:var(--primary-d);margin:8px 0 8px;display:flex;align-items:center;gap:8px}
+  .issue{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start;background:#fff;transition:.25s}
+  .issue.got{border-color:var(--primary);background:#eef6ef}
+  .issue .emo{font-size:26px;line-height:1}
+  .issue .body{flex:1}
+  .issue .ty{font-weight:800;font-size:14.5px}
+  .issue .ds{font-size:13px;color:var(--sub);margin-top:2px}
+  .issue .col{border:1.5px solid var(--primary);background:#fff;color:var(--primary-d);border-radius:10px;padding:7px 10px;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .issue.got .col{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .empty{color:var(--sub);font-size:14px;background:#f6faf6;border:1px dashed var(--line);border-radius:12px;padding:20px;text-align:center}
+  /* 미션 */
+  .mission-scenario{background:#eef4ee;border:1px solid #cfe3d4;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+  .opts button:disabled{opacity:.9;cursor:default}
+  .opts button.picked-good{border-color:var(--primary);background:#e7f4ec}
+  .opts button.picked-mid{border-color:var(--gold);background:#fbf3df}
+  .opts button.picked-bad{border-color:var(--terra);background:#f7e9e2}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#eef4ee;color:var(--ink)}
+  .mnav{display:flex;justify-content:flex-end;margin-top:14px}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e9efe8;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅰ 인권 보장과 헌법 · 세계 인권 문제</div>
+    <h1>🌍 세계 인권 문제 지도 탐험</h1>
+    <p>지구 어딘가에선 지금 이 순간에도 학교 대신 공장으로 향하는 아이가 있다. 세계 인권 지도를 열어, 문제와 그것을 푸는 손을 이어 보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="map">2. 지도 탐험</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- 1. 개념 -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>인권은 모두의 것, 그리고 세계의 과제</h2>
+      <p class="lead"><b>인권</b>은 사람이라면 누구나 태어나면서부터 당연히 누리는 기본적 권리다. 인권은 특정 국가만의 문제가 아니라 <b>온 인류가 함께 지켜야 할 보편 과제</b>다.</p>
+      <div class="grid2">
+        <div class="concept">
+          <h3>🕊️ 인권의 특성</h3>
+          <span class="pill">천부성 — 태어나면서 주어짐</span>
+          <span class="pill">보편성 — 모든 사람이 누림</span>
+          <span class="pill">불가침성 — 함부로 침해 못 함</span>
+          <span class="pill">항구성 — 영원히 보장됨</span>
+        </div>
+        <div class="concept">
+          <h3>📜 세계인권선언(1948)</h3>
+          제2차 세계대전의 참상 이후 국제연합(UN)이 채택한 선언. "모든 인간은 태어날 때부터 <b>자유롭고 평등</b>하다"는 원칙을 세계 공통의 기준으로 삼았다.
+        </div>
+      </div>
+
+      <h3>🌐 세계 곳곳의 인권 문제 유형</h3>
+      <div class="grid3">
+        <div class="feat"><div class="emo">🧒</div><div class="nm">아동노동</div><div class="ds">학교 대신 위험한 노동에 내몰림</div></div>
+        <div class="feat"><div class="emo">⛵</div><div class="nm">난민</div><div class="ds">분쟁·박해로 삶터를 잃고 피란</div></div>
+        <div class="feat"><div class="emo">⚔️</div><div class="nm">무력 분쟁</div><div class="ds">전쟁 속 민간인 피해</div></div>
+        <div class="feat"><div class="emo">🍚</div><div class="nm">기아·빈곤</div><div class="ds">식량 부족과 아동 영양실조</div></div>
+        <div class="feat"><div class="emo">⚖️</div><div class="nm">차별</div><div class="ds">인종·성·소수자에 대한 차별</div></div>
+        <div class="feat"><div class="emo">🗣️</div><div class="nm">표현의 자유</div><div class="ds">언론·집회의 자유 제약</div></div>
+      </div>
+
+      <h3>🤝 누가 함께 해결할까 — 해결 주체·수단</h3>
+      <div class="grid3">
+        <div class="feat"><div class="emo">🇺🇳</div><div class="nm">국제연합(UN)</div><div class="ds">세계인권선언·인권이사회 등 국제 규범</div></div>
+        <div class="feat"><div class="emo">🏛️</div><div class="nm">국제법·ICC</div><div class="ds">전쟁범죄 등 처벌, 국제형사재판소</div></div>
+        <div class="feat"><div class="emo">💚</div><div class="nm">국제 NGO</div><div class="ds">감시·구호·캠페인(앰네스티 등)</div></div>
+        <div class="feat"><div class="emo">🧑‍🤝‍🧑</div><div class="nm">UNHCR·ILO</div><div class="ds">난민 보호, 노동·아동노동 기준</div></div>
+        <div class="feat"><div class="emo">🌱</div><div class="nm">세계시민</div><div class="ds">관심·연대·후원·윤리적 소비</div></div>
+        <div class="feat"><div class="emo">📢</div><div class="nm">여론·연대</div><div class="ds">서명·모금·목소리 내기</div></div>
+      </div>
+      <p class="note">※ 이 교구는 특정 국가를 지목하지 않고 <b>권역(지역)과 문제 유형</b>으로 일반화해 다룹니다.</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 모둠마다 권역을 하나씩 맡겨 탐험시키고, 그 권역의 인권 이슈와 해결 주체를 짝지어 발표하게 하면 지구촌 전체가 한 판에 채워집니다.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('map')">지도 탐험 시작 →</button></div>
+    </div>
+  </section>
+
+  <!-- 2. 지도 탐험 -->
+  <section id="tab-map">
+    <div class="card">
+      <h2><span class="dot"></span>세계 인권 지도를 탐험하자</h2>
+      <p class="lead">권역을 <b>탭</b>하면 그 땅에서 벌어지는 인권 이슈 카드가 펼쳐진다. 카드를 하나씩 <b>수집</b>할수록 잿빛 대륙이 초록으로 되살아난다.</p>
+      <div class="mapwrap">
+        <div class="maptip">🌍 6개 권역을 눌러 인권 이슈를 탐험하세요</div>
+        <div id="worldmap" role="group" aria-label="세계 권역 지도"></div>
+      </div>
+      <div class="mapstat">
+        <span id="statRegion">탐험한 권역 0/6</span>
+        <span id="statIssue">수집한 이슈 카드 0/14</span>
+      </div>
+      <div class="progress"><i id="mapProg"></i></div>
+      <div id="regionPanel">
+        <div class="empty">👆 위 지도에서 권역을 눌러 인권 이슈를 탐험해 보세요.</div>
+      </div>
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="resetMap()">탐험 초기화</button>
+        <button class="btn primary" onclick="go('mission')">매칭 미션으로 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 미션 -->
+  <section id="tab-mission">
+    <div class="card">
+      <h2><span class="dot"></span>인권 미션 — 문제와 해결 주체 잇기</h2>
+      <p class="lead">인권 문제 상황에 <b>가장 알맞은 해결 주체·수단</b>을 골라 보자. 마지막 문항은 세계시민의 <b>인권 감수성</b>을 확인한다.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 결과 -->
+  <section id="tab-result">
+    <div class="card">
+      <h2><span class="dot"></span>나의 세계시민 인권 리포트</h2>
+      <p class="lead">이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1040"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <a href="#" onclick="return openPNG()" class="note" style="align-self:center">📱 저장이 안 되면 여기(새 탭)</a>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅰ 인권 보장과 헌법 · 세계 인권 문제와 해결 주체 · 세계인권선언·UN·NGO·세계시민 · 단일 HTML · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+
+/* ===== 데이터 ===== */
+const REGIONS=[
+  {key:'na',nm:'북아메리카',emo:'🌎'},
+  {key:'la',nm:'라틴아메리카',emo:'🌴'},
+  {key:'eu',nm:'유럽',emo:'🏰'},
+  {key:'af',nm:'아프리카',emo:'🌍'},
+  {key:'me',nm:'중동',emo:'🕌'},
+  {key:'ap',nm:'아시아·태평양',emo:'🌏'}
+];
+
+/* 이슈 카드: 특정 국가 비지목, 권역·유형 일반화 */
+const ISSUES={
+  na:[
+    {id:'na1',emo:'⚖️',ty:'소수인종 차별',ds:'제도·일상 속 인종차별과 혐오, 평등권 침해.'},
+    {id:'na2',emo:'🚸',ty:'이주민·난민 인권',ds:'국경을 넘는 이주민과 이주 아동의 보호 문제.'}
+  ],
+  la:[
+    {id:'la1',emo:'🌿',ty:'원주민 권리',ds:'개발 과정에서 토지·문화·환경을 지킬 원주민의 권리.'},
+    {id:'la2',emo:'🧒',ty:'빈곤과 아동노동',ds:'빈곤 가정 아동이 학교 대신 노동에 내몰림.'}
+  ],
+  eu:[
+    {id:'eu1',emo:'⛵',ty:'난민 수용',ds:'대규모 난민 유입에 대한 보호와 수용 책임 갈등.'},
+    {id:'eu2',emo:'🤝',ty:'이주민·소수자 차별',ds:'이민자·종교·성소수자에 대한 차별과 혐오.'}
+  ],
+  af:[
+    {id:'af1',emo:'🍚',ty:'기아·빈곤',ds:'식량 위기 속 아동 영양실조와 생존권 위협.'},
+    {id:'af2',emo:'⛏️',ty:'아동·강제 노동',ds:'광산·농장에서의 아동노동과 강제노동.'},
+    {id:'af3',emo:'⚔️',ty:'분쟁과 실향',ds:'내전으로 삶터를 잃고 국경을 넘는 난민.'}
+  ],
+  me:[
+    {id:'me1',emo:'🕊️',ty:'무력 분쟁',ds:'전쟁 속 민간인 피해와 생명권 침해.'},
+    {id:'me2',emo:'♀️',ty:'여성 인권',ds:'교육·사회 참여에서의 성차별과 제약.'}
+  ],
+  ap:[
+    {id:'ap1',emo:'🗣️',ty:'표현의 자유',ds:'언론·집회의 자유가 제약되는 문제.'},
+    {id:'ap2',emo:'🏭',ty:'노동 인권',ds:'저임금·장시간 노동과 이주노동자 인권.'},
+    {id:'ap3',emo:'📚',ty:'교육받을 권리',ds:'지역·성별에 따른 교육 기회의 격차.'}
+  ]
+};
+const TOTAL_ISSUES=Object.values(ISSUES).reduce((s,a)=>s+a.length,0);
+
+const explored=new Set();
+const collected=new Set();
+let curRegion=null;
+
+/* ===== 지도 그리기(권역 타일) ===== */
+function buildMap(){
+  const c=el('worldmap');
+  c.innerHTML='';
+  REGIONS.forEach(r=>{
+    const g=document.createElement('button');
+    g.type='button';
+    g.className='region'; g.dataset.key=r.key;
+    g.setAttribute('aria-label',r.nm+' 권역 탐험');
+    g.innerHTML='<span class="rchk" data-chk="'+r.key+'"></span>'+
+      '<span class="remo">'+r.emo+'</span>'+
+      '<span class="rnm">'+r.nm+'</span>'+
+      '<span class="rbadge">탐험</span>';
+    g.addEventListener('click',()=>exploreRegion(r.key));
+    c.appendChild(g);
+  });
+}
+function regionEl(key){ return el('worldmap').querySelector('.region[data-key="'+key+'"]'); }
+
+function exploreRegion(key){
+  curRegion=key;
+  explored.add(key);
+  const g=regionEl(key);
+  g.classList.add('explored','pulse');
+  const bd=g.querySelector('.rbadge'); if(bd && !g.classList.contains('done')) bd.textContent='탐험 중';
+  setTimeout(()=>g.classList.remove('pulse'),500);
+  renderPanel(key);
+  updateMapStat();
+}
+function renderPanel(key){
+  const r=REGIONS.find(x=>x.key===key);
+  const list=ISSUES[key];
+  el('regionPanel').innerHTML=
+    '<div class="panelhead">📍 '+r.nm+' <span class="pill">이슈 '+list.length+'개</span></div>'+
+    list.map(it=>{
+      const got=collected.has(it.id);
+      return '<div class="issue'+(got?' got':'')+'" id="iss_'+it.id+'">'+
+        '<div class="emo">'+it.emo+'</div>'+
+        '<div class="body"><div class="ty">'+it.ty+'</div><div class="ds">'+it.ds+'</div></div>'+
+        '<button class="col" onclick="collectIssue(\''+it.id+'\',\''+key+'\')">'+(got?'✓ 수집됨':'수집 +')+'</button>'+
+      '</div>';
+    }).join('');
+}
+function collectIssue(id,key){
+  collected.add(id);
+  const box=el('iss_'+id);
+  if(box){ box.classList.add('got'); box.querySelector('.col').textContent='✓ 수집됨'; }
+  // 권역의 모든 이슈 수집 완료 시 지도 완성
+  const all=ISSUES[key].every(it=>collected.has(it.id));
+  if(all){
+    const g=regionEl(key);
+    g.classList.add('done');
+    g.querySelector('.rchk[data-chk="'+key+'"]').textContent='✓';
+    const bd=g.querySelector('.rbadge'); if(bd) bd.textContent='완료';
+  }
+  updateMapStat();
+}
+function updateMapStat(){
+  el('statRegion').textContent='탐험한 권역 '+explored.size+'/'+REGIONS.length;
+  el('statIssue').textContent='수집한 이슈 카드 '+collected.size+'/'+TOTAL_ISSUES;
+  el('mapProg').style.width=(collected.size/TOTAL_ISSUES*100)+'%';
+}
+function resetMap(){
+  explored.clear(); collected.clear(); curRegion=null;
+  buildMap(); updateMapStat();
+  el('regionPanel').innerHTML='<div class="empty">👆 위 지도에서 권역을 눌러 인권 이슈를 탐험해 보세요.</div>';
+}
+
+/* ===== 미션(매칭 + 감수성) ===== */
+const MISSIONS=[
+  {emoji:'⛏️',txt:'한 개발도상 권역에서 어린이들이 학교 대신 광산·농장의 <b>위험한 노동</b>에 동원된다. 아동노동 기준을 세우고 감시할 <b>국제기구</b>는?',
+   opts:[['국제노동기구(ILO) — 노동·아동노동 국제 기준',2,'정답! ILO는 노동권과 아동노동 금지 기준을 만들어 세계 노동 인권을 보호한다.'],
+         ['유엔난민기구(UNHCR)',0,'UNHCR은 난민 보호 기구다. 아동노동은 노동 기준을 다루는 ILO가 핵심.'],
+         ['국제 NGO의 감시·구호',1,'좋은 연대! NGO도 큰 역할을 하지만, 노동 "기준"을 만드는 국제기구는 ILO다.']]},
+  {emoji:'⛵',txt:'분쟁을 피해 국경을 넘은 사람들이 <b>난민</b>이 되어 보호가 필요하다. 난민을 직접 보호·지원하는 UN 기구는?',
+   opts:[['유엔난민기구(UNHCR)',2,'정답! UNHCR은 난민의 보호·정착·귀환을 돕는 UN 전문기구다.'],
+         ['국제형사재판소(ICC)',0,'ICC는 전쟁범죄 등을 처벌하는 곳. 난민 보호는 UNHCR의 몫이다.'],
+         ['세계시민의 후원',1,'따뜻한 마음! 후원도 힘이 되지만, 난민 보호 전담 기구는 UNHCR이다.']]},
+  {emoji:'⚔️',txt:'무력 분쟁 중 <b>민간인 학살 등 전쟁범죄</b>가 벌어졌다. 개인의 중대한 국제 범죄를 <b>처벌</b>할 수 있는 것은?',
+   opts:[['국제법·국제형사재판소(ICC)',2,'정답! 전쟁범죄·인도에 반한 죄는 국제법과 ICC를 통해 처벌을 물을 수 있다.'],
+         ['국제노동기구(ILO)',0,'ILO는 노동 문제 기구다. 전쟁범죄 처벌은 국제법·ICC의 영역.'],
+         ['국제 NGO의 캠페인',1,'NGO는 진상 규명·여론을 이끌지만, "처벌"의 근거는 국제법·ICC다.']]},
+  {emoji:'🍚',txt:'식량 위기 권역에서 <b>아동 영양실조</b>가 심각하다. 굶주리는 사람들에게 <b>긴급 구호</b>를 펼치는 주체로 가장 알맞은 것은?',
+   opts:[['국제기구·국제 NGO의 구호 활동',2,'정답! UN 산하 구호기구와 세이브더칠드런 같은 NGO가 식량·의료 긴급 구호를 편다.'],
+         ['국제형사재판소(ICC)',0,'ICC는 처벌 기관이라 구호와는 거리가 있다.'],
+         ['세계인권선언 채택',1,'선언은 원칙을 세우지만, 당장의 굶주림은 구호 활동으로 해결해야 한다.']]},
+  {emoji:'⚖️',txt:'인종·성·소수자에 대한 <b>차별</b>은 어디서나 문제다. 모든 사람이 평등하다는 <b>보편 기준</b>의 근거가 되는 것은?',
+   opts:[['국제연합(UN)의 세계인권선언',2,'정답! 세계인권선언은 "모든 인간은 자유롭고 평등하다"는 보편 기준을 제시한다.'],
+         ['특정 한 국가의 국내법만',0,'국내법도 중요하지만, 차별은 세계 공통의 보편 기준(세계인권선언)으로 다뤄진다.'],
+         ['국제 NGO의 캠페인',1,'NGO 캠페인도 힘이 되지만, 보편 "기준"의 근거는 세계인권선언이다.']]},
+  {emoji:'🗣️',txt:'<b>표현의 자유</b>를 요구하다 부당하게 구금된 사람이 있다. 이런 양심수를 위해 감시·석방 캠페인·서명을 벌이는 주체는?',
+   opts:[['국제 인권 NGO(앰네스티 등)와 세계시민의 연대',2,'정답! 국제 인권 NGO는 감시·보고서·석방 캠페인으로, 시민은 서명·연대로 압력을 만든다.'],
+         ['국제노동기구(ILO)',0,'ILO는 노동 문제 담당. 표현의 자유 감시는 인권 NGO와 시민 연대가 앞장선다.'],
+         ['가만히 지켜보기',0,'무관심은 인권 침해를 방치한다. 관심과 연대가 변화를 만든다.']]},
+  {emoji:'🌱',txt:'"먼 나라의 인권 문제, 나와 상관있을까?" — 세계시민으로서 가장 성숙한 <b>인권 감수성</b>은?',
+   opts:[['인권은 보편적이므로 함께 관심 갖고 연대·행동한다',2,'멋져요! 인권의 보편성을 이해하고 세계시민으로서 연대하는 성숙한 감수성이다.'],
+         ['우리나라 일만 신경 쓰면 된다',0,'인권은 국경을 넘는 보편 가치다. 지구촌 문제에 무관심하면 감수성이 자라지 못한다.'],
+         ['안타깝지만 나는 할 수 있는 게 없다',1,'공감은 첫걸음! 하지만 서명·후원·윤리적 소비처럼 시민도 할 수 있는 일이 많다.']]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+' / '+MISSIONS.length+'</b><br>'+m.txt;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>'<button onclick="choose('+i+')">'+o[0]+'</button>').join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], pts=m.opts[i][1];
+  mChoice[mIdx]={i,pts};
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'picked-bad')); });
+  const icon= pts>=2?'🌟':pts===1?'💡':'🤔';
+  el('mFeedback').innerHTML='<div class="feedback">'+icon+' +'+pts+'점 · '+m.opts[i][2]+'</div>';
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  el('mNext').textContent=(mIdx===MISSIONS.length-1)?'결과 보기 →':'다음 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+
+/* ===== 결과 카드 ===== */
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+function sensType(pctv){
+  if(pctv>=0.9) return {t:'인권 지킴이 리더 🏅',d:'문제와 해결 주체를 정확히 잇고, 세계시민의 책임을 실천한다.'};
+  if(pctv>=0.7) return {t:'공감하는 세계시민 🤝',d:'인권을 보편 가치로 이해하고 연대할 줄 안다.'};
+  if(pctv>=0.5) return {t:'성장하는 감수성 🌱',d:'인권 감수성이 자라는 중. 조금만 더 관심을 기울여 보자.'};
+  return {t:'관심의 시작 💭',d:'세계 인권 문제에 눈뜨기 시작한 단계. 함께 배워 나가자.'};
+}
+function getBadges(pctv){
+  const b=[];
+  if(explored.size>=REGIONS.length) b.push('🗺️ 세계 탐험가');
+  if(collected.size>=TOTAL_ISSUES) b.push('📇 인권 기록가');
+  if(totalPts()===MISSIONS.length*2) b.push('🎯 매칭 마스터');
+  if(pctv>=0.8) b.push('🕊️ 인권 지킴이');
+  if(!b.length) b.push('🌱 첫걸음');
+  return b;
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const max=MISSIONS.length*2, tot=totalPts(), pctv=max?tot/max:0;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#3A7D44'); g.addColorStop(1,'#2b5e33');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#3A7D44'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌍 세계시민 인권 리포트', W/2, 122);
+  ctx.fillStyle='#5f6b60'; ctx.font='20px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅰ 인권 보장과 헌법 · 세계 인권 문제', W/2, 162);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1e2a1f'; ctx.font='bold 30px "Malgun Gothic",sans-serif'; ctx.fillText(name, W/2, 224);
+  // 점수 원
+  const cx=W/2, cy=356, r=98;
+  ctx.lineWidth=24; ctx.strokeStyle='#e6ede5'; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle= pctv>=0.8?'#3A7D44':(pctv>=0.5?'#e0a526':'#c9683d');
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*(pctv||0.001)); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1e2a1f'; ctx.font='bold 50px "Malgun Gothic",sans-serif'; ctx.fillText(tot+'', cx, cy+2);
+  ctx.fillStyle='#5f6b60'; ctx.font='19px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+34);
+  // 감수성 유형
+  const s=sensType(pctv);
+  ctx.fillStyle='#3A7D44'; ctx.font='bold 26px "Malgun Gothic",sans-serif'; ctx.fillText(s.t, W/2, cy+r+58);
+  ctx.fillStyle='#5f6b60'; ctx.font='17px "Malgun Gothic",sans-serif';
+  wrapText(ctx,s.d,W/2,cy+r+88,W-160,23);
+  // 탐험 요약
+  let y=cy+r+140;
+  ctx.fillStyle='#1e2a1f'; ctx.font='bold 21px "Malgun Gothic",sans-serif';
+  ctx.fillText('🗺️ 탐험한 권역 '+explored.size+'/'+REGIONS.length+' · 📇 이슈 카드 '+collected.size+'/'+TOTAL_ISSUES, W/2, y);
+  y+=44;
+  // 뱃지
+  ctx.fillStyle='#2b5e33'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('획득 뱃지', W/2, y); y+=30;
+  const badges=getBadges(pctv);
+  ctx.font='18px "Malgun Gothic",sans-serif';
+  badges.forEach(bd=>{ ctx.fillStyle='#3A7D44'; ctx.fillText(bd, W/2, y); y+=30; });
+  // 미션 요약
+  y+=6; ctx.textAlign='left'; ctx.font='17px "Malgun Gothic",sans-serif';
+  const labels=['아동노동·ILO','난민·UNHCR','전쟁범죄·국제법','기아·구호','차별·인권선언','표현의자유·NGO','세계시민 감수성'];
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i];
+    ctx.fillStyle='#1e2a1f'; ctx.fillText(MISSIONS[i].emoji+' '+labels[i], 92, y);
+    ctx.textAlign='right';
+    if(c){ ctx.fillStyle=c.pts>=2?'#3A7D44':(c.pts===1?'#e0a526':'#c9683d'); ctx.fillText('+'+c.pts+'점', W-92, y); }
+    else { ctx.fillStyle='#a9b0a5'; ctx.fillText('미완료', W-92, y); }
+    ctx.textAlign='left'; y+=32;
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#a9b0a5'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 세계 인권 문제 지도 탐험', W/2, H-58);
+}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(' '); let line=''; const lines=[];
+  words.forEach(w=>{ const test=line?line+' '+w:w;
+    if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=w; } else line=test; });
+  if(line) lines.push(line);
+  lines.forEach((ln,i)=>ctx.fillText(ln,x,y+i*lh));
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download='세계인권리포트_'+(el('studentName').value||'학생')+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+function openPNG(){ drawResult(); window.open(el('resultCanvas').toDataURL('image/png'),'_blank'); return false; }
+
+/* ===== 탭 ===== */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','map','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['map','mission','result'].forEach(t=>el('tab-'+t).classList.add('hide'));
+buildMap(); updateMapStat(); renderMission();
+</script>
+</body>
+</html>

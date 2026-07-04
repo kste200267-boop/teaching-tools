@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생애주기 금융·자산관리 시뮬레이터 · 통합사회2 Ⅲ 자산관리와 금융생활</title>
+<style>
+  :root{
+    --bg:#f3f6fb; --surface:#ffffff; --ink:#1b2634; --sub:#5b6b7c;
+    --primary:#3a5f8f; --primary-d:#27436a; --gold:#c8a24a; --gold-d:#a8842f;
+    --safe:#2e8b6f; --stock:#c0562f; --realty:#c8a24a;
+    --line:#e2e8f1; --ok:#2e8b6f; --warn:#c0562f;
+    --shadow:0 6px 20px rgba(20,40,70,.09);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;
+    background:radial-gradient(circle,rgba(200,162,74,.35),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.9;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:25px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.93}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:80px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#eaf1fa;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:#f7faff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  /* 자산 비교표 */
+  table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 6px;text-align:center}
+  table.cmp th{background:#eef3f9;color:var(--primary-d);font-weight:800}
+  table.cmp td.a{font-weight:800}
+  .chip{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+  /* 그래프 */
+  .graphwrap{position:relative;width:100%;max-width:560px;margin:0 auto}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+  .readout{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .stat{background:#f2f6fb;border-radius:12px;padding:10px 14px;text-align:center;min-width:104px}
+  .stat .lab{font-size:12px;color:var(--sub);font-weight:700}
+  .stat .val{font-size:21px;font-weight:800}
+  /* 점수 게이지(탭2) */
+  .scorebox{display:flex;align-items:center;gap:12px;background:#f7faff;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-top:12px}
+  .scorebox .big{font-size:30px;font-weight:800;color:var(--primary-d);min-width:52px;text-align:center}
+  .scorebar{flex:1}
+  .scorebar .track{height:12px;background:#e6ecf4;border-radius:99px;overflow:hidden}
+  .scorebar .track i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--primary),var(--gold));transition:width .4s}
+  .scorebar .glab{font-size:13px;font-weight:800;margin-top:4px;color:var(--gold-d)}
+  /* 몰빵 배지 */
+  .warnbadge{display:none;background:#fdece7;border:1px solid #f2c3b2;color:#a5401f;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-top:10px}
+  .warnbadge.on{display:block;animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,86,47,.3)}50%{box-shadow:0 0 0 6px rgba(192,86,47,0)}}
+  /* 단계 카드 */
+  .stage{background:#fbfcfe;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .stage-head{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--primary-d)}
+  .stage-head .mini{font-size:11.5px;font-weight:800;color:#fff;background:var(--warn);border-radius:8px;padding:2px 7px;display:none}
+  .stage-head .mini.on{display:inline-block}
+  .slider-row{margin:11px 0}
+  .slider-row label{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;margin-bottom:2px}
+  input[type=range]{width:100%;height:26px;accent-color:var(--primary)}
+  input.safe{accent-color:var(--safe)} input.stock{accent-color:var(--stock)} input.realty{accent-color:var(--realty)}
+  .allocbar{display:flex;height:26px;border-radius:8px;overflow:hidden;margin-top:8px;border:1px solid var(--line);font-size:11.5px;font-weight:800;color:#fff}
+  .allocbar span{display:flex;align-items:center;justify-content:center;min-width:0;transition:flex-basis .2s}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--gold);color:#3a2c07}
+  .btn.ghost{background:#eef2f7;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;color:var(--primary-d)}
+  .presets button:active{transform:scale(.96)}
+  /* 미션 */
+  .mission-scenario{background:#fbf6ea;border:1px solid #ecd9a8;border-radius:12px;padding:15px;font-size:15px;
+    animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .mission-scenario .emoji{font-size:28px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left;transition:.12s}
+  .opts button:hover{border-color:var(--primary)}
+  .opts button.sel{border-color:var(--primary);background:#eaf1fa;color:var(--primary-d)}
+  .opts button.best{border-color:var(--ok);background:#e7f6ef;color:#12805a}
+  .opts button.bad{border-color:var(--warn);background:#fdece7;color:#a5401f}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e7f6ef;color:#12805a}
+  .feedback.mid{background:#fbf3e0;color:#8a6a1a}
+  .feedback.no{background:#fdece7;color:#a5401f}
+  .progress{height:8px;background:#eef2f7;border-radius:99px;overflow:hidden;margin:10px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#eef2f7;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);background:#f2f6fb;border-radius:8px;padding:9px 11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅲ 시장경제와 지속가능발전 · 3-3 자산관리와 금융생활</div>
+    <h1>📊 생애주기 금융·자산관리 시뮬레이터</h1>
+    <p>지금 스무 살의 네가 내리는 저축·투자 선택이, 예순의 네 통장을 결정한다. <b>복리·물가·위험</b>을 켠 채 청년→중년→노년, 오늘 하루로 50년을 살아보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="design">2. 설계</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>자산 관리의 3원칙</h2>
+      <p class="lead">모든 금융 자산은 <b>안전성·수익성·유동성</b>으로 평가한다. 셋은 서로 <b>상충</b>한다 — 고수익은 대개 고위험이다.</p>
+      <div class="grid3">
+        <div class="concept"><h3>🛡️ 안전성</h3>원금을 잃지 않을 가능성. 예·적금은 예금자보호로 <b>높고</b>, 주식은 <b>낮다</b>.</div>
+        <div class="concept"><h3>📈 수익성</h3>기대할 수 있는 이익. 주식이 <b>높고</b> 예금이 <b>낮다</b>. 높을수록 위험도 커진다.</div>
+        <div class="concept"><h3>💧 유동성</h3>필요할 때 <b>현금화</b>하는 속도. 예금은 즉시, 부동산은 <b>느리다</b>.</div>
+      </div>
+
+      <h3>3대 금융 자산 비교</h3>
+      <table class="cmp">
+        <tr><th>자산</th><th>기대수익</th><th>위험(σ)</th><th>안전성</th><th>유동성</th></tr>
+        <tr><td class="a"><span class="chip" style="background:var(--safe)"></span>예·적금</td><td>3%</td><td>1%</td><td>★★★</td><td>★★★</td></tr>
+        <tr><td class="a"><span class="chip" style="background:var(--stock)"></span>주식·펀드</td><td>7%</td><td>20%</td><td>★</td><td>★★</td></tr>
+        <tr><td class="a"><span class="chip" style="background:var(--realty)"></span>부동산</td><td>5%</td><td>10%</td><td>★★</td><td>★</td></tr>
+      </table>
+
+      <div class="grid2" style="margin-top:14px">
+        <div class="concept"><h3>🥚 분산 투자</h3>"달걀을 한 바구니에 담지 마라." 여러 자산에 나눠 담으면 <b>위험(σ)이 줄어든다</b>. 한 자산에 <b>몰빵</b>하면 위험이 커진다.</div>
+        <div class="concept"><h3>⏳ 복리 & 물가</h3>이자가 이자를 낳는 <b>복리</b>는 시간이 길수록 강력하다. 반대로 <b>물가(연 2.5%)</b>는 돈의 <b>실질 가치</b>를 갉아먹는다.</div>
+      </div>
+
+      <h3>생애 주기별 재무 과제</h3>
+      <div>
+        <span class="pill">🌱 청년: 소득 시작·<b>종잣돈</b> 저축·적극 투자</span>
+        <span class="pill">🏢 중년: 소득 정점·<b>주택/교육</b>·분산 강화</span>
+        <span class="pill">🌳 노년: 소득 감소·<b>안전자산</b>·적정 인출</span>
+      </div>
+      <div class="note">👩‍🏫 이렇게 쓰세요: 이 탭으로 3원칙을 함께 짚은 뒤, 설계 탭에서 짝끼리 프리셋을 바꿔 재무건강 점수를 겨루게 하고, 미션 6개를 풀어 결과 카드를 제출하면 한 차시가 자연스럽게 완성됩니다.</div>
+      <div class="note">⚠️ 이 교구의 수익률·위험 값은 <b>교육용 단순 가정값</b>으로 실제 금융상품과 다릅니다. 특정 상품·투자 권유가 아닙니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('design')">내 생애 자산을 설계하러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 설계 ===== -->
+  <section id="tab-design" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>생애 자산곡선 설계</h2>
+      <p class="lead">x축=나이(25→79세), y축=<b>실질자산</b>(물가 반영). 파란 밴드는 위험(±1σ)이며, <b>넓을수록 불확실</b>하다.</p>
+      <div class="graphwrap"><canvas id="curve" width="560" height="360"></canvas></div>
+      <div class="readout">
+        <div class="stat"><div class="lab">79세 실질자산</div><div class="val" id="rFinal">–</div></div>
+        <div class="stat"><div class="lab">평균 위험도 σ</div><div class="val" id="rRisk" style="font-size:16px;padding-top:3px">–</div></div>
+        <div class="stat"><div class="lab">유동성(예금비중)</div><div class="val" id="rLiquid" style="font-size:16px;padding-top:3px">–</div></div>
+      </div>
+
+      <div class="scorebox">
+        <div class="big" id="scoreNum">0</div>
+        <div class="scorebar">
+          <div class="track"><i id="scoreBar"></i></div>
+          <div class="glab" id="scoreGrade">재무건강 점수</div>
+        </div>
+      </div>
+      <div class="warnbadge" id="warnBadge"></div>
+
+      <h3>프리셋</h3>
+      <div class="presets">
+        <button onclick="applyPreset('safe')">🛡️ 안전형</button>
+        <button onclick="applyPreset('balance')">⚖️ 균형형</button>
+        <button onclick="applyPreset('aggress')">🚀 공격형</button>
+        <button onclick="applyPreset('reset')">↺ 초기화</button>
+      </div>
+
+      <div id="stageBox"></div>
+
+      <div class="note">배분 슬라이더 3종(예금·주식·부동산)은 자동으로 <b>합 100%</b>로 정규화됩니다. 한 자산 비중이 70% 이상이면 <b>몰빵 경고</b>가 뜹니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">생애 사건 미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>생애 사건 미션 (6)</h2>
+      <p class="lead">살면서 마주치는 6가지 재무 사건. 3원칙을 근거로 최선을 골라보자. (선택마다 0~2점)</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="graphwrap" style="margin-top:14px"><canvas id="mcurve" width="520" height="230"></canvas></div>
+      <div class="mnav">
+        <button class="btn ghost hide" id="mPrev" onclick="prevMission()">← 이전</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>생애 자산관리 리포트</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="1000"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="openPNG()">📱 저장이 안 되면 여기(새 탭)</button>
+        <button class="btn ghost" onclick="go('design')">설계 다시</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅲ 시장경제와 지속가능발전 · 자산관리와 금융생활 [10통사2-06] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    수익률·위험은 교육용 가정값이며 특정 상품·투자 권유가 아닙니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+
+/* ============ 자산·단계 데이터 ============ */
+const ASSETS = {
+  safe:  {name:'예·적금', r:0.03, sig:0.01, color:'#2e8b6f'},
+  stock: {name:'주식',    r:0.07, sig:0.20, color:'#c0562f'},
+  realty:{name:'부동산',  r:0.05, sig:0.10, color:'#c8a24a'}
+};
+const AK = ['safe','stock','realty'];
+const INFL = 0.025;               // 물가 2.5%
+const TARGET = 30000;            // 노후 목표 3억(만원)
+
+function defStages(){
+  return [
+    {key:'young', name:'청년', emoji:'🌱', a0:25, a1:39, years:15, mode:'save',
+     income:250, rate:40, incMin:150, incMax:400, alloc:{safe:30,stock:45,realty:25}},
+    {key:'mid',   name:'중년', emoji:'🏢', a0:40, a1:59, years:20, mode:'save',
+     income:450, rate:35, incMin:250, incMax:700, alloc:{safe:40,stock:30,realty:30}},
+    {key:'old',   name:'노년', emoji:'🌳', a0:60, a1:79, years:20, mode:'draw',
+     income:150, rate:5,  incMin:80,  incMax:300, alloc:{safe:60,stock:15,realty:25}}
+  ];
+}
+let STAGES = defStages();
+const RECSIG = {young:0.16, mid:0.11, old:0.07}; // 연령대 권장 위험 상한
+
+/* ============ 정규화·가중치 ============ */
+function weights(st){
+  const s=st.alloc, sum=(s.safe+s.stock+s.realty)||1;
+  return {safe:s.safe/sum, stock:s.stock/sum, realty:s.realty/sum};
+}
+function stageOf(age){ return age<=39?STAGES[0] : age<=59?STAGES[1] : STAGES[2]; }
+
+/* ============ 시뮬레이션 (연 복리 55년) ============ */
+function simulate(){
+  let mid=0, up=0, dn=0;
+  const pts=[];
+  for(let age=25; age<=79; age++){
+    const st=stageOf(age), w=weights(st);
+    const r = w.safe*ASSETS.safe.r + w.stock*ASSETS.stock.r + w.realty*ASSETS.realty.r;
+    const sig = Math.sqrt(w.safe*w.safe*ASSETS.safe.sig*ASSETS.safe.sig
+                        + w.stock*w.stock*ASSETS.stock.sig*ASSETS.stock.sig
+                        + w.realty*w.realty*ASSETS.realty.sig*ASSETS.realty.sig);
+    let S;
+    if(st.mode==='draw'){ S = st.income*12 - mid*(st.rate/100); } // 연금 - 인출액
+    else { S = st.income*12*(st.rate/100); }                     // 저축액
+    mid = Math.max(0,(mid + S)*(1+r));
+    up  = Math.max(0,(up  + S)*(1+r+sig));
+    dn  = Math.max(0,(dn  + S)*(1+r-sig));
+    const t=age-25, disc=Math.pow(1+INFL,t);
+    pts.push({age, mid:mid/disc, up:up/disc, dn:dn/disc, nominal:mid});
+  }
+  return pts;
+}
+
+/* ============ 재무건강 산식 (0-100) ============ */
+function metrics(){
+  const pts=simulate();
+  const finalReal=pts[pts.length-1].mid;
+  let tot=0, wsafe=0, hhi=0, sigAvg=0;
+  const stInfo=[]; const concentrated=[];
+  STAGES.forEach(st=>{
+    const w=weights(st); tot+=st.years;
+    wsafe += w.safe*st.years;
+    hhi   += (w.safe*w.safe+w.stock*w.stock+w.realty*w.realty)*st.years;
+    const sig=Math.sqrt(w.safe*w.safe*ASSETS.safe.sig*ASSETS.safe.sig
+                      + w.stock*w.stock*ASSETS.stock.sig*ASSETS.stock.sig
+                      + w.realty*w.realty*ASSETS.realty.sig*ASSETS.realty.sig);
+    sigAvg += sig*st.years;
+    let over=null;
+    AK.forEach(k=>{ if(w[k]>=0.70) over=ASSETS[k].name; });
+    if(over) concentrated.push(st.emoji+' '+st.name+'('+over+')');
+    stInfo.push({key:st.key, sig, over});
+  });
+  const avgSafe=wsafe/tot, avgHHI=hhi/tot, avgSig=sigAvg/tot;
+
+  // 배점
+  const retire = Math.min(1, finalReal/TARGET)*40;
+  const diversify = Math.max(0, Math.min(1,(1-avgHHI)/(1-1/3)))*25;
+  const liquid = Math.min(1, avgSafe/0.35)*20;
+  let riskfit=0;
+  stInfo.forEach((s,i)=>{
+    const rec=RECSIG[STAGES[i].key], ratio=s.sig/rec;
+    const ok = ratio<=1 ? 1 : Math.max(0, 1-(ratio-1));
+    riskfit += ok*(STAGES[i].years/tot);
+  });
+  riskfit*=15;
+  const total = Math.max(0, Math.min(100, retire+diversify+liquid+riskfit));
+
+  let grade, gicon;
+  if(total>=90){grade='자산관리 마스터'; gicon='🏆';}
+  else if(total>=70){grade='균형 설계자'; gicon='📊';}
+  else if(total>=50){grade='성장하는 투자자'; gicon='🌱';}
+  else {grade='다시 도전'; gicon='💪';}
+
+  return {pts, finalReal, avgSafe, avgHHI, avgSig,
+          retire, diversify, liquid, riskfit, total, grade, gicon, concentrated};
+}
+
+/* ============ 캔버스 유틸 ============ */
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+function niceCeil(v){
+  if(v<=0) return 1;
+  const e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e;
+  const n = f<=1?1 : f<=2?2 : f<=5?5 : 10;
+  return n*e;
+}
+// 생애 자산곡선을 임의 ctx의 박스 B={x,y,w,h}에 그림
+function plotCurve(ctx, pts, B, o){
+  o=o||{};
+  const reveal=o.reveal==null?1:o.reveal;
+  const fs=o.fs||12;
+  let maxV=1; pts.forEach(p=>{ maxV=Math.max(maxV, o.band?p.up:p.mid); });
+  const top=niceCeil(maxV);
+  const a0=25, a1=79;
+  const X=a=> B.x + (a-a0)/(a1-a0)*B.w;
+  const Y=v=> B.y + B.h - Math.min(v,top)/top*B.h;
+  // 단계 배경
+  if(o.stages){
+    const seg=[[25,39,'rgba(46,139,111,.07)'],[40,59,'rgba(58,95,143,.07)'],[60,79,'rgba(200,162,74,.10)']];
+    seg.forEach(s=>{ ctx.fillStyle=s[2]; ctx.fillRect(X(s[0]), B.y, X(s[1])-X(s[0]), B.h); });
+  }
+  // 격자 + y축 라벨(억)
+  ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1; ctx.fillStyle='#8896a6';
+  ctx.font=fs+'px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let g=0; g<=4; g++){
+    const v=top*g/4, y=Y(v);
+    ctx.beginPath(); ctx.moveTo(B.x,y); ctx.lineTo(B.x+B.w,y); ctx.stroke();
+    ctx.fillText((v/10000).toFixed(v>=10000?1:2)+'억', B.x-6, y);
+  }
+  // 축
+  ctx.strokeStyle='#c9d4df'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(B.x,B.y); ctx.lineTo(B.x,B.y+B.h); ctx.lineTo(B.x+B.w,B.y+B.h); ctx.stroke();
+  // x 라벨
+  ctx.fillStyle='#5b6b7c'; ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.font='bold '+fs+'px sans-serif';
+  [['🌱25',25],['🏢40',40],['🌳60',60],['79',79]].forEach(t=>{
+    ctx.fillText(t[0], X(t[1]), B.y+B.h+5);
+  });
+  const n=Math.max(2, Math.floor(pts.length*reveal));
+  // 위험 밴드
+  if(o.band){
+    ctx.beginPath();
+    for(let i=0;i<n;i++){ const p=pts[i]; const x=X(p.age),y=Y(p.up); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    for(let i=n-1;i>=0;i--){ const p=pts[i]; ctx.lineTo(X(p.age),Y(p.dn)); }
+    ctx.closePath(); ctx.fillStyle='rgba(58,95,143,.14)'; ctx.fill();
+  }
+  // 중앙(기대) 라인
+  ctx.beginPath();
+  for(let i=0;i<n;i++){ const p=pts[i]; const x=X(p.age),y=Y(p.mid); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+  ctx.strokeStyle='#3a5f8f'; ctx.lineWidth=o.compact?2.6:3.4; ctx.lineJoin='round'; ctx.stroke();
+  // 끝점 마커
+  const last=pts[n-1];
+  ctx.fillStyle='#c8a24a'; ctx.beginPath(); ctx.arc(X(last.age),Y(last.mid), o.compact?4:5.5, 0, 7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+}
+
+/* ============ 탭2 설계 UI ============ */
+function buildStages(){
+  el('stageBox').innerHTML = STAGES.map(st=>{
+    const rateLab = st.mode==='draw' ? '인출률' : '저축률';
+    const rateMax = st.mode==='draw' ? 12 : 70;
+    return `
+    <div class="stage" data-k="${st.key}">
+      <div class="stage-head">${st.emoji} ${st.name} (${st.a0}–${st.a1}세)
+        <span class="mini" id="mini-${st.key}">몰빵 위험</span></div>
+      <div class="slider-row">
+        <label><span>월 ${st.mode==='draw'?'연금':'수입'}</span><span><b id="v-${st.key}-income">${st.income}</b>만원</span></label>
+        <input type="range" id="${st.key}-income" data-k="${st.key}" data-f="income" min="${st.incMin}" max="${st.incMax}" step="10" value="${st.income}">
+      </div>
+      <div class="slider-row">
+        <label><span>${rateLab}</span><span><b id="v-${st.key}-rate">${st.rate}</b>%</span></label>
+        <input type="range" id="${st.key}-rate" data-k="${st.key}" data-f="rate" min="0" max="${rateMax}" value="${st.rate}">
+      </div>
+      <div class="slider-row">
+        <label><span style="color:var(--safe)">예·적금 배분</span><span><b id="v-${st.key}-safe">–</b>%</span></label>
+        <input type="range" class="safe" id="${st.key}-safe" data-k="${st.key}" data-f="safe" min="0" max="100" value="${st.alloc.safe}">
+      </div>
+      <div class="slider-row">
+        <label><span style="color:var(--stock)">주식·펀드 배분</span><span><b id="v-${st.key}-stock">–</b>%</span></label>
+        <input type="range" class="stock" id="${st.key}-stock" data-k="${st.key}" data-f="stock" min="0" max="100" value="${st.alloc.stock}">
+      </div>
+      <div class="slider-row">
+        <label><span style="color:var(--realty)">부동산 배분</span><span><b id="v-${st.key}-realty">–</b>%</span></label>
+        <input type="range" class="realty" id="${st.key}-realty" data-k="${st.key}" data-f="realty" min="0" max="100" value="${st.alloc.realty}">
+      </div>
+      <div class="allocbar" id="bar-${st.key}"></div>
+    </div>`;
+  }).join('');
+  el('stageBox').addEventListener('input', onStageInput);
+}
+function onStageInput(e){
+  const t=e.target; if(t.tagName!=='INPUT') return;
+  const st=STAGES.find(s=>s.key===t.dataset.k), f=t.dataset.f, v=+t.value;
+  if(f==='income'||f==='rate'){ st[f]=v; }
+  else { st.alloc[f]=v; }
+  sync(false);
+}
+function renderStageUI(){
+  STAGES.forEach(st=>{
+    const w=weights(st);
+    el('v-'+st.key+'-income').textContent=st.income;
+    el('v-'+st.key+'-rate').textContent=st.rate;
+    AK.forEach(k=>{ el('v-'+st.key+'-'+k).textContent=Math.round(w[k]*100); });
+    // 배분 바
+    el('bar-'+st.key).innerHTML = AK.map(k=>{
+      const p=w[k]*100;
+      return `<span style="flex:0 0 ${p}%;background:${ASSETS[k].color}">${p>=12?Math.round(p)+'%':''}</span>`;
+    }).join('');
+    // 몰빵 표시
+    const over = AK.some(k=>w[k]>=0.70);
+    el('mini-'+st.key).classList.toggle('on', over);
+  });
+}
+function drawDesignCurve(pts, reveal){
+  const cv=el('curve'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  plotCurve(ctx, pts, {x:52, y:14, w:cv._lw-52-14, h:cv._lh-14-34}, {band:true, stages:true, reveal});
+}
+let animTimer=null;
+function animateCurve(pts){
+  if(animTimer) clearInterval(animTimer);
+  let r=0;
+  animTimer=setInterval(()=>{
+    r+=0.06; if(r>=1){ r=1; clearInterval(animTimer); animTimer=null; }
+    drawDesignCurve(pts, r);
+  }, 24);
+}
+let lastMetrics=null;
+function sync(animated){
+  renderStageUI();
+  const m=metrics(); lastMetrics=m;
+  el('rFinal').textContent=(m.finalReal/10000).toFixed(2)+'억';
+  const sg = m.avgSig<0.05?'낮음 🟢' : m.avgSig<0.12?'보통 🟡' : '높음 🔴';
+  el('rRisk').textContent=sg+' ('+(m.avgSig*100).toFixed(0)+'%)';
+  const lq = m.avgSafe>=0.4?'높음' : m.avgSafe>=0.2?'보통':'낮음';
+  el('rLiquid').textContent=lq+' ('+(m.avgSafe*100).toFixed(0)+'%)';
+  el('scoreNum').textContent=Math.round(m.total);
+  el('scoreBar').style.width=m.total+'%';
+  el('scoreGrade').textContent=m.gicon+' '+m.grade+' · '+Math.round(m.total)+'점';
+  const wb=el('warnBadge');
+  if(m.concentrated.length){
+    wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>몰빵 위험!</b> '+m.concentrated.join(', ')+' — 한 자산 비중 70%↑. 위험(σ)이 커지고 분산도 점수가 깎입니다.';
+  } else { wb.classList.remove('on'); }
+  if(animated) animateCurve(m.pts); else drawDesignCurve(m.pts, 1);
+}
+function applyPreset(kind){
+  const P = {
+    safe:   {safe:70, stock:10, realty:20},
+    balance:{safe:40, stock:35, realty:25},
+    aggress:{safe:10, stock:70, realty:20}
+  };
+  if(kind==='reset'){ STAGES=defStages(); buildStages(); sync(true); return; }
+  const p=P[kind];
+  STAGES.forEach(st=>{ st.alloc={safe:p.safe, stock:p.stock, realty:p.realty}; });
+  // 슬라이더 값 반영
+  STAGES.forEach(st=>{ AK.forEach(k=>{ el(st.key+'-'+k).value=st.alloc[k]; }); });
+  sync(true);
+}
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {emoji:'💍', title:'결혼 자금 마련', desc:'청첩장을 돌렸다. 신혼집 보증금으로 <b>3,000만원</b>이 당장 필요한데, 어디서 꺼내 쓸까?',
+   opts:[
+     {t:'예·적금을 인출한다', pts:2},
+     {t:'주식을 지금 당장 급매한다', pts:1},
+     {t:'부동산을 급하게 팔아 현금화한다', pts:0}],
+   why:'✅ 정답은 <b>예·적금 인출</b>. 급전은 <b>유동성</b>이 핵심 — 예금은 손실 없이 즉시 현금화된다. 주식 급매는 손실 위험, 부동산은 유동성이 낮아 제때 못 판다.'},
+  {emoji:'🏠', title:'내 집 마련', desc:'전세 만기가 다가온다. 이참에 내 집으로 갈아타려는데, 자금 계획을 어떻게 세울까?',
+   opts:[
+     {t:'소득 대비 적정 대출 + 부동산 편입', pts:2},
+     {t:'전세를 유지하고 아무것도 안 한다', pts:1},
+     {t:'전 재산 + 최대 대출로 부동산에 몰빵', pts:0}],
+   why:'✅ 정답은 <b>적정 대출 + 부동산</b>. 실물자산은 인플레 방어에 좋지만, 무리한 대출 몰빵은 금리·집값 하락 시 <b>가계 파산 위험</b>. 감당 가능한 범위가 원칙이다.'},
+  {emoji:'💸', title:'갑작스런 실직', desc:'월요일 아침, 회사에서 갑자기 정리해고를 통보받았다. <b>6개월간 수입이 0</b> — 누가 이 겨울을 버틸까?',
+   opts:[
+     {t:'예금 3~6개월치 비상금이 준비돼 있다', pts:2},
+     {t:'주식을 손절해 생활비를 충당한다', pts:1},
+     {t:'비상금이 없어 카드빚·대출로 버틴다', pts:0}],
+   why:'✅ 정답은 <b>비상금(예금 3~6개월치)</b>. 유동성 높은 안전자산은 위기의 방패다. 하락장에 주식을 파는 건 손실 확정, 빚은 이자 부담을 키운다.'},
+  {emoji:'📈', title:'"이 주식 3배" 정보', desc:'오랜만에 만난 지인이 "곧 3배 뛴다"며 전 재산 <b>몰빵</b>을 권한다. 귀가 솔깃한데, 어떻게 할까?',
+   opts:[
+     {t:'분산 원칙을 지키고 거절하거나 소액만', pts:2},
+     {t:'여윳돈 일부만 넣어본다', pts:1},
+     {t:'예금까지 헐어 전액 몰빵한다', pts:0}],
+   why:'✅ 정답은 <b>분산 유지·거절/소액</b>. <b>고수익=고위험</b>이고 확실한 정보는 없다. 한 곳에 몰빵하면 σ가 급등해 큰 손실 구간에 노출된다.'},
+  {emoji:'🧾', title:'물가 급등', desc:'장바구니 물가가 확 뛰었다. <b>예금만</b> 쥔 사람의 돈은 실질가치가 어떻게 될까?',
+   opts:[
+     {t:'실물·주식 등 인플레 방어 자산을 일부 편입', pts:2},
+     {t:'그냥 예금을 계속 유지한다', pts:1},
+     {t:'불안해서 전 재산을 주식으로 옮긴다', pts:0}],
+   why:'✅ 정답은 <b>인플레 방어 자산 일부 편입</b>. 예금 이자(3%)가 물가(2.5%)에 근접하면 <b>실질가치가 정체·감소</b>한다. 부동산·주식 일부로 방어하되, 전액 이동은 위험하다.'},
+  {emoji:'🌳', title:'은퇴 설계', desc:'드디어 은퇴. 남은 노후 30년을 모아둔 자산을 <b>인출</b>하며 살아야 한다 — 어떤 전략이 통장 바닥을 막을까?',
+   opts:[
+     {t:'안전자산 비중↑ + 적정 인출률 유지', pts:2},
+     {t:'수익을 노려 고위험 주식 비중을 유지', pts:1},
+     {t:'전액 예금으로 옮기고 많이 인출한다', pts:0}],
+   why:'✅ 정답은 <b>안전자산↑ + 적정 인출률</b>. 노년엔 손실 회복 시간이 없어 안전성이 우선이고, 인출률이 너무 높으면 <b>자산이 조기 고갈</b>된다.'}
+];
+let mIdx=0; const mResult=new Array(MISSIONS.length).fill(null);
+function renderMission(){
+  const m=MISSIONS[mIdx];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<span class="emoji">${m.emoji}</span> <b>미션 ${mIdx+1}/${MISSIONS.length} · ${m.title}</b><br>${m.desc}`;
+  el('mScenario').style.animation='none'; void el('mScenario').offsetWidth; el('mScenario').style.animation='';
+  const chosen=mResult[mIdx];
+  el('mOpts').innerHTML=m.opts.map((o,i)=>{
+    let cls='';
+    if(chosen){ if(o.pts===2) cls=' best'; else if(o.pts===0) cls=' bad'; if(chosen.pick===i && o.pts!==2 && o.pts!==0) cls=' sel'; if(chosen.pick===i) cls+=' sel'; }
+    return `<button class="${cls.trim()}" onclick="pickOpt(${i})">${o.t} <b style="float:right">${chosen?('+'+o.pts):''}</b></button>`;
+  }).join('');
+  el('mFeedback').innerHTML = chosen ? feedbackHTML(m, chosen.pts) : '';
+  drawMissionCurve(chosen ? chosen.pts : null);
+  el('mPrev').classList.toggle('hide', mIdx===0);
+  el('mNext').classList.toggle('hide', !chosen);
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function feedbackHTML(m, pts){
+  const cls = pts===2?'ok' : pts===1?'mid':'no';
+  const head = pts===2?'✅ 최선의 선택! (+2)' : pts===1?'🟡 나쁘진 않지만 더 나은 선택이 있어. (+1)':'❌ 위험한 선택! (+0)';
+  return `<div class="feedback ${cls}">${head}<br>${m.why}</div>`;
+}
+function pickOpt(i){
+  const m=MISSIONS[mIdx];
+  mResult[mIdx]={pick:i, pts:m.opts[i].pts, emoji:m.emoji};
+  renderMission();
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+}
+function drawMissionCurve(pts){
+  const cv=el('mcurve'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  // 합성 곡선: 선택 품질에 따라 상승/변동
+  const q = pts==null?1.2:pts;
+  let A=100; const arr=[];
+  const g = q>=2?0.055 : q>=1?0.03 : -0.015;
+  const vol = q>=2?0.03 : q>=1?0.07 : 0.16;
+  for(let i=0;i<=20;i++){
+    A=Math.max(6, A*(1+g));
+    arr.push({age:25+i*(54/20), mid:A, up:A*(1+vol*2.5), dn:Math.max(3,A*(1-vol*2.5))});
+  }
+  plotCurve(ctx, arr, {x:46, y:12, w:cv._lw-46-12, h:cv._lh-12-30}, {band:true, compact:true, reveal:1});
+  ctx.fillStyle='#8896a6'; ctx.font='11px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(pts==null?'선택하면 자산 흐름이 나타나요':(pts>=2?'안정적으로 우상향 📈':pts>=1?'상승하지만 변동 큼':'변동 확대·위험 노출 ⚠️'), 50, 14);
+}
+function prevMission(){ if(mIdx>0){ mIdx--; renderMission(); } }
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mResult.reduce((s,r)=>s+(r?r.pts:0),0); }
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const m=lastMetrics||metrics();
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  // 배경(남색 그라데)
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#3a5f8f'); g.addColorStop(1,'#27436a');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W-68,H-68,26); ctx.fill();
+  // 헤더
+  ctx.textAlign='center';
+  ctx.fillStyle='#27436a'; ctx.font='bold 38px "Malgun Gothic",sans-serif';
+  ctx.fillText('📊 생애 자산관리 리포트', W/2, 108);
+  ctx.fillStyle='#5b6b7c'; ctx.font='19px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅲ · 자산관리와 금융생활 [10통사2-06]', W/2, 146);
+  // 금색 구분선
+  ctx.strokeStyle='#c8a24a'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-120,168); ctx.lineTo(W/2+120,168); ctx.stroke();
+  // 이름
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1b2634'; ctx.font='bold 28px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+' 님의 노후 설계', W/2, 208);
+  // 미니 생애 자산곡선
+  ctx.fillStyle='#27436a'; ctx.font='bold 18px "Malgun Gothic",sans-serif'; ctx.textAlign='left';
+  ctx.fillText('생애 실질자산 곡선 (25→79세)', 70, 258);
+  plotCurve(ctx, m.pts, {x:96, y:290, w:W-96-70, h:170}, {band:true, compact:true, fs:13});
+  // 점수 게이지
+  const pct=m.total/100, cx=W/2, cy=580, r=92;
+  ctx.lineWidth=20; ctx.strokeStyle='#eef2f7'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.9?'#2e8b6f' : pct>=0.7?'#3a5f8f' : pct>=0.5?'#c8a24a':'#c0562f';
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1b2634'; ctx.textAlign='center'; ctx.font='bold 52px "Malgun Gothic",sans-serif';
+  ctx.fillText(Math.round(m.total)+'', cx, cy+6);
+  ctx.fillStyle='#5b6b7c'; ctx.font='18px "Malgun Gothic",sans-serif'; ctx.fillText('/ 100점', cx, cy+34);
+  ctx.fillStyle='#27436a'; ctx.font='bold 26px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.gicon+' '+m.grade, cx, cy+r+52);
+  // 요약 4행
+  const rows=[
+    ['79세 실질자산', (m.finalReal/10000).toFixed(2)+'억'],
+    ['분산도(1-HHI)', (Math.max(0,1-m.avgHHI)).toFixed(2)],
+    ['유동성(예금비중)', (m.avgSafe*100).toFixed(0)+'%'],
+    ['평균 위험도 σ', (m.avgSig*100).toFixed(0)+'% '+(m.avgSig<0.05?'(낮음)':m.avgSig<0.12?'(보통)':'(높음)')]
+  ];
+  ctx.font='20px "Malgun Gothic",sans-serif';
+  let y=cy+r+96;
+  rows.forEach(rw=>{
+    ctx.textAlign='left'; ctx.fillStyle='#5b6b7c'; ctx.fillText(rw[0], 80, y);
+    ctx.textAlign='right'; ctx.fillStyle='#1b2634'; ctx.font='bold 20px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[1], W-80, y);
+    ctx.font='20px "Malgun Gothic",sans-serif'; y+=36;
+  });
+  // 미션 점수표
+  y+=6; ctx.textAlign='left'; ctx.fillStyle='#27436a'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('생애 사건 미션  ('+missionTotal()+'/12)', 80, y); y+=30;
+  ctx.font='19px "Malgun Gothic",sans-serif';
+  const colW=(W-160)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3);
+    const x=80+col*colW, yy=y+row*34;
+    const rr=mResult[i];
+    ctx.textAlign='left'; ctx.fillStyle='#1b2634';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.fillStyle= rr? (rr.pts===2?'#2e8b6f':rr.pts===1?'#a8842f':'#c0562f') : '#a9b4c0';
+    ctx.font='bold 19px "Malgun Gothic",sans-serif';
+    ctx.fillText(rr? (rr.pts+'/2') : '–', x+34, yy);
+    ctx.font='19px "Malgun Gothic",sans-serif';
+  }
+  // 푸터
+  ctx.textAlign='center'; ctx.fillStyle='#a9b4c0'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('수익률·위험은 교육용 가정값 · 투자 권유 아님', W/2, H-72);
+  ctx.fillStyle='#8896a6'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 생애주기 금융·자산관리 시뮬레이터', W/2, H-48);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='생애자산리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+// 모바일 등에서 다운로드가 막힐 때: 같은 제스처 안에서 새 탭으로 이미지 열기(길게 눌러 저장)
+function openPNG(){
+  drawResult();
+  window.open(el('resultCanvas').toDataURL('image/png'), '_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let designInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','design','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='design'){ if(!designInit){ buildStages(); designInit=true; } sync(true); }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ if(!lastMetrics) metrics(); drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+buildStages(); designInit=true; sync(false);
+</script>
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미래 사회 시나리오 예측 · 통합사회2 Ⅴ 미래와 지속가능한 삶</title>
+<style>
+  :root{
+    /* 팔레트 19 Digital Product UX — 인디고, 미래지향 */
+    --primary:#4F46E5; --primary-d:#3730a3;
+    --bg:#f3f4fb; --surface:#ffffff; --ink:#1b2033; --sub:#5c6478;
+    --life:#4F46E5;   /* 삶의질 */
+    --equity:#0ea5e9; /* 형평 */
+    --sustain:#16a34a;/* 지속가능성 */
+    --opp:#16a34a; --risk:#ef4444; --gold:#f59e0b;
+    --line:#e5e7f2; --shadow:0 8px 24px rgba(40,45,90,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;
+    background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.9;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.93}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--primary)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#f5f6ff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .pill{display:inline-block;background:#eceafb;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.warn{background:#fdeaea;color:#c0392b}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+  .driver{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fff}
+  .driver .ico{font-size:26px}
+  .driver .nm{font-weight:800;font-size:15px;margin:2px 0 4px}
+  .driver.pop{border-top:4px solid var(--life)}
+  .driver.tech{border-top:4px solid var(--equity)}
+  .driver.env{border-top:4px solid var(--sustain)}
+  .callout{background:linear-gradient(135deg,#eef0ff,#f6f0ff);border:1px solid #ddd8fb;border-radius:12px;padding:14px;margin-top:12px;font-size:14.5px}
+  .callout b{color:var(--primary-d)}
+  canvas{max-width:100%;height:auto}
+  /* 시나리오 배지 */
+  .scenbadge{border-radius:14px;padding:16px;color:#fff;text-align:center;box-shadow:var(--shadow);transition:.3s}
+  .scenbadge .st{font-size:12px;font-weight:800;letter-spacing:1px;opacity:.9}
+  .scenbadge .big{font-size:24px;font-weight:800;margin:2px 0}
+  .scenbadge .dv{font-size:13px;opacity:.95}
+  .scenbadge .sc{display:inline-block;margin-top:8px;background:rgba(255,255,255,.22);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800}
+  .pop-anim{animation:pop .4s}
+  @keyframes pop{0%{transform:scale(.96)}45%{transform:scale(1.03)}100%{transform:scale(1)}}
+  /* 게이지 */
+  .gauge{margin:12px 0}
+  .gauge .top{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:700;margin-bottom:4px}
+  .gauge .top .val{font-size:15px;font-weight:800}
+  .gauge .bar{height:16px;background:#eceef6;border-radius:99px;overflow:hidden}
+  .gauge .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+  .gauge.life i{background:linear-gradient(90deg,#9089f0,#4F46E5)}
+  .gauge.equity i{background:linear-gradient(90deg,#7dd3fc,#0ea5e9)}
+  .gauge.sustain i{background:linear-gradient(90deg,#86efac,#16a34a)}
+  /* 슬라이더 */
+  .slider-row{margin:15px 0}
+  .slider-row label{display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-bottom:4px}
+  .slider-row .lo{font-size:11.5px;color:var(--sub);font-weight:600;display:flex;justify-content:space-between;margin-top:2px}
+  input[type=range]{width:100%;accent-color:var(--primary);height:26px}
+  .factors{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .factors button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .factors button:active{transform:scale(.96)}
+  .factors button.up{border-color:#c8c4f4;color:var(--primary-d)}
+  .factors button.down{border-color:#f3c9c9;color:#c0392b}
+  /* 미래 카드 */
+  .fcards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+  @media(max-width:680px){.fcards{grid-template-columns:1fr}}
+  .fcard{border-radius:12px;padding:12px;color:#fff;min-height:104px;position:relative;overflow:hidden}
+  .fcard.appear{animation:flip .55s ease}
+  @keyframes flip{0%{transform:rotateY(90deg);opacity:0}60%{transform:rotateY(-8deg);opacity:1}100%{transform:rotateY(0);opacity:1}}
+  .fcard .kind{font-size:11px;font-weight:800;letter-spacing:.5px;opacity:.92}
+  .fcard .ft{font-size:14.5px;font-weight:800;margin:3px 0 4px}
+  .fcard .fd{font-size:12px;line-height:1.45;opacity:.96}
+  .fcard.opp{background:linear-gradient(135deg,#16a34a,#0f7a37)}
+  .fcard.risk{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+  .fcard.mid{background:linear-gradient(135deg,#f59e0b,#c77c06)}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .presets button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.accent{background:var(--gold);color:#fff}
+  .btn.ghost{background:#ecedf5;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+  /* 미션 */
+  .scen{background:#eef0ff;border:1px solid #d9d5fb;border-radius:12px;padding:14px;font-size:15px;margin-bottom:8px}
+  .scen .emoji{font-size:26px}
+  .scen .type{display:inline-block;font-size:11.5px;font-weight:800;background:var(--primary);color:#fff;border-radius:6px;padding:2px 8px;margin-bottom:6px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left;font-family:inherit}
+  .opts button:disabled{opacity:.95;cursor:default}
+  .opts button.picked-good{border-color:var(--opp);background:#e8f6ec}
+  .opts button.picked-mid{border-color:var(--gold);background:#fdf3e0}
+  .opts button.picked-bad{border-color:var(--risk);background:#fdeaea}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#eef0ff;color:var(--ink)}
+  .progress{height:8px;background:#ecedf5;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px;font-family:inherit}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#ecedf5;border-radius:6px;padding:2px 7px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅴ 미래와 지속가능한 삶</div>
+    <h1>🔮 미래 사회 시나리오 예측</h1>
+    <p>2050년, 너는 마흔이 넘는다. 그때 세상은 어떤 얼굴일까? 미래는 정해져 있지 않다 — <b>인구·기술·환경 다이얼</b>을 직접 돌려, 네가 만들 내일을 미리 살아보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="lab">2. 시나리오 랩</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>미래는 '결정'이 아니라 '선택'이다</h2>
+      <p class="lead">미래학은 하나의 정해진 미래를 <b>맞히는</b> 것이 아니라, 변화의 동인을 읽고 <b>여러 갈래의 미래</b>를 그려 대비하는 학문이다. 같은 조건이라도 <b>대응에 따라 미래는 달라진다</b>(비결정론).</p>
+      <h3>🌐 미래를 바꾸는 3대 변화 동인</h3>
+      <div class="grid3">
+        <div class="driver pop">
+          <div class="ico">👥</div><div class="nm" style="color:var(--life)">인구</div>
+          <b>저출산·고령화</b><br>생산가능인구 감소, 부양비·연금·의료 부담, 지방 소멸.
+        </div>
+        <div class="driver tech">
+          <div class="ico">🤖</div><div class="nm" style="color:var(--equity)">기술</div>
+          <b>AI·자동화</b><br>일자리 대체와 창출, 디지털 격차, AI 윤리 문제.
+        </div>
+        <div class="driver env">
+          <div class="ico">🌍</div><div class="nm" style="color:var(--sustain)">환경</div>
+          <b>기후변화·자원</b><br>폭염·해수면 상승, 화석연료 고갈, 물·식량 위기.
+        </div>
+      </div>
+      <div class="callout">
+        <b>같은 동인, 다른 미래.</b> 저출산이라는 같은 조건도 <b>돌봄·일가정양립</b>에 투자하면 활력 있는 사회로, 방치하면 인구 절벽으로 간다.
+        AI도 <b>재교육·안전망</b>과 함께면 기회, 방임하면 격차가 된다. → 미래는 <b>분기(分岐)</b>한다.
+      </div>
+      <h3>🧭 대응에 따라 갈리는 2050</h3>
+      <div>
+        <span class="pill" style="background:#e8f6ec;color:#0f7a37">🌱 지속가능 공존 사회</span>
+        <span class="pill" style="background:#fdf3e0;color:#c77c06">⚡ 기술 풍요·격차 사회</span>
+        <span class="pill warn">⚠️ 인구·환경 위기 사회</span>
+        <span class="pill" style="background:#eceafb;color:var(--primary-d)">🔀 갈림길·전환기 사회</span>
+      </div>
+      <h3>♻️ 판단 기준: 지속가능발전</h3>
+      <div class="concept" style="margin-top:6px">
+        <b>지속가능발전</b>이란 <b>미래 세대의 필요</b>를 해치지 않으면서 현재의 필요를 채우는 발전이다.
+        <b>경제·사회·환경</b> 세 축이 조화를 이룰 때 미래는 지속가능하다. 이 교구의 지표(삶의 질·형평·지속가능성)도 이 세 축을 본다.
+      </div>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 모둠마다 인구·기술·환경 다이얼을 다르게 설정해 서로 다른 2050을 만든 뒤, 결과 카드를 띄워 "왜 이런 미래가 됐는지" 비교·발표하게 하세요.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('lab')">시나리오 직접 만들기 →</button></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 시나리오 랩 ===== -->
+  <section id="tab-lab" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>시나리오 랩 — 2050을 설계하라</h2>
+      <div id="scenBadge" class="scenbadge" style="background:linear-gradient(135deg,#4F46E5,#3730a3)">
+        <div class="st">2050 예상 시나리오</div>
+        <div class="big" id="scenTitle">🔀 갈림길·전환기 사회</div>
+        <div class="dv" id="scenDesc">세 변수를 움직여 미래를 분기시켜 보자.</div>
+        <div class="sc">종합 미래지수 <span id="scenScore">50</span></div>
+      </div>
+
+      <div class="gauge life"><div class="top"><span>💜 삶의 질</span><span class="val" id="v_life">50</span></div><div class="bar"><i id="g_life"></i></div></div>
+      <div class="gauge equity"><div class="top"><span>🤝 형평(격차 해소)</span><span class="val" id="v_equity">50</span></div><div class="bar"><i id="g_equity"></i></div></div>
+      <div class="gauge sustain"><div class="top"><span>🌿 지속가능성</span><span class="val" id="v_sustain">50</span></div><div class="bar"><i id="g_sustain"></i></div></div>
+
+      <div class="presets">
+        <button onclick="preset(25,25,25)">😴 방관 시나리오</button>
+        <button onclick="preset(85,45,50)">👥 인구 집중</button>
+        <button onclick="preset(45,90,40)">🤖 기술 폭주</button>
+        <button onclick="preset(75,78,82)">🌱 균형 전환</button>
+      </div>
+
+      <div class="slider-row">
+        <label><span style="color:var(--life)">👥 인구 대응 수준</span><span id="popVal">50</span></label>
+        <input type="range" id="pop" min="0" max="100" value="50">
+        <div class="lo"><span>방치(저출산·고령화)</span><span>적극 대응(돌봄·정년·이민)</span></div>
+        <div class="factors" id="popFactors"></div>
+      </div>
+      <div class="slider-row">
+        <label><span style="color:var(--equity)">🤖 기술 포용 수준</span><span id="techVal">50</span></label>
+        <input type="range" id="tech" min="0" max="100" value="50">
+        <div class="lo"><span>방임(자동화 충격)</span><span>포용(재교육·AI 윤리)</span></div>
+        <div class="factors" id="techFactors"></div>
+      </div>
+      <div class="slider-row">
+        <label><span style="color:var(--sustain)">🌍 환경 대응 수준</span><span id="envVal">50</span></label>
+        <input type="range" id="env" min="0" max="100" value="50">
+        <div class="lo"><span>개발 우선(방치)</span><span>녹색 전환(탄소중립)</span></div>
+        <div class="factors" id="envFactors"></div>
+      </div>
+
+      <h3>🃏 2050 미래 카드</h3>
+      <div class="fcards" id="fcards"></div>
+
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="preset(50,50,50)">↺ 초기화</button>
+        <button class="btn primary" onclick="go('mission')">정책 미션 도전 →</button>
+      </div>
+      <p class="note">※ 지표·시나리오는 학습을 돕기 위한 <b>예시 모델</b>이며, 실제 미래 사회는 훨씬 복잡합니다. 특정 국가·집단을 지칭하지 않습니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>정책 미션 (6) — 어떤 미래를 고를까?</h2>
+      <p class="lead">2050의 책상 위에 6개의 결재판이 놓였다. 네 사인 하나하나가 미래를 바꾼다. 정답이 하나만은 아니지만, <b>구조를 바꾸고 미래 세대를 함께 보는</b> 선택이 가장 멀리 간다. 이 선택은 랩의 지표에도 곧바로 반영된다.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <span></span>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>나의 2050 시나리오 카드</h2>
+      <p class="lead">이름을 넣고 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1080"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn accent" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="#" onclick="openPNG(event)" style="color:var(--primary-d);font-weight:700">📱 저장이 안 되면 여기(새 탭)</a> — 열린 이미지를 길게 눌러 저장하세요.</p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅴ 미래와 지속가능한 삶 · 미래 사회 변화·지속가능발전 [10통사2-05] · 단일 HTML · 오프라인 동작<br>
+    미래는 결정되어 있지 않으며, 지표는 학습용 예시 모델입니다.<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ===== 3대 변화 동인(대응 수준) 0~100 ===== */
+const START={pop:50,tech:50,env:50};
+let S={...START};
+
+/* ===== 지표 계산 (경제·사회·환경 3축 → 삶의질·형평·지속가능성) ===== */
+function indicators(){
+  const p=S.pop, t=S.tech, e=S.env;
+  const gap=Math.max(p,t,e)-Math.min(p,t,e);          // 불균형(격차) 정도
+  const life   = clamp(0.40*t + 0.30*p + 0.30*e, 0,100);
+  // 형평: 세 축이 고를수록↑, 기술만 앞서면(격차) 벌점
+  const equity = clamp(0.34*p + 0.34*e + 0.32*t - 0.35*gap, 0,100);
+  const sustain= clamp(0.55*e + 0.25*p + 0.20*t, 0,100);
+  const overall= Math.round(0.33*life + 0.34*equity + 0.33*sustain);
+  return {life,equity,sustain,overall,gap};
+}
+
+/* ===== 시나리오 분기 (결정론 아님: 대응 조합으로 갈림) ===== */
+const SCEN={
+  sustain:{t:'🌱 지속가능 공존 사회', c:'linear-gradient(135deg,#16a34a,#0f7a37)', col:'#16a34a',
+    d:'인구·기술·환경에 고르게 대응해 세 축이 조화를 이룬 미래. 미래 세대도 살 만한 사회.'},
+  divide:{t:'⚡ 기술 풍요·격차 사회', c:'linear-gradient(135deg,#f59e0b,#b45309)', col:'#d97706',
+    d:'기술·풍요는 앞서가지만 그 혜택이 고르지 않아 격차가 커진 미래. 형평이 과제다.'},
+  crisis:{t:'⚠️ 인구·환경 위기 사회', c:'linear-gradient(135deg,#ef4444,#991b1b)', col:'#dc2626',
+    d:'대응을 미뤄 인구 절벽·기후 재난이 겹친 위기의 미래. 지금의 선택이 가장 중요하다.'},
+  transit:{t:'🔀 갈림길·전환기 사회', c:'linear-gradient(135deg,#4F46E5,#3730a3)', col:'#4F46E5',
+    d:'아직 미래가 어느 쪽으로도 갈 수 있는 전환기. 대응을 조금만 더 높여 보자.'}
+};
+function scenarioKey(ind){
+  const {life,equity,sustain,overall,gap}=ind;
+  const mn=Math.min(life,equity,sustain);
+  if(overall<42 || mn<32) return 'crisis';
+  if(overall>=62 && mn>=52 && gap<=34) return 'sustain';
+  if((equity<50 && life>=52) || gap>38) return 'divide';
+  return 'transit';
+}
+
+/* ===== 미래 카드 (동인별 기회/위험) ===== */
+const CARD_DEF={
+  pop:{
+    opp :{k:'기회 · 인구', t:'활력 있는 인구 구조', d:'출산·돌봄 지원과 정년 연장으로 생산가능인구를 안정시켰다.'},
+    risk:{k:'위험 · 인구', t:'인구 절벽·지방 소멸', d:'저출산·고령화 방치로 노동력이 급감하고 연금·재정이 흔들린다.'},
+    mid :{k:'주의 · 인구', t:'완만한 고령화', d:'부분적으로 대응 중이나 부양 부담이 서서히 커진다.'}
+  },
+  tech:{
+    opp :{k:'기회 · 기술', t:'포용적 AI 전환', d:'재교육·안전망으로 자동화의 혜택을 나눈다. 의료·신산업 혁신.'},
+    risk:{k:'위험 · 기술', t:'일자리 충격·디지털 격차', d:'자동화가 일자리를 대체하고 AI 접근 격차가 불평등을 키운다.'},
+    mid :{k:'주의 · 기술', t:'기술 전환의 진통', d:'자동화는 진행되지만 대비가 아직 충분치 않다.'}
+  },
+  env:{
+    opp :{k:'기회 · 환경', t:'탄소중립·순환경제', d:'재생에너지·자원순환으로 기후 위기를 늦추고 새 성장동력을 얻었다.'},
+    risk:{k:'위험 · 환경', t:'기후 재난·자원 고갈', d:'온실가스 방치로 폭염·해수면 상승, 물·식량 위기가 닥친다.'},
+    mid :{k:'주의 · 환경', t:'더딘 녹색 전환', d:'감축 노력은 있으나 속도가 부족하다.'}
+  }
+};
+function levelOf(v){ return v>=60?'opp':(v<45?'risk':'mid'); }
+
+/* ===== 정책 칩(슬라이더 넛지) ===== */
+const FACTORS={
+  pop:[['출산·양육 지원',14],['정년 연장',10],['이민·외국인력',8],['방치',-16]],
+  tech:[['재교육·평생학습',14],['AI 윤리·규제',10],['신산업 육성',9],['방임',-14]],
+  env:[['재생에너지 전환',14],['탄소중립 감축',12],['순환경제',10],['개발 우선',-14]]
+};
+function buildFactors(){
+  for(const key of ['pop','tech','env']){
+    el(key+'Factors').innerHTML=FACTORS[key].map(f=>
+      `<button class="${f[1]>0?'up':'down'}" onclick="nudge('${key}',${f[1]})">${f[0]}</button>`).join('');
+  }
+}
+function nudge(which,amt){
+  const s=el(which); s.value=clamp((+s.value)+amt,0,100); syncLab(true);
+}
+function preset(p,t,e){
+  el('pop').value=p; el('tech').value=t; el('env').value=e; syncLab(true);
+}
+
+/* ===== 랩 동기화 ===== */
+let lastKey=null;
+function syncLab(anim){
+  S.pop=+el('pop').value; S.tech=+el('tech').value; S.env=+el('env').value;
+  el('popVal').textContent=S.pop; el('techVal').textContent=S.tech; el('envVal').textContent=S.env;
+  const ind=indicators();
+  el('g_life').style.width=ind.life+'%';   el('v_life').textContent=Math.round(ind.life);
+  el('g_equity').style.width=ind.equity+'%';el('v_equity').textContent=Math.round(ind.equity);
+  el('g_sustain').style.width=ind.sustain+'%';el('v_sustain').textContent=Math.round(ind.sustain);
+  const key=scenarioKey(ind), sc=SCEN[key];
+  const badge=el('scenBadge');
+  badge.style.background=sc.c;
+  el('scenTitle').textContent=sc.t; el('scenDesc').textContent=sc.d; el('scenScore').textContent=ind.overall;
+  if(anim && key!==lastKey){ badge.classList.remove('pop-anim'); void badge.offsetWidth; badge.classList.add('pop-anim'); }
+  lastKey=key;
+  renderCards(anim);
+}
+function renderCards(anim){
+  const box=el('fcards');
+  const rows=[['pop',S.pop],['tech',S.tech],['env',S.env]].map(([k,v])=>{
+    const lv=levelOf(v), c=CARD_DEF[k][lv];
+    return `<div class="fcard ${lv} ${anim?'appear':''}"><div class="kind">${c.k}</div><div class="ft">${c.t}</div><div class="fd">${c.d}</div></div>`;
+  });
+  box.innerHTML=rows.join('');
+}
+
+/* ===== 미션 6개 (정책 선택) : 선택지 [텍스트, pts, 피드백, {dp,dt,de}] ===== */
+const MISSIONS=[
+  {type:'저출산', emoji:'👶', txt:'합계출산율이 세계 최저 수준으로 떨어져 학교·병원이 문을 닫고 생산가능인구가 줄고 있다.',
+   opts:[
+     ['🙈 자연스러운 현상이니 그대로 둔다',0,'저출산 방치는 노동력 급감·지방 소멸로 이어진다. 미래는 저절로 좋아지지 않는다.',{dp:-8,dt:0,de:0}],
+     ['💰 출산 시 일회성 현금만 지급한다',1,'단기 지원은 도움이 되지만, 양육·주거·일가정양립 구조를 못 바꾸면 효과가 제한적이다.',{dp:3,dt:0,de:0}],
+     ['🏡 돌봄·주거·일가정양립을 함께 지원한다',2,'출산·양육의 구조적 부담을 줄이는 종합 대응. 가장 지속가능한 인구 정책.',{dp:12,dt:0,de:2}]
+   ]},
+  {type:'고령화', emoji:'👵', txt:'65세 이상 인구가 급증해 부양비와 연금·의료 재정 부담이 빠르게 커진다.',
+   opts:[
+     ['🏷️ 고령층을 사회의 부담으로만 여긴다',0,'노인을 부담으로만 보면 세대 갈등만 커진다. 고령자도 사회의 소중한 자원이다.',{dp:-6,dt:0,de:0}],
+     ['⏳ 정년만 늦춰 오래 일하게 한다',1,'정년 연장은 도움이 되나, 건강·재교육·돌봄이 없으면 한계가 있다.',{dp:4,dt:2,de:0}],
+     ['🤝 정년연장·평생교육·돌봄·실버산업을 함께 키운다',2,'고령자의 경제활동을 돕고 돌봄을 사회가 나누는 능동적 대응.',{dp:11,dt:4,de:0}]
+   ]},
+  {type:'AI·자동화', emoji:'🤖', txt:'AI와 로봇이 일자리를 대체하기 시작했다. 일부 직군은 사라지고 새 직군이 생긴다.',
+   opts:[
+     ['🚫 기술 도입을 전면 금지한다',0,'변화를 막기만 하면 경쟁력을 잃는다. 문제는 기술 자체가 아니라 대비의 부족이다.',{dp:0,dt:-6,de:0}],
+     ['🏭 기업 자율에 맡기고 지켜만 본다',1,'혁신은 빠르지만 대비 없는 방임은 일자리 충격·격차를 키운다.',{dp:0,dt:2,de:0}],
+     ['📚 재교육·평생학습+사회안전망+AI 윤리를 갖춘다',2,'자동화의 혜택을 나누고 충격을 흡수하는 포용적 기술 전환.',{dp:2,dt:12,de:0}]
+   ]},
+  {type:'기후변화', emoji:'🔥', txt:'폭염·집중호우 같은 이상기후가 잦아지고 온실가스 배출이 계속 늘고 있다.',
+   opts:[
+     ['🛢️ 경제가 먼저다, 감축은 미룬다',0,'감축을 미루면 기후 재난 비용이 훨씬 커진다. 지금이 가장 값싼 대응 시점이다.',{dp:0,dt:0,de:-9}],
+     ['🌫️ 적응(방파제·냉방)에만 투자한다',1,'적응도 필요하지만 감축 없이는 기후변화 자체를 멈출 수 없다.',{dp:0,dt:0,de:4}],
+     ['⚡ 재생에너지 전환+온실가스 감축(탄소중립)',2,'원인을 줄이는 완화와 적응을 병행하는 근본 대응. 새 성장동력이기도 하다.',{dp:0,dt:3,de:12}]
+   ]},
+  {type:'자원·에너지', emoji:'⛽', txt:'화석연료가 고갈되고 물·식량·핵심 광물을 둘러싼 확보 경쟁이 치열해진다.',
+   opts:[
+     ['⛏️ 값싼 화석연료를 최대한 더 캔다',0,'고갈되는 자원에 의존하면 미래 세대의 몫이 사라진다. 지속가능하지 않다.',{dp:0,dt:0,de:-8}],
+     ['♻️ 재활용을 개인 실천에만 맡긴다',1,'개인 실천도 중요하나, 순환경제는 산업·제도 차원의 설계가 필요하다.',{dp:0,dt:1,de:4}],
+     ['🔄 순환경제+재생에너지+자원 효율화',2,'쓰고 버리는 선형경제를 자원이 도는 순환경제로. 자원·에너지 위기의 해법.',{dp:0,dt:4,de:11}]
+   ]},
+  {type:'종합·개념', emoji:'🌍', txt:'지금까지 배운 것을 종합하자. 가장 지속가능한 2050을 만드는 태도는?',
+   opts:[
+     ['🔮 미래는 정해져 있으니 순응한다',0,'미래는 결정돼 있지 않다. 오늘의 선택에 따라 여러 갈래로 분기한다.',{dp:0,dt:0,de:0}],
+     ['💹 경제성장만 잘하면 나머지는 따라온다',1,'성장은 중요하지만 환경·사회를 함께 보지 않으면 지속가능하지 않다.',{dp:1,dt:2,de:-2}],
+     ['🌱 경제·사회·환경을 함께 살피는 지속가능발전',2,'세 축의 조화가 지속가능발전의 핵심. 미래 세대의 필요도 함께 고려한다.',{dp:6,dt:6,de:8}]
+   ]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<div class="scen"><span class="type">${m.type}</span><br>
+    <span class="emoji">${m.emoji}</span> <b>미션 ${mIdx+1} / ${MISSIONS.length}</b><br>${m.txt}</div>`;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>`<button onclick="choose(${i},this)">${o[0]}</button>`).join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i,btn){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], o=m.opts[i], pts=o[1], d=o[3];
+  mChoice[mIdx]={i,pts,of:2};
+  S.pop=clamp(S.pop+d.dp,0,100); S.tech=clamp(S.tech+d.dt,0,100); S.env=clamp(S.env+d.de,0,100);
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'picked-bad')); });
+  el('mFeedback').innerHTML=`<div class="feedback">${pts>=2?'🌟':pts===1?'💡':'🤔'} +${pts}점 · ${o[2]}</div>`;
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+
+/* ===== 결과 카드 (PNG) ===== */
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+function gradeOf(key,overall){
+  if(key==='sustain') return {t:'🏆 미래 설계자',s:'지속가능한 공존을 이끌다'};
+  if(overall>=58)     return {t:'🧭 균형 잡힌 전략가',s:''};
+  if(key==='divide')  return {t:'⚡ 성장 우선 개척자',s:'형평이라는 숙제가 남았다'};
+  if(key==='crisis')  return {t:'💭 위기를 배우는 중',s:'대응을 미루면 위험하다'};
+  return {t:'🌿 성장하는 예측가',s:''};
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const ind=indicators(), key=scenarioKey(ind), sc=SCEN[key], g=gradeOf(key,ind.overall);
+  const pctv=clamp(ind.overall,0,100)/100;
+  // 배경
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#4F46E5'); bg.addColorStop(1,'#3730a3');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,36,36,W-72,H-72,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#3730a3'; ctx.font='bold 34px "Malgun Gothic",sans-serif';
+  ctx.fillText('🔮 나의 2050 시나리오', W/2, 108);
+  ctx.fillStyle='#5c6478'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅴ 미래와 지속가능한 삶', W/2, 142);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1b2033'; ctx.font='bold 27px "Malgun Gothic",sans-serif'; ctx.fillText(name+' 미래학자', W/2, 190);
+  // 시나리오 유형 배지
+  let by=222;
+  ctx.fillStyle=sc.col; roundRect(ctx,W/2-215,by,430,54,16); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 25px "Malgun Gothic",sans-serif'; ctx.fillText(sc.t, W/2, by+35);
+  // 종합 지수 원
+  const cx=W/2, cy=400, r=90;
+  ctx.lineWidth=22; ctx.strokeStyle='#ecebfa'; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle=sc.col; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pctv); ctx.stroke(); ctx.lineCap='butt';
+  ctx.fillStyle='#1b2033'; ctx.font='bold 52px "Malgun Gothic",sans-serif'; ctx.fillText(ind.overall+'', cx, cy+4);
+  ctx.fillStyle='#5c6478'; ctx.font='17px "Malgun Gothic",sans-serif'; ctx.fillText('종합 미래지수', cx, cy+32);
+  // 등급
+  ctx.fillStyle=sc.col; ctx.font='bold 26px "Malgun Gothic",sans-serif'; ctx.fillText(g.t, W/2, cy+r+52);
+  if(g.s){ ctx.fillStyle='#5c6478'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.fillText(g.s, W/2, cy+r+78); }
+  // 3대 지표 막대
+  by=cy+r+112;
+  ctx.textAlign='left'; ctx.fillStyle='#1b2033'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('미래 지표 (경제·사회·환경 3축)', 72, by); by+=14;
+  const bx=196, barW=W-72-bx;
+  const drawBar=(label,val,col,yy)=>{
+    ctx.fillStyle='#5c6478'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.textAlign='left';
+    ctx.fillText(label, 72, yy+18);
+    ctx.fillStyle='#edeef7'; roundRect(ctx,bx,yy+3,barW,20,10); ctx.fill();
+    ctx.fillStyle=col; roundRect(ctx,bx,yy+3,Math.max(6,barW*clamp(val,0,100)/100),20,10); ctx.fill();
+    ctx.fillStyle='#1b2033'; ctx.font='bold 15px "Malgun Gothic",sans-serif'; ctx.textAlign='right';
+    ctx.fillText(Math.round(val), W-72, yy+18);
+  };
+  drawBar('💜 삶의 질', ind.life, '#4F46E5', by); by+=32;
+  drawBar('🤝 형평', ind.equity, '#0ea5e9', by); by+=32;
+  drawBar('🌿 지속가능성', ind.sustain, '#16a34a', by); by+=46;
+  // 미션 요약
+  ctx.textAlign='left'; ctx.fillStyle='#1b2033'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('정책 미션 ('+totalPts()+'/12점)', 72, by); by+=8;
+  ctx.font='16px "Malgun Gothic",sans-serif';
+  const colW=(W-144)/2;
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i], row=Math.floor(i/2), col=i%2;
+    const yy=by+24+row*30, xx=72+col*colW;
+    ctx.fillStyle='#1b2033'; ctx.textAlign='left';
+    ctx.fillText(`${MISSIONS[i].emoji} ${MISSIONS[i].type}`, xx, yy);
+    if(c){ ctx.fillStyle=c.pts>=2?'#16a34a':(c.pts===1?'#d97706':'#dc2626'); ctx.textAlign='right';
+      ctx.fillText('+'+c.pts, xx+colW-24, yy); }
+    else { ctx.fillStyle='#a3a8bd'; ctx.textAlign='right'; ctx.fillText('미완료', xx+colW-24, yy); }
+  }
+  by+=24+Math.ceil(MISSIONS.length/2)*30+18;
+  // 동인 요약 박스
+  ctx.textAlign='center';
+  ctx.fillStyle='#f2f2fb'; roundRect(ctx,72,by,W-144,54,14); ctx.fill();
+  const th=by+34, seg=(W-144)/3;
+  const mini=(label,val,col,ci)=>{ const mx=72+seg*ci+seg/2;
+    ctx.fillStyle=col; ctx.font='bold 22px "Malgun Gothic",sans-serif'; ctx.fillText(Math.round(val), mx, th);
+    ctx.fillStyle='#5c6478'; ctx.font='14px "Malgun Gothic",sans-serif'; ctx.fillText(label, mx, th+18); };
+  mini('👥 인구대응', S.pop, '#4F46E5', 0);
+  mini('🤖 기술포용', S.tech, '#0ea5e9', 1);
+  mini('🌍 환경대응', S.env, '#16a34a', 2);
+  // 푸터
+  ctx.fillStyle='#a3a8bd'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('미래는 결정되어 있지 않다 · 풀어쓰는 사회학 AI · 미래 사회 시나리오 예측', W/2, H-56);
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download=`2050시나리오_${(el('studentName').value||'학생')}.png`;
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+/* 모바일 저장 fallback: 제스처 동기로 새 탭에 PNG 열기 (길게 눌러 저장) */
+function openPNG(e){ if(e) e.preventDefault(); drawResult();
+  const url=el('resultCanvas').toDataURL('image/png'); window.open(url,'_blank'); }
+
+/* ===== 탭 ===== */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','lab','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='lab') syncLab(true);
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['pop','tech','env'].forEach(k=>el(k).addEventListener('input',()=>syncLab(false)));
+
+/* 초기화 */
+buildFactors(); syncLab(false); renderMission();
+</script>
+</body>
+</html>

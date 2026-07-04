@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세계 문화권 지도 탐험 · 통합사회1 문화와 다양성</title>
+<style>
+  /* 팔레트 13 Travel Lifestyle (터콰이즈) */
+  :root{
+    --primary:#17A2B8; --primary-d:#0f7c8c; --primary-l:#7fd0dc;
+    --bg:#eef7f9; --surface:#fff; --ink:#14323a; --sub:#5a707a;
+    --gold:#f2a71b; --terra:#e8734d; --trust:#2e6fb7;
+    --ocean:#d6eef2; --land:#e4dcc7; --land-h:#d8caa8;
+    --line:#dbe9ec; --shadow:0 6px 20px rgba(20,60,70,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#e9f5f7;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .pill{display:inline-block;background:#e2f2f4;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.nat{background:#e5f1e0;color:#4b7a3a}
+  .pill.hum{background:#f6e6d8;color:#b56a34}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+  .feat{background:#f2fafb;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:13px;text-align:center}
+  .feat .emo{font-size:24px}
+  .feat .nm{font-weight:800;margin-top:2px;color:var(--primary-d)}
+  .feat .ds{color:var(--sub);font-size:12px;margin-top:2px;line-height:1.45}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--gold);color:#4a3608}
+  .btn.terra{background:var(--terra);color:#fff}
+  .btn.ghost{background:#e4eef0;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* 문화권 탐험 보드 (타일 그리드) */
+  .mapwrap{background:linear-gradient(135deg,#dff0f3,#cfe9ee);border-radius:14px;padding:12px;border:1px solid var(--line)}
+  .regiongrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:680px){.regiongrid{grid-template-columns:repeat(2,1fr);gap:8px}}
+  .rtile{position:relative;border:2px solid var(--land-h);background:var(--surface);border-radius:14px;
+    padding:14px 8px 12px;cursor:pointer;font-family:inherit;
+    transition:transform .15s,box-shadow .2s,background .3s,border-color .3s;
+    box-shadow:0 2px 6px rgba(20,60,70,.06);min-height:118px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center}
+  .rtile:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--primary-l)}
+  .rtile:active{transform:translateY(0)}
+  .rtile .emo{font-size:34px;line-height:1}
+  .rtile .nm{font-size:15px;font-weight:800;color:var(--ink);line-height:1.25;word-break:keep-all}
+  .rtile .badge{display:inline-block;font-size:11.5px;font-weight:800;color:var(--primary-d);
+    background:#e2f2f4;border-radius:999px;padding:2px 10px;margin-top:2px}
+  .rtile.explored{background:var(--primary-l);border-color:var(--primary)}
+  .rtile.explored .nm{color:#0c3a43}
+  .rtile.explored .badge{background:#fff;color:var(--primary-d)}
+  .rtile.done{background:var(--primary);border-color:var(--primary-d)}
+  .rtile.done .nm{color:#fff}
+  .rtile.done .badge{background:var(--gold);color:#4a3608}
+  .rtile.pulse{animation:pulse .5s}
+  @keyframes pulse{0%{transform:scale(1.06);box-shadow:0 8px 22px rgba(23,162,184,.42)}100%{transform:scale(1);box-shadow:var(--shadow)}}
+  .rtile .chk{position:absolute;top:6px;right:10px;font-size:18px;font-weight:800;color:#fff;line-height:1}
+  .mapstat{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:var(--sub);margin:10px 2px 4px}
+  .progress{height:9px;background:#e0edef;border-radius:99px;overflow:hidden;margin:4px 0 6px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:width .4s}
+  #regionPanel{margin-top:12px}
+  .panelhead{font-weight:800;font-size:16px;color:var(--primary-d);margin:8px 0 4px;display:flex;align-items:center;gap:8px}
+  .summ{background:#f2fafb;border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:6px 0 10px;font-size:13.5px}
+  .summ .row{margin:3px 0}
+  .summ .k{display:inline-block;min-width:52px;font-weight:800;color:var(--primary-d)}
+  .factor{margin-top:6px;font-size:13px}
+  .issue{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start;background:#fff;transition:.25s}
+  .issue.got{border-color:var(--primary);background:#e7f5f7}
+  .issue .emo{font-size:26px;line-height:1}
+  .issue .body{flex:1}
+  .issue .ty{font-weight:800;font-size:14.5px}
+  .issue .ds{font-size:13px;color:var(--sub);margin-top:2px}
+  .issue .col{border:1.5px solid var(--primary);background:#fff;color:var(--primary-d);border-radius:10px;padding:7px 10px;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .issue.got .col{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .empty{color:var(--sub);font-size:14px;background:#f2fafb;border:1px dashed var(--line);border-radius:12px;padding:20px;text-align:center}
+  /* 미션 */
+  .mission-scenario{background:#e9f5f7;border:1px solid #c7e6ec;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+  .opts button:disabled{opacity:.9;cursor:default}
+  .opts button.picked-good{border-color:var(--primary);background:#e2f4f2}
+  .opts button.picked-mid{border-color:var(--gold);background:#fbf3df}
+  .opts button.picked-bad{border-color:var(--terra);background:#f9ece4}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#e9f5f7;color:var(--ink)}
+  .mnav{display:flex;justify-content:flex-end;margin-top:14px}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e4eef0;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회1 · 문화와 다양성 · 세계의 다양한 문화권</div>
+    <h1>🌏 세계 문화권 지도 탐험</h1>
+    <p>같은 지구인데 왜 사는 모습은 이렇게 다를까? 사막의 헐렁한 옷, 열대의 물 위 집… 지도를 돌며 의식주·종교·언어를 살펴보고, 그 다름을 만든 <b>자연·인문 형성 요인</b>을 찾아보자. 우열을 가르지 않는 문화 상대주의의 눈으로!</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="map">2. 지도 탐험</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- 1. 개념 -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>문화권이란 무엇일까</h2>
+      <p class="lead"><b>문화권</b>은 언어·종교·의식주·생활 양식 등 <b>문화의 공통 요소가 나타나는 지리적 범위</b>다. 서로 비슷한 문화를 공유하는 지역을 하나로 묶은 것이다.</p>
+      <div class="grid2">
+        <div class="concept">
+          <h3>🌿 자연적 형성 요인</h3>
+          <span class="pill nat">기후 — 기온·강수</span>
+          <span class="pill nat">지형 — 산지·평야·해안</span>
+          <span class="pill nat">식생·토양</span>
+          <div style="margin-top:6px">더운 곳의 얇은 옷, 건조지역의 유목, 벼농사 지역의 쌀 문화처럼 <b>자연환경</b>은 의식주의 바탕이 된다.</div>
+        </div>
+        <div class="concept">
+          <h3>🏛️ 인문적 형성 요인</h3>
+          <span class="pill hum">종교 — 신앙·계율</span>
+          <span class="pill hum">언어 — 문자·말</span>
+          <span class="pill hum">산업·민족·역사</span>
+          <div style="margin-top:6px"><b>종교·언어·산업</b> 등 사람이 만든 요소는 금기 음식, 예배, 명절, 생활 규범 등 문화의 색을 결정한다.</div>
+        </div>
+      </div>
+
+      <h3>🗺️ 세계의 주요 문화권</h3>
+      <div class="grid3">
+        <div class="feat"><div class="emo">🍚</div><div class="nm">동아시아</div><div class="ds">유교·불교·한자, 벼농사·젓가락</div></div>
+        <div class="feat"><div class="emo">🌴</div><div class="nm">동남아시아</div><div class="ds">교역로 다종교, 벼농사·고상가옥</div></div>
+        <div class="feat"><div class="emo">🛕</div><div class="nm">인도(남부아시아)</div><div class="ds">힌두교·불교 발상, 몬순·향신료</div></div>
+        <div class="feat"><div class="emo">🕌</div><div class="nm">건조(이슬람)</div><div class="ds">이슬람교·아랍어, 유목·오아시스</div></div>
+        <div class="feat"><div class="emo">⛪</div><div class="nm">유럽</div><div class="ds">크리스트교, 산업혁명·밀농사</div></div>
+        <div class="feat"><div class="emo">🥁</div><div class="nm">아프리카(사하라 이남)</div><div class="ds">다채로운 부족·언어, 열대기후</div></div>
+        <div class="feat"><div class="emo">🗽</div><div class="nm">앵글로아메리카</div><div class="ds">영어·개신교, 이주민 사회</div></div>
+        <div class="feat"><div class="emo">💃</div><div class="nm">라틴아메리카</div><div class="ds">에스파냐어·가톨릭, 혼혈 문화</div></div>
+        <div class="feat"><div class="emo">🦘</div><div class="nm">오세아니아</div><div class="ds">영어권+원주민(마오리·애버리진)</div></div>
+      </div>
+      <p class="note">※ 문화에는 <b>우열이 없다</b>. 각 문화를 그 사회의 환경과 역사 속에서 이해하는 <b>문화 상대주의</b>의 태도로 탐험해 보자.</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 모둠별로 문화권을 하나씩 나눠 조사하게 한 뒤, 각자 탐험한 결과를 모아 반 전체의 세계 문화권 지도를 함께 완성해 보세요.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('map')">지도 탐험 시작 →</button></div>
+    </div>
+  </section>
+
+  <!-- 2. 지도 탐험 -->
+  <section id="tab-map">
+    <div class="card">
+      <h2><span class="dot"></span>세계 문화권 지도를 탐험하자</h2>
+      <p class="lead">문화권을 <b>탭</b>하면 의식주·종교·언어 정보와 <b>형성 요인 카드</b>가 나타난다. 카드를 <b>수집</b>할수록 지도가 채워진다.</p>
+      <div class="mapwrap">
+        <div id="regiongrid" class="regiongrid" role="group" aria-label="세계 문화권 탐험 보드"></div>
+      </div>
+      <div class="mapstat">
+        <span id="statRegion">탐험한 문화권 0/9</span>
+        <span id="statIssue">수집한 요인 카드 0/18</span>
+      </div>
+      <div class="progress"><i id="mapProg"></i></div>
+      <div id="regionPanel">
+        <div class="empty">👆 위 지도에서 문화권을 눌러 특징과 형성 요인을 탐험해 보세요.</div>
+      </div>
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="resetMap()">탐험 초기화</button>
+        <button class="btn primary" onclick="go('mission')">미션으로 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 미션 -->
+  <section id="tab-mission">
+    <div class="card">
+      <h2><span class="dot"></span>탐험가 미션 — 형성 요인·문화권 식별</h2>
+      <p class="lead">문화의 특징을 보고 <b>어떤 문화권</b>인지, 또 그것이 <b>자연·인문 어느 요인</b>에서 비롯됐는지 골라 보자. 마지막 문항은 <b>문화를 대하는 태도</b>를 확인한다.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 결과 -->
+  <section id="tab-result">
+    <div class="card">
+      <h2><span class="dot"></span>나의 세계 문화 탐험 리포트</h2>
+      <p class="lead">이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1060"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="#" onclick="openPNG();return false;" style="color:var(--primary-d);font-weight:700">📱 저장이 안 되면 여기(새 탭)</a></p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회1 · 문화와 다양성 · 세계의 문화권과 형성 요인(자연·인문) · 문화 상대주의 · 단일 HTML · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+
+/* ===== 데이터 : 9개 문화권 ===== */
+const REGIONS=[
+  {key:'na',nm:'앵글로아메리카',emo:'🗽',lbl:['앵글로','아메리카'],lx:172,ly:120,cx:172,cy:150,
+   path:'M120,60 Q88,82 100,132 Q112,184 172,204 Q232,208 254,166 Q268,124 240,88 Q200,52 160,58 Z',
+   clim:'냉대~온대 등 다양',rel:'개신교 중심',lang:'영어',
+   life:'밀·육류 식단과 상업적 대농장, 이민자들이 세운 산업·상업 사회.',
+   cards:[
+     {id:'na1',emo:'🌾',ty:'넓은 평야와 상업적 농업',tag:'자연',ds:'광활한 평야와 온화한 기후가 대규모 상업적 농업을 발달시켰다.'},
+     {id:'na2',emo:'⛪',ty:'유럽 이주와 영어·개신교',tag:'인문',ds:'영국 등 유럽 이주민이 영어와 개신교, 산업 문화를 이식했다.'}
+   ]},
+  {key:'la',nm:'라틴아메리카',emo:'💃',lbl:['라틴','아메리카'],lx:290,ly:340,cx:290,cy:370,
+   path:'M250,240 Q228,264 240,314 Q250,384 290,434 Q320,462 336,420 Q346,370 320,312 Q304,262 285,242 Z',
+   clim:'열대·고산 기후',rel:'가톨릭',lang:'에스파냐어·포르투갈어',
+   life:'옥수수·감자 등 원주민 작물과 유럽 식문화가 섞이고, 원주민·유럽·아프리카가 어우러진 혼혈(메스티소) 문화.',
+   cards:[
+     {id:'la1',emo:'🌽',ty:'고산·열대의 삶',tag:'자연',ds:'안데스 고산지대와 열대 기후가 옥수수·감자 재배와 고산 도시 문화를 낳았다.'},
+     {id:'la2',emo:'🎭',ty:'원주민+유럽+아프리카 혼합문화',tag:'인문',ds:'식민 지배로 에스파냐어·가톨릭이 퍼지고 여러 민족 문화가 융합됐다.'}
+   ]},
+  {key:'eu',nm:'유럽',emo:'⛪',lbl:['유럽'],lx:487,ly:112,cx:487,cy:140,
+   path:'M430,72 Q410,94 426,134 Q446,168 500,162 Q546,152 546,112 Q540,76 500,66 Q460,60 430,72 Z',
+   clim:'서안해양성·지중해성',rel:'크리스트교(가톨릭·개신교·정교)',lang:'인도·유럽어족',
+   life:'밀·빵과 육류, 석조 가옥. 산업혁명을 이끈 산업·시민 문화의 중심.',
+   cards:[
+     {id:'eu1',emo:'🌦️',ty:'온화한 기후와 혼합 농업',tag:'자연',ds:'온화·습윤한 기후가 밀농사와 목축을 겸하는 혼합 농업을 발달시켰다.'},
+     {id:'eu2',emo:'✝️',ty:'크리스트교와 산업 문화',tag:'인문',ds:'크리스트교 전통과 산업혁명이 유럽 생활·가치관의 바탕이 됐다.'}
+   ]},
+  {key:'dry',nm:'건조(이슬람) 문화권',emo:'🕌',lbl:['건조·이슬람'],lx:576,ly:216,cx:576,cy:244,
+   path:'M470,176 Q455,202 470,238 Q490,270 560,266 Q640,262 686,234 Q700,204 682,180 Q650,166 580,170 Q510,170 470,176 Z',
+   clim:'건조 기후(사막·초원)',rel:'이슬람교',lang:'아랍어',
+   life:'온몸을 감싸는 헐렁한 옷, 두꺼운 벽·작은 창의 흙집. 유목과 오아시스 농업, 돼지고기·술 금기와 라마단.',
+   cards:[
+     {id:'dry1',emo:'🏜️',ty:'건조기후와 유목·오아시스',tag:'자연',ds:'뜨겁고 건조한 사막 기후가 유목과 오아시스 농업, 통풍 좋은 흙집을 낳았다.'},
+     {id:'dry2',emo:'☪️',ty:'이슬람교 생활 문화',tag:'인문',ds:'이슬람교가 음식 금기·복장·라마단 등 일상 규범을 형성했다.'}
+   ]},
+  {key:'af',nm:'아프리카(사하라 이남)',emo:'🥁',lbl:['아프리카'],lx:540,ly:344,cx:540,cy:372,
+   path:'M492,270 Q472,300 486,352 Q504,410 546,432 Q590,438 606,384 Q618,330 598,286 Q580,268 540,270 Q512,270 492,270 Z',
+   clim:'열대(사바나·열대우림)',rel:'토속 신앙 + 이슬람·크리스트교',lang:'부족별 매우 다양(수천 언어)',
+   life:'열대 기후 속 전통 농업과 공동체 중심 생활, 다채로운 부족 문화와 음악·춤.',
+   cards:[
+     {id:'af1',emo:'🌴',ty:'열대기후와 다양한 부족',tag:'자연',ds:'넓은 열대 기후대에 수많은 부족이 저마다의 전통 생활을 이어 왔다.'},
+     {id:'af2',emo:'🪘',ty:'토속 신앙과 공동체 문화',tag:'인문',ds:'부족 공동체와 토속 신앙, 외래 종교가 어우러진 다양한 문화가 나타난다.'}
+   ]},
+  {key:'in',nm:'인도(남부아시아)',emo:'🛕',lbl:['인도'],lx:672,ly:288,cx:672,cy:316,
+   path:'M636,232 Q620,258 634,300 Q650,336 686,332 Q712,322 712,286 Q708,250 686,232 Q662,222 636,232 Z',
+   clim:'몬순(계절풍) 기후',rel:'힌두교(다수)·불교·이슬람교',lang:'힌디어 등 다양한 언어',
+   life:'향신료를 쓴 카레와 사리, 소를 신성시(쇠고기 금기). 힌두교·불교의 발상지이며 다양한 종교가 공존.',
+   cards:[
+     {id:'in1',emo:'🌧️',ty:'몬순과 향신료·벼농사',tag:'자연',ds:'몬순의 비가 벼·밀 농사와 향신료 문화를 뒷받침한다.'},
+     {id:'in2',emo:'🕉️',ty:'힌두교와 종교의 다양성',tag:'인문',ds:'힌두교를 중심으로 불교·이슬람교 등이 공존하며 생활 규범을 이룬다.'}
+   ]},
+  {key:'ea',nm:'동아시아',emo:'🍚',lbl:['동아시아'],lx:816,ly:150,cx:816,cy:180,
+   path:'M735,92 Q712,116 730,160 Q752,198 820,206 Q892,206 906,160 Q912,116 884,92 Q840,76 790,80 Q756,82 735,92 Z',
+   clim:'계절풍(온대·냉대)',rel:'유교·불교·도교',lang:'한자 문화권(한국어·중국어·일본어)',
+   life:'쌀밥과 젓가락, 계절풍 기후의 벼농사. 유교의 예절과 한자를 공유하는 생활 문화.',
+   cards:[
+     {id:'ea1',emo:'🌾',ty:'계절풍 기후와 벼농사',tag:'자연',ds:'여름 계절풍의 비가 벼농사를 발달시켜 쌀 중심 식문화를 만들었다.'},
+     {id:'ea2',emo:'🏮',ty:'유교·불교와 한자 문화',tag:'인문',ds:'유교의 예절과 한자·불교가 동아시아 공통의 생활 규범을 형성했다.'}
+   ]},
+  {key:'sea',nm:'동남아시아',emo:'🌴',lbl:['동남아시아'],lx:830,ly:296,cx:830,cy:322,
+   path:'M760,250 Q740,272 756,306 Q778,334 838,332 Q898,326 906,290 Q902,256 872,246 Q820,240 760,250 Z',
+   clim:'열대(고온다습)',rel:'불교·이슬람교·크리스트교 등 다양',lang:'다양한 언어',
+   life:'열대의 벼농사(2기작)와 향신료, 물 위·기둥 위의 고상 가옥. 바닷길 교역으로 여러 종교가 뒤섞였다.',
+   cards:[
+     {id:'sea1',emo:'🏠',ty:'고온다습 기후와 고상 가옥',tag:'자연',ds:'덥고 습한 열대 기후가 바람이 통하는 고상 가옥과 벼농사를 낳았다.'},
+     {id:'sea2',emo:'⛵',ty:'교역로가 만든 다양한 종교',tag:'인문',ds:'해상 교역의 요충지라 불교·이슬람교·크리스트교가 함께 전해졌다.'}
+   ]},
+  {key:'oc',nm:'오세아니아',emo:'🦘',lbl:['오세아니아'],lx:892,ly:410,cx:892,cy:438,
+   path:'M828,368 Q808,392 824,428 Q846,458 906,454 Q958,446 962,406 Q956,368 920,360 Q872,356 828,368 Z',
+   clim:'온대·건조(넓은 초원)',rel:'개신교',lang:'영어 + 원주민 언어',
+   life:'영국 이주 문화가 바탕이며, 넓은 초원의 목축이 발달. 마오리·애버리진 등 원주민 문화가 공존한다.',
+   cards:[
+     {id:'oc1',emo:'🐑',ty:'초원과 목축',tag:'자연',ds:'넓은 초원과 온대·건조 기후가 대규모 목축을 발달시켰다.'},
+     {id:'oc2',emo:'🪃',ty:'이주민과 원주민 문화',tag:'인문',ds:'영국계 이주 문화와 마오리·애버리진 원주민 문화가 함께 어우러진다.'}
+   ]}
+];
+const CARD_BY_REGION={};
+REGIONS.forEach(r=>CARD_BY_REGION[r.key]=r.cards);
+const TOTAL_CARDS=REGIONS.reduce((s,r)=>s+r.cards.length,0);
+
+const explored=new Set();
+const collected=new Set();
+let curRegion=null;
+
+/* ===== 문화권 탐험 보드(타일) 그리기 ===== */
+function buildMap(){
+  const grid=el('regiongrid');
+  grid.innerHTML='';
+  REGIONS.forEach(r=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='rtile'; b.dataset.key=r.key;
+    b.setAttribute('aria-label',r.nm+' 탐험');
+    b.innerHTML='<span class="chk" data-chk="'+r.key+'"></span>'+
+      '<span class="emo">'+r.emo+'</span>'+
+      '<span class="nm">'+r.nm+'</span>'+
+      '<span class="badge">탐험 →</span>';
+    b.addEventListener('click',()=>exploreRegion(r.key));
+    grid.appendChild(b);
+  });
+}
+function regionEl(key){ return el('regiongrid').querySelector('.rtile[data-key="'+key+'"]'); }
+
+function exploreRegion(key){
+  curRegion=key;
+  explored.add(key);
+  const g=regionEl(key);
+  g.classList.add('explored','pulse');
+  setTimeout(()=>g.classList.remove('pulse'),500);
+  renderPanel(key);
+  updateMapStat();
+}
+function renderPanel(key){
+  const r=REGIONS.find(x=>x.key===key);
+  const list=CARD_BY_REGION[key];
+  let html='<div class="panelhead">'+r.emo+' '+r.nm+' <span class="pill">형성요인 '+list.length+'개</span></div>';
+  html+='<div class="summ">'+
+    '<div class="row"><span class="k">기후</span> '+r.clim+'</div>'+
+    '<div class="row"><span class="k">종교</span> '+r.rel+'</div>'+
+    '<div class="row"><span class="k">언어</span> '+r.lang+'</div>'+
+    '<div class="row"><span class="k">의식주</span> '+r.life+'</div>'+
+    '</div>';
+  html+=list.map(it=>{
+    const got=collected.has(it.id);
+    const tagCls=it.tag==='자연'?'nat':'hum';
+    return '<div class="issue'+(got?' got':'')+'" id="iss_'+it.id+'">'+
+      '<div class="emo">'+it.emo+'</div>'+
+      '<div class="body"><div class="ty">'+it.ty+' <span class="pill '+tagCls+'">'+it.tag+' 요인</span></div>'+
+      '<div class="ds">'+it.ds+'</div></div>'+
+      '<button class="col" onclick="collectCard(\''+it.id+'\',\''+key+'\')">'+(got?'✓ 수집됨':'수집 +')+'</button>'+
+    '</div>';
+  }).join('');
+  el('regionPanel').innerHTML=html;
+}
+function collectCard(id,key){
+  collected.add(id);
+  const box=el('iss_'+id);
+  if(box){ box.classList.add('got'); box.querySelector('.col').textContent='✓ 수집됨'; }
+  const all=CARD_BY_REGION[key].every(it=>collected.has(it.id));
+  if(all){
+    const g=regionEl(key);
+    g.classList.add('done');
+    g.querySelector('.chk[data-chk="'+key+'"]').textContent='✓';
+  }
+  updateMapStat();
+}
+function updateMapStat(){
+  el('statRegion').textContent='탐험한 문화권 '+explored.size+'/'+REGIONS.length;
+  el('statIssue').textContent='수집한 요인 카드 '+collected.size+'/'+TOTAL_CARDS;
+  el('mapProg').style.width=(collected.size/TOTAL_CARDS*100)+'%';
+}
+function resetMap(){
+  explored.clear(); collected.clear(); curRegion=null;
+  buildMap(); updateMapStat();
+  el('regionPanel').innerHTML='<div class="empty">👆 위 지도에서 문화권을 눌러 특징과 형성 요인을 탐험해 보세요.</div>';
+}
+
+/* ===== 미션(형성요인·문화권 식별 + 태도) ===== */
+const MISSIONS=[
+  {emoji:'🍚',txt:'쌀밥을 <b>젓가락</b>으로 먹고, <b>유교와 한자</b>를 공유하며 계절풍 기후 속 벼농사를 지어 온 문화권은?',
+   opts:[['동아시아 문화권',2,'정답! 벼농사·젓가락·유교·한자는 동아시아 문화권의 대표 특징이다.'],
+         ['건조(이슬람) 문화권',0,'건조 문화권은 유목·이슬람교가 중심이다. 벼농사·한자는 동아시아의 특징.'],
+         ['유럽 문화권',0,'유럽은 밀·빵과 크리스트교 중심. 젓가락·한자는 동아시아다.']]},
+  {emoji:'🏜️',txt:'온몸을 감싸는 헐렁한 옷, 두꺼운 벽과 작은 창의 흙집, 유목 생활. 이런 의식주를 만든 가장 큰 <b>자연적</b> 형성 요인은?',
+   opts:[['뜨겁고 건조한 사막 기후',2,'정답! 강한 햇빛·모래바람·큰 일교차라는 건조 기후가 이런 의식주를 만들었다.'],
+         ['이슬람교라는 종교',0,'종교는 인문적 요인이다. 옷·집의 형태는 우선 "건조 기후"라는 자연환경에서 비롯됐다.'],
+         ['벼농사에 알맞은 강수',0,'건조 지역은 물이 부족해 벼농사가 어렵다. 사막 기후가 핵심 요인이다.']]},
+  {emoji:'🕌',txt:'돼지고기와 술을 먹지 않고, 라마단에 금식하며, 하루 다섯 번 기도한다. 이 생활 양식을 만든 <b>인문적</b> 형성 요인은?',
+   opts:[['이슬람교라는 종교',2,'정답! 음식 금기·라마단·기도는 이슬람교라는 종교(인문 요인)에서 비롯된 생활 문화다.'],
+         ['건조한 사막 기후',1,'자연도 삶에 영향을 주지만, 금기·기도 같은 규범의 직접 원인은 종교(인문 요인)다.'],
+         ['험준한 산지 지형',0,'지형은 이 관습과 관련이 적다. 핵심은 이슬람교라는 종교다.']]},
+  {emoji:'💃',txt:'<b>에스파냐어·포르투갈어</b>를 쓰고 <b>가톨릭</b>을 믿으며, 원주민·유럽·아프리카 문화가 섞인 혼혈(메스티소) 문화가 발달한 문화권은?',
+   opts:[['라틴아메리카 문화권',2,'정답! 식민 지배로 남유럽 언어·가톨릭이 퍼지고 여러 민족이 융합된 라틴아메리카다.'],
+         ['앵글로아메리카 문화권',0,'앵글로아메리카는 영어·개신교 중심이다. 에스파냐어·가톨릭·혼혈은 라틴아메리카.'],
+         ['오세아니아 문화권',0,'오세아니아는 영어권+원주민 문화다. 혼혈·가톨릭은 라틴아메리카의 특징.']]},
+  {emoji:'🌧️',txt:'다음 중 문화권 형성의 <b>자연적 요인</b>끼리 바르게 묶은 것은?',
+   opts:[['기후 · 지형 · 식생',2,'정답! 기후·지형·식생은 자연환경, 곧 자연적 형성 요인이다.'],
+         ['종교 · 언어 · 산업',0,'그것은 사람이 만든 인문적 요인이다. 자연적 요인은 기후·지형·식생.'],
+         ['정치 제도 · 경제 체제',0,'제도·경제도 인문적 요인이다. 자연적 요인은 기후·지형·식생이다.']]},
+  {emoji:'🤝',txt:'손으로 음식을 먹는 인도, 소를 신성시하는 힌두교처럼 <b>낯선 문화</b>를 만났을 때 세계시민으로서 가장 바람직한 태도는?',
+   opts:[['그 사회의 환경·역사 속에서 이해하는 문화 상대주의',2,'정답! 문화에는 우열이 없으며, 각 문화를 그 맥락에서 이해하는 것이 문화 상대주의다.'],
+         ['무조건 남의 문화가 더 낫다고 따르는 태도',1,'그것은 문화 사대주의다. 자기 문화를 지나치게 낮추는 것도 바람직하지 않다.'],
+         ['내 문화가 기준이라 여기며 낯선 문화를 무시',0,'그것은 자문화 중심주의다. 다른 문화를 편견 없이 존중하는 태도가 필요하다.']]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+' / '+MISSIONS.length+'</b><br>'+m.txt;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>'<button onclick="choose('+i+')">'+o[0]+'</button>').join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], pts=m.opts[i][1];
+  mChoice[mIdx]={i,pts};
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'picked-bad')); });
+  const icon= pts>=2?'🌟':pts===1?'💡':'🤔';
+  el('mFeedback').innerHTML='<div class="feedback">'+icon+' +'+pts+'점 · '+m.opts[i][2]+'</div>';
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  el('mNext').textContent=(mIdx===MISSIONS.length-1)?'결과 보기 →':'다음 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+
+/* ===== 결과 카드 ===== */
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+function explType(pctv){
+  if(pctv>=0.9) return {t:'세계 문화 탐험 마스터 🏅',d:'문화권과 형성 요인을 정확히 짚고, 문화 상대주의를 실천한다.'};
+  if(pctv>=0.7) return {t:'열린 마음의 세계시민 🤝',d:'다양한 문화를 편견 없이 이해할 줄 아는 탐험가다.'};
+  if(pctv>=0.5) return {t:'성장하는 문화 탐험가 🌱',d:'문화권과 요인을 익혀 가는 중. 조금만 더 탐험해 보자.'};
+  return {t:'탐험의 시작 🧭',d:'세계 문화권의 세계에 막 발을 들인 단계. 함께 배워 나가자.'};
+}
+function getBadges(pctv){
+  const b=[];
+  if(explored.size>=REGIONS.length) b.push('🗺️ 세계 탐험가');
+  if(collected.size>=TOTAL_CARDS) b.push('🃏 요인 수집가');
+  if(totalPts()===MISSIONS.length*2) b.push('🎯 식별 마스터');
+  if(pctv>=0.8) b.push('🌏 문화 상대주의자');
+  if(!b.length) b.push('🌱 첫걸음');
+  return b;
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const max=MISSIONS.length*2, tot=totalPts(), pctv=max?tot/max:0;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#17A2B8'); g.addColorStop(1,'#0f7c8c');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#0f7c8c'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌏 세계 문화 탐험 리포트', W/2, 122);
+  ctx.fillStyle='#5a707a'; ctx.font='20px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회1 · 문화와 다양성 · 세계 문화권', W/2, 162);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#14323a'; ctx.font='bold 30px "Malgun Gothic",sans-serif'; ctx.fillText(name, W/2, 224);
+  // 점수 원
+  const cx=W/2, cy=356, r=98;
+  ctx.lineWidth=24; ctx.strokeStyle='#e0edef'; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle= pctv>=0.8?'#17A2B8':(pctv>=0.5?'#f2a71b':'#e8734d');
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*(pctv||0.001)); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#14323a'; ctx.font='bold 50px "Malgun Gothic",sans-serif'; ctx.fillText(tot+'', cx, cy+2);
+  ctx.fillStyle='#5a707a'; ctx.font='19px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+34);
+  // 탐험 유형
+  const s=explType(pctv);
+  ctx.fillStyle='#0f7c8c'; ctx.font='bold 26px "Malgun Gothic",sans-serif'; ctx.fillText(s.t, W/2, cy+r+58);
+  ctx.fillStyle='#5a707a'; ctx.font='17px "Malgun Gothic",sans-serif';
+  wrapText(ctx,s.d,W/2,cy+r+88,W-160,23);
+  // 탐험 요약
+  let y=cy+r+140;
+  ctx.fillStyle='#14323a'; ctx.font='bold 21px "Malgun Gothic",sans-serif';
+  ctx.fillText('🗺️ 탐험한 문화권 '+explored.size+'/'+REGIONS.length+' · 🃏 요인 카드 '+collected.size+'/'+TOTAL_CARDS, W/2, y);
+  y+=44;
+  // 뱃지
+  ctx.fillStyle='#0f7c8c'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('획득 뱃지', W/2, y); y+=30;
+  const badges=getBadges(pctv);
+  ctx.font='18px "Malgun Gothic",sans-serif';
+  badges.forEach(bd=>{ ctx.fillStyle='#17A2B8'; ctx.fillText(bd, W/2, y); y+=30; });
+  // 미션 요약
+  y+=6; ctx.textAlign='left'; ctx.font='17px "Malgun Gothic",sans-serif';
+  const labels=['동아시아 식별','건조기후 요인','이슬람교 요인','라틴아메리카 식별','자연요인 구분','문화 상대주의'];
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i];
+    ctx.fillStyle='#14323a'; ctx.fillText(MISSIONS[i].emoji+' '+labels[i], 92, y);
+    ctx.textAlign='right';
+    if(c){ ctx.fillStyle=c.pts>=2?'#17A2B8':(c.pts===1?'#f2a71b':'#e8734d'); ctx.fillText('+'+c.pts+'점', W-92, y); }
+    else { ctx.fillStyle='#a9b5b8'; ctx.fillText('미완료', W-92, y); }
+    ctx.textAlign='left'; y+=32;
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#a9b5b8'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 세계 문화권 지도 탐험', W/2, H-58);
+}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(' '); let line=''; const lines=[];
+  words.forEach(w=>{ const test=line?line+' '+w:w;
+    if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=w; } else line=test; });
+  if(line) lines.push(line);
+  lines.forEach((ln,i)=>ctx.fillText(ln,x,y+i*lh));
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download='세계문화탐험리포트_'+(el('studentName').value||'학생')+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+function openPNG(){ drawResult(); const url=el('resultCanvas').toDataURL('image/png'); window.open(url,'_blank'); }
+
+/* ===== 탭 ===== */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','map','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['map','mission','result'].forEach(t=>el('tab-'+t).classList.add('hide'));
+buildMap(); updateMapStat(); renderMission();
+</script>
+</body>
+</html>

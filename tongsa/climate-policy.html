@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기후변화 대응 정책 시뮬레이터 · 통합사회1 Ⅲ 자연환경과 인간</title>
+<style>
+  :root{
+    --bg:#f4f7f0; --surface:#ffffff; --ink:#1e2a1c; --sub:#5f6f57;
+    --primary:#2f6b3c; --primary-d:#1f4d2a; --sage:#8cb369; --line:#e4e8dc;
+    --emi:#d9534f; --emi-d:#b23b37;           /* 탄소배출: 낮을수록 좋음(높으면 빨강) */
+    --cost:#d8973c; --cost-d:#b57a26;         /* 비용 */
+    --acc:#3d7ea6; --acc-d:#2c5f80;           /* 사회적 수용성 */
+    --ok:#2f8b4e; --warn:#c0562f;
+    --shadow:0 6px 20px rgba(40,60,30,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:940px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;bottom:-40px;width:170px;height:170px;
+    background:radial-gradient(circle,rgba(140,179,105,.38),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.92;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.94}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:78px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--sage)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#eaf1e4;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:#f2f6ec;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .axisbox{border-radius:12px;padding:13px;font-size:13.5px;border:1px solid var(--line)}
+  .axisbox.miti{background:#eef7f0;border-color:#cbe6d3}
+  .axisbox.adap{background:#eef4f8;border-color:#cfe0eb}
+  .axisbox h3{margin:0 0 4px}
+  .twobox{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.twobox{grid-template-columns:1fr}}
+  /* 정책 설계 화면 */
+  .designgrid{display:grid;grid-template-columns:1.02fr 1fr;gap:16px}
+  @media(max-width:720px){.designgrid{grid-template-columns:1fr}}
+  canvas{max-width:100%;height:auto;display:block}
+  #pathway{width:100%;max-width:340px;margin:0 auto;background:#fff}
+  .gauges{margin-top:6px}
+  .gauge{margin:9px 0}
+  .gauge .glab{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:3px}
+  .gauge .track{height:16px;background:#eef1e8;border-radius:99px;overflow:hidden}
+  .gauge .track i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.4,1.3,.5,1)}
+  .gauge.emi .track i{background:linear-gradient(90deg,#e88a56,var(--emi))}
+  .gauge.cost .track i{background:linear-gradient(90deg,#eab866,var(--cost))}
+  .gauge.acc .track i{background:linear-gradient(90deg,#77aecb,var(--acc))}
+  .gauge.emi .glab .v{color:var(--emi-d)} .gauge.cost .glab .v{color:var(--cost-d)} .gauge.acc .glab .v{color:var(--acc-d)}
+  .budgetbar{display:flex;align-items:center;gap:10px;background:#f2f6ec;border:1px solid var(--line);
+    border-radius:12px;padding:10px 13px;margin-bottom:10px;font-size:13.5px;font-weight:700}
+  .budgetbar .track{flex:1;height:12px;background:#e2e8dc;border-radius:99px;overflow:hidden}
+  .budgetbar .track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sage),var(--cost));transition:width .3s}
+  .budgetbar.over .track i{background:var(--warn)}
+  .goalbox{display:flex;align-items:center;gap:12px;background:#f2f6ec;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-top:10px}
+  .goalbox .big{font-size:28px;font-weight:800;color:var(--primary-d);min-width:52px;text-align:center;line-height:1.05}
+  .goalbox .big small{display:block;font-size:11px;color:var(--sub);font-weight:700}
+  .goalbar{flex:1}
+  .goalbar .track{height:12px;background:#e6ecdf;border-radius:99px;overflow:hidden}
+  .goalbar .track i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--emi),var(--cost),var(--ok));transition:.4s}
+  .goalbar .glab{font-size:13.5px;font-weight:800;margin-top:4px;color:var(--primary-d)}
+  .warnbadge{display:none;background:#fbeee6;border:1px solid #edc7ad;color:#9c4a1f;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-top:10px}
+  .warnbadge.on{display:block;animation:pulse 1.2s infinite}
+  .warnbadge.win{background:#e6f5ec;border-color:#b6e0c5;color:#1a7a44}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,86,47,.26)}50%{box-shadow:0 0 0 6px rgba(192,86,47,0)}}
+  .pcard{border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff;margin-bottom:9px;transition:.15s}
+  .pcard.on{border-color:var(--sage);background:#f6faf1}
+  .pcard .top{display:flex;align-items:center;gap:7px}
+  .pcard .emo{font-size:21px}
+  .pcard .nm{font-weight:800;font-size:14px;line-height:1.2}
+  .pcard .cat{margin-left:auto;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 7px}
+  .cat.m{background:#e4f2e8;color:var(--primary-d)} .cat.a{background:#e4eef4;color:var(--acc-d)}
+  .pcard .eff{display:flex;gap:5px;margin:7px 0 6px;flex-wrap:wrap}
+  .pcard .ef{font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px}
+  .ef.emi{background:#f7e4df;color:var(--emi-d)} .ef.cost{background:#faeecf;color:var(--cost-d)} .ef.acc{background:#e0ecf3;color:var(--acc-d)}
+  .ef.neg{opacity:.95}
+  .pcard .slrow{display:flex;align-items:center;gap:10px}
+  .pcard input[type=range]{flex:1;accent-color:var(--primary);height:22px}
+  .pcard .pct{font-weight:800;min-width:44px;text-align:right;font-size:14px;color:var(--primary-d)}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.ocher{background:var(--cost);color:#3a2c07}
+  .btn.ghost{background:#eef1e8;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;color:var(--primary-d)}
+  .presets button:active{transform:scale(.96)}
+  /* 미션 */
+  .mission-scenario{background:#eef7f0;border:1px solid #cbe6d3;border-radius:12px;padding:15px;font-size:15px;animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .mission-scenario .emoji{font-size:28px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left;transition:.12s}
+  .opts button:hover{border-color:var(--primary)}
+  .opts button.sel{border-color:var(--primary);background:#eef5ea;color:var(--primary-d)}
+  .opts button.best{border-color:var(--ok);background:#e6f5ec;color:#1a7a44}
+  .opts button.bad{border-color:var(--warn);background:#fbeee6;color:#9c4a1f}
+  .opts button:disabled{cursor:default}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e6f5ec;color:#1a7a44}
+  .feedback.mid{background:#fbf3e0;color:#8a6a1a}
+  .feedback.no{background:#fbeee6;color:#9c4a1f}
+  .progress{height:8px;background:#eef1e8;border-radius:99px;overflow:hidden;margin:10px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--primary),var(--cost));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:56%;max-width:220px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#eef1e8;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);background:#f2f6ec;border-radius:8px;padding:9px 11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회1 · Ⅲ 자연환경과 인간 · 기후변화와 지속가능한 삶</div>
+    <h1>🌍 기후변화 대응 정책 시뮬레이터 — 2050 탄소중립 도전</h1>
+    <p>지구 평균기온이 <b>1.5℃</b> 선을 넘보고 있다. 네가 정책 결정자라면? <b>감축(줄이기)</b>과 <b>적응(대비하기)</b>을 조절해 <b>탄소배출·비용·사회적 수용성</b>의 트레이드오프를 풀고, 탄소도 살림(예산)도 민심(수용성)도 지켜 <b>2050 탄소중립</b>으로 지구를 구해보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="policy">2. 정책 설계</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>기후변화, 왜 일어나고 어떻게 대응할까?</h2>
+      <p class="lead"><b>기후변화</b>는 화석연료 사용 등으로 <b>온실가스(이산화탄소·메탄 등)</b>가 늘어 지구 평균기온이 오르는 현상이다. 그 결과 <b>폭염·가뭄·집중호우·해수면 상승·생태계 교란</b>이 심해진다.</p>
+
+      <h3>대응의 두 축 — 감축과 적응</h3>
+      <div class="twobox">
+        <div class="axisbox miti"><h3 style="color:var(--primary-d)">🏭 감축 (Mitigation)</h3><b>온실가스 배출 자체를 줄이는</b> 것. 원인을 없앤다. 재생에너지 전환, 탄소세, 배출 규제, 숲 조성(흡수) 등.</div>
+        <div class="axisbox adap"><h3 style="color:var(--acc-d)">🛡️ 적응 (Adaptation)</h3>이미 진행된 변화의 <b>피해에 대비</b>하는 것. 원인이 아닌 결과에 대응한다. 방재 인프라, 폭염 대응, 적응형 농업·물관리 등.</div>
+      </div>
+      <p class="lead" style="margin-top:10px">감축만으로도, 적응만으로도 부족하다. <b>감축으로 원인을 줄이면서 적응으로 피해에 대비</b>하는 <b>병행 전략</b>이 필요하다.</p>
+
+      <h3>정책은 서로 상충한다 (트레이드오프)</h3>
+      <div class="grid2">
+        <div class="concept">💸 <b>탄소세·배출 규제</b>는 배출을 강력히 줄이지만, 기업·시민 부담이 커 <b>사회적 수용성(찬성)</b>이 떨어질 수 있다.</div>
+        <div class="concept">☀️ <b>재생에너지·방재 인프라</b>는 환경과 안전에 좋지만 <b>큰 투자 비용</b>이 든다. 예산은 한정돼 있다.</div>
+      </div>
+      <p class="lead" style="margin-top:10px">그래서 <b>탄소배출 ↓ · 비용 ↓ · 수용성 ↑</b> 셋을 동시에 만족시키기 어렵다. 정책을 <b>영리하게 조합</b>해야 한다.</p>
+
+      <h3>국제 협력 — 파리협정</h3>
+      <div class="concept">🌐 기후변화는 한 나라만의 문제가 아니다. <b>파리협정(2015)</b>에서 세계 각국은 산업화 이전 대비 지구 기온 상승을 <b>1.5~2℃ 이내</b>로 억제하기로 합의하고, 나라마다 감축 목표(NDC)를 제출한다. 우리나라도 <b>2050 탄소중립</b>을 선언했다.</div>
+
+      <h3>이번 시뮬레이터의 목표</h3>
+      <div>
+        <span class="pill">🎯 탄소배출 ≤ 30 (탄소중립 근접)</span>
+        <span class="pill">💵 비용 ≤ 예산 100</span>
+        <span class="pill">🤝 사회적 수용성 ≥ 50</span>
+      </div>
+      <div class="note">※ 이 교구의 예산·지표·효과 값은 개념 이해를 돕기 위한 <b>교육용 단순 가정값</b>이며, 실제 정책 수치가 아닙니다.</div>
+      <div class="note" style="background:#eef5ea;color:var(--primary-d)">👩‍🏫 이렇게 쓰세요: 모둠별로 정책 조합을 설계해 <b>정책점수·탄소중립 달성</b>을 겨루게 하세요. "누가 가장 영리하게 탄소중립에 도달하나" 대결로 트레이드오프를 몸으로 익힙니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('policy')">정책을 설계하러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 정책 설계 ===== -->
+  <section id="tab-policy" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>기후 정책 설계 · 감축·적응 강도를 조절하자</h2>
+      <p class="lead">각 정책의 <b>실행 강도</b>를 슬라이더로 조절하면 <b>탄소배출·비용·수용성</b>이 실시간으로 움직이고, <b>2050 배출 경로 그래프</b>가 반응한다. 목표는 배출을 <b>탄소중립선(≤30)</b> 아래로 내리는 것!</p>
+
+      <div class="budgetbar" id="budgetBar">
+        <span>💵 예산</span>
+        <div class="track"><i id="budgetFill"></i></div>
+        <span id="budgetTxt">0 / 100</span>
+      </div>
+
+      <div class="designgrid">
+        <div>
+          <canvas id="pathway" width="340" height="270"></canvas>
+          <div class="gauges">
+            <div class="gauge emi"><div class="glab"><span>🏭 탄소배출 <small style="font-weight:700;color:var(--sub)">(낮을수록 좋음)</small></span><span class="v" id="gvEmi">100</span></div><div class="track"><i id="gEmi"></i></div></div>
+            <div class="gauge cost"><div class="glab"><span>💵 비용</span><span class="v" id="gvCost">0</span></div><div class="track"><i id="gCost"></i></div></div>
+            <div class="gauge acc"><div class="glab"><span>🤝 사회적 수용성</span><span class="v" id="gvAcc">60</span></div><div class="track"><i id="gAcc"></i></div></div>
+          </div>
+          <div class="goalbox">
+            <div class="big" id="scoreNum">0<small>정책점수</small></div>
+            <div class="goalbar">
+              <div class="track"><i id="goalBar"></i></div>
+              <div class="glab" id="goalGrade">정책을 조절해 보자</div>
+            </div>
+          </div>
+          <div class="warnbadge" id="warnBadge"></div>
+        </div>
+        <div>
+          <div class="presets">
+            <button onclick="applyPreset('miti')">🏭 감축 몰빵</button>
+            <button onclick="applyPreset('adap')">🛡️ 적응 중심</button>
+            <button onclick="applyPreset('balance')">⚖️ 균형 전략</button>
+            <button onclick="applyPreset('reset')">↺ 초기화</button>
+          </div>
+          <div id="cardList"></div>
+        </div>
+      </div>
+
+      <div class="note">슬라이더를 올릴수록 정책을 강하게 실행합니다. <b>탄소세·규제</b>는 배출을 크게 줄이지만 수용성을 떨어뜨리고, <b>적응 정책</b>은 배출을 거의 못 줄입니다. 예산을 넘기거나 수용성이 무너지면 경고가 뜹니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">기후 위기 미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>기후 위기 시나리오 (6)</h2>
+      <p class="lead">지구를 덮치는 6가지 기후 위기. 감축·적응·트레이드오프·국제협력을 근거로 최선의 정책을 골라보자. (선택마다 0~2점)</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn ghost hide" id="mPrev" onclick="prevMission()">← 이전</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>기후 정책 리포트</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="1060"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn ocher" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <a href="#" onclick="openPNG();return false;" style="align-self:center;font-size:13px;color:var(--acc-d);font-weight:800;text-decoration:underline">📱 저장이 안 되면 여기(새 탭)</a>
+        <button class="btn ghost" onclick="go('policy')">정책 다시 설계</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회1 Ⅲ 자연환경과 인간 · 기후변화 대응(감축·적응)·탄소중립·파리협정 [10통사1-03] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    예산·지표는 교육용 가정값입니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+
+/* ============ 데이터 ============ */
+const BUDGET = 100;
+const BASE = {emi:100, cost:0, acc:60};   // 아무 정책도 없을 때(현재 배출 100)
+const EMI_GOAL = 30;                        // 탄소중립 근접 목표
+const ACC_MIN = 50;                         // 사회적 수용성 임계
+// 정책: cat m=감축, a=적응. 100% 강도일 때 효과 — emi=배출 감소량, cost=비용, acc=수용성 변화
+const POLICIES = [
+  {k:'renew',  emo:'☀️', nm:'재생에너지 확대',   cat:'m', emi:28, cost:30, acc:8},
+  {k:'tax',    emo:'💸', nm:'탄소세 도입',       cat:'m', emi:22, cost:6,  acc:-20},
+  {k:'reg',    emo:'🏭', nm:'배출 규제 강화',     cat:'m', emi:20, cost:10, acc:-12},
+  {k:'forest', emo:'🌳', nm:'산림·도시숲(흡수원)',cat:'m', emi:10, cost:12, acc:14},
+  {k:'transit',emo:'🚆', nm:'친환경 교통 전환',   cat:'m', emi:14, cost:22, acc:6},
+  {k:'defense',emo:'🛡️', nm:'기후재난 방재 인프라',cat:'a', emi:2,  cost:26, acc:16},
+  {k:'agri',   emo:'🌾', nm:'적응형 농업·물관리', cat:'a', emi:0,  cost:14, acc:10}
+];
+const PMAP = {}; POLICIES.forEach(p=>PMAP[p.k]=p);
+let plan = {}; POLICIES.forEach(p=>plan[p.k]=0);   // 강도 0~100
+
+/* ============ 계산 ============ */
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function metrics(){
+  let emi=BASE.emi, cost=BASE.cost, acc=BASE.acc, miti=0, adap=0;
+  POLICIES.forEach(p=>{
+    const f=plan[p.k]/100;
+    emi-=p.emi*f; cost+=p.cost*f; acc+=p.acc*f;
+    if(p.cat==='m') miti+=f; else adap+=f;
+  });
+  emi=clamp(emi,0,100); cost=clamp(cost,0,220); acc=clamp(acc,0,100);
+  const over = cost>BUDGET;
+  const goalMet = (emi<=EMI_GOAL) && (cost<=BUDGET) && (acc>=ACC_MIN);
+  // 정책점수(0~100)
+  const carbonScore = clamp((100-emi)/(100-EMI_GOAL)*100, 0, 100);
+  const acceptScore = clamp(acc, 0, 100);
+  const budgetScore = cost<=BUDGET ? 100 : clamp(100-(cost-BUDGET)*1.5, 0, 100);
+  const score = Math.round(0.45*carbonScore + 0.25*acceptScore + 0.30*budgetScore);
+  // 등급
+  let grade, gicon;
+  if(goalMet && score>=85){ grade='탄소중립 마스터'; gicon='🏆'; }
+  else if(goalMet){ grade='2050 탄소중립 달성'; gicon='🌍'; }
+  else if(score>=72){ grade='기후위기 대응 우수'; gicon='🌱'; }
+  else if(score>=58){ grade='노력하는 기후정책'; gicon='🌤️'; }
+  else { grade='기후 대응 미흡'; gicon='⚠️'; }
+  // 성향 뱃지
+  let badge;
+  if(acc<40) badge='⚠️ 사회적 반발 위험';
+  else if(miti>0.3 && adap>0.3 && Math.abs(miti-adap*1.4)<1.2) badge='⚖️ 감축·적응 균형 전략';
+  else if(miti > adap*1.6+0.4) badge='🏭 감축 중심 전략';
+  else if(adap > miti+0.3) badge='🛡️ 적응 중심 전략';
+  else badge='⚖️ 감축·적응 균형 전략';
+  return {emi,cost,acc,over,goalMet,score,grade,gicon,badge,miti,adap};
+}
+
+/* ============ 2050 배출 경로 그래프 ============ */
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+// 배출 경로(2025→2050)를 그림. emi=현재 정책 기준 2050 배출(0~100)
+function drawPathwayOn(ctx, X, Y, W, H, emi, o){
+  o=o||{};
+  const yMax=120;
+  const yFor=v=>Y+H-(clamp(v,0,yMax)/yMax)*H;
+  const xS=X, xE=X+W;
+  // 배경/축
+  ctx.fillStyle=o.bg||'#fbfdfa'; ctx.fillRect(X,Y,W,H);
+  // 탄소중립 목표 구역(0~30) 초록 밴드
+  const yg=yFor(EMI_GOAL);
+  ctx.fillStyle=o.band||'rgba(47,139,78,.13)';
+  ctx.fillRect(X, yg, W, Y+H-yg);
+  // 격자 가로선
+  ctx.strokeStyle=o.grid||'#e4e8dc'; ctx.lineWidth=1;
+  [0,30,60,90,120].forEach(v=>{ const y=yFor(v); ctx.beginPath(); ctx.moveTo(X,y); ctx.lineTo(xE,y); ctx.stroke(); });
+  // 축 테두리
+  ctx.strokeStyle=o.axis||'#c8d2be'; ctx.lineWidth=1.4;
+  ctx.strokeRect(X,Y,W,H);
+  // 탄소중립선(30) 점선
+  ctx.strokeStyle=o.zero||'#2f8b4e'; ctx.lineWidth=1.8; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(X,yg); ctx.lineTo(xE,yg); ctx.stroke(); ctx.setLineDash([]);
+  // BAU(현행유지) 선: 100 -> 112 상승, 빨강 점선
+  ctx.strokeStyle=o.bau||'#d9534f'; ctx.lineWidth=2; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(xS,yFor(100)); ctx.lineTo(xE,yFor(112)); ctx.stroke(); ctx.setLineDash([]);
+  // 정책 경로 선: 100(2025) -> emi(2050)
+  const yEnd=yFor(emi);
+  const grad=ctx.createLinearGradient(xS,0,xE,0);
+  grad.addColorStop(0,'#8cb369'); grad.addColorStop(1, emi<=EMI_GOAL?'#2f8b4e':'#d8973c');
+  ctx.strokeStyle=grad; ctx.lineWidth=o.lw||3.4; ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(xS,yFor(100)); ctx.lineTo(xE,yEnd); ctx.stroke();
+  // 끝점
+  ctx.fillStyle= emi<=EMI_GOAL?'#2f8b4e':'#d8973c';
+  ctx.beginPath(); ctx.arc(xE-2,yEnd,o.dot||5.5,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  // 라벨
+  const fs=o.fs||11;
+  ctx.font='bold '+fs+'px "Malgun Gothic",sans-serif'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle=o.tx||'#5f6f57'; ctx.textAlign='left';
+  ctx.fillText('2025', xS+2, Y+H+ (o.xlab||14));
+  ctx.textAlign='right'; ctx.fillText('2050', xE-2, Y+H+(o.xlab||14));
+  ctx.textAlign='left'; ctx.fillStyle=o.zero||'#2f8b4e';
+  ctx.fillText('탄소중립 목표('+EMI_GOAL+')', X+5, yg-5);
+  ctx.fillStyle=o.bau||'#d9534f'; ctx.textAlign='right';
+  ctx.fillText('현행 유지', xE-4, yFor(112)-6);
+}
+let emiDisp=BASE.emi, pathTimer=null;
+function drawPathway(){
+  const cv=el('pathway'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  drawPathwayOn(ctx, 46, 14, cv._lw-60, cv._lh-42, emiDisp, {});
+  // y축 제목
+  ctx.save(); ctx.translate(12, (cv._lh-28)/2+14); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#8a9680'; ctx.font='bold 11px "Malgun Gothic",sans-serif'; ctx.textAlign='center';
+  ctx.fillText('연간 탄소배출량', 0, 0); ctx.restore();
+}
+function animatePath(target){
+  if(pathTimer) clearInterval(pathTimer);
+  pathTimer=setInterval(()=>{
+    const d=target-emiDisp;
+    if(Math.abs(d)>0.5){ emiDisp+=d*0.28; } else { emiDisp=target; clearInterval(pathTimer); pathTimer=null; }
+    drawPathway();
+  },20);
+}
+
+/* ============ 설계 UI ============ */
+function buildCards(){
+  el('cardList').innerHTML = POLICIES.map(p=>{
+    const chips=[['emi',-p.emi],['cost',p.cost],['acc',p.acc]].filter(x=>x[1]!==0).map(x=>{
+      const lab={emi:'🏭',cost:'💵',acc:'🤝'}[x[0]];
+      const sign=x[1]>0?'+':''; return `<span class="ef ${x[0]}${x[1]<0?' neg':''}">${lab}${sign}${x[1]}</span>`;
+    }).join('');
+    const catlab=p.cat==='m'?'감축':'적응';
+    return `<div class="pcard" id="pc-${p.k}">
+      <div class="top"><span class="emo">${p.emo}</span><span class="nm">${p.nm}</span><span class="cat ${p.cat}">${catlab}</span></div>
+      <div class="eff">${chips}</div>
+      <div class="slrow">
+        <input type="range" min="0" max="100" step="5" value="0" id="sl-${p.k}"
+          oninput="onSlide('${p.k}', this.value)" aria-label="${p.nm} 실행 강도">
+        <span class="pct" id="pct-${p.k}">0%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function onSlide(k,v){ plan[k]=+v; el('pct-'+k).textContent=v+'%'; el('pc-'+k).classList.toggle('on', +v>0); sync(true); }
+function applyPreset(kind){
+  POLICIES.forEach(p=>plan[p.k]=0);
+  if(kind==='miti')    Object.assign(plan,{tax:100,reg:100,renew:100,transit:60});
+  if(kind==='adap')    Object.assign(plan,{defense:100,agri:100,forest:80,renew:30});
+  if(kind==='balance') Object.assign(plan,{renew:100,tax:80,reg:50,forest:100,transit:40,defense:45,agri:30});
+  // reset: 전부 0 유지
+  POLICIES.forEach(p=>{ el('sl-'+p.k).value=plan[p.k]; el('pct-'+p.k).textContent=plan[p.k]+'%'; el('pc-'+p.k).classList.toggle('on',plan[p.k]>0); });
+  sync(true);
+}
+let lastM=null;
+function sync(animated){
+  const m=metrics(); lastM=m;
+  // 예산바
+  el('budgetTxt').textContent=Math.round(m.cost)+' / '+BUDGET;
+  el('budgetFill').style.width=Math.min(100,m.cost/BUDGET*100)+'%';
+  el('budgetBar').classList.toggle('over', m.over);
+  // 게이지
+  el('gEmi').style.width=m.emi+'%'; el('gvEmi').textContent=Math.round(m.emi);
+  el('gCost').style.width=Math.min(100,m.cost)+'%'; el('gvCost').textContent=Math.round(m.cost);
+  el('gAcc').style.width=m.acc+'%'; el('gvAcc').textContent=Math.round(m.acc);
+  // 정책점수
+  el('scoreNum').innerHTML=m.score+'<small>정책점수</small>';
+  el('goalBar').style.width=m.score+'%';
+  el('goalGrade').textContent=m.gicon+' '+m.grade+' · '+m.badge;
+  // 경고/성공
+  const wb=el('warnBadge'); wb.classList.remove('win');
+  if(m.goalMet){ wb.classList.add('on','win');
+    wb.innerHTML='🎉 <b>2050 탄소중립 목표 달성!</b> 배출을 탄소중립선 아래로 내리면서 예산과 사회적 수용성도 지켰어요.';
+  } else if(m.over){ wb.classList.add('on'); wb.classList.remove('win');
+    wb.innerHTML='⚠️ <b>재정 초과!</b> 비용이 예산('+BUDGET+')을 넘었습니다. 정책 강도를 조절하세요.';
+  } else if(m.acc<40){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>사회적 반발!</b> 수용성이 너무 낮아 정책이 좌초될 수 있어요. 시민이 반기는 정책도 함께 쓰세요.';
+  } else if(m.emi>60){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>탄소중립 요원:</b> 아직 배출이 너무 많아요. 감축 정책을 더 강화하세요.';
+  } else wb.classList.remove('on');
+  // 경로 그래프
+  if(animated) animatePath(m.emi);
+  else { emiDisp=m.emi; drawPathway(); }
+}
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {emoji:'🌡️', title:'기록적 폭염과 한파', desc:'해마다 폭염·한파가 극심해져 시민 건강과 농작물이 위협받는다. 가장 균형 잡힌 대응은?',
+   opts:[
+     {t:'재생에너지로 배출을 줄이면서(감축), 폭염 쉼터·물관리로 피해에도 대비한다(적응)', pts:2},
+     {t:'에어컨을 무제한 보급하고 화석연료 발전을 더 늘린다', pts:1},
+     {t:'날씨는 어쩔 수 없다며 아무 대책도 세우지 않는다', pts:0}],
+   why:'✅ 정답은 <b>감축과 적응의 병행</b>. 원인(온실가스)을 줄이는 감축과, 이미 온 피해에 대비하는 적응을 함께 써야 한다. 화석연료 에어컨 확대는 당장 시원해도 <b>탄소를 늘려 위기를 키우는</b> 악순환이다.'},
+  {emoji:'💸', title:'탄소세 도입 반발', desc:'탄소세를 도입하려 하자 기업과 서민이 "부담이 크다"며 강하게 반발한다. 어떻게 할까?',
+   opts:[
+     {t:'세수를 취약계층 지원·재생에너지에 돌려주는 공정한 전환으로 수용성을 높인다', pts:2},
+     {t:'반발이 무서워 탄소세를 완전히 없던 일로 한다', pts:1},
+     {t:'반발을 무시하고 세율을 최대로 밀어붙인다', pts:0}],
+   why:'✅ 정답은 <b>공정한 전환</b>. 탄소세는 배출을 강력히 줄이지만 <b>사회적 수용성(찬성)</b>을 떨어뜨리는 트레이드오프가 있다. 세수를 시민에게 되돌려 부담을 줄이면 감축과 수용성을 함께 잡을 수 있다.'},
+  {emoji:'🌊', title:'해수면 상승과 침수', desc:'해수면이 오르고 집중호우로 저지대 도시가 자주 잠긴다. 지금 당장 필요한 대응은?',
+   opts:[
+     {t:'제방·배수 시설 등 방재 인프라로 침수 피해에 적응하며, 배출 감축도 이어간다', pts:2},
+     {t:'배출만 줄이면 되니 침수 대비 시설은 짓지 않는다', pts:1},
+     {t:'위험 지역 주민에게 각자 알아서 대피하라고만 한다', pts:0}],
+   why:'✅ 정답은 <b>방재 인프라(적응) + 감축 병행</b>. 이미 진행된 해수면 상승은 감축만으로 당장 막을 수 없어 <b>적응</b>이 반드시 필요하다. 다만 적응만 하고 감축을 놓으면 위기가 계속 커진다.'},
+  {emoji:'⚡', title:'재생에너지 전환 비용', desc:'태양광·풍력으로 전환하려니 초기 투자 비용이 매우 크다. 재정은 한정돼 있다. 최선은?',
+   opts:[
+     {t:'예산 안에서 감축 효과가 큰 정책부터 우선 배분해 단계적으로 전환한다', pts:2},
+     {t:'비용이 든다는 이유로 전환을 아예 포기하고 석탄을 계속 쓴다', pts:1},
+     {t:'예산을 무시하고 모든 정책을 한꺼번에 최대로 실행한다', pts:0}],
+   why:'✅ 정답은 <b>예산 내 우선순위 배분</b>. 비용은 한정 자원이라 <b>트레이드오프</b>가 생긴다. 감축 효율이 높은 정책부터 배치해야 한다. 예산을 무시하면 재정이 붕괴하고, 포기하면 배출이 줄지 않는다.'},
+  {emoji:'🌐', title:'파리협정과 국제 공조', desc:'"우리나라만 줄이면 손해"라는 목소리가 나온다. 기후변화 국제협력에 대한 성숙한 태도는?',
+   opts:[
+     {t:'파리협정처럼 각국이 함께 감축 목표를 지켜야 효과가 있으므로 국제 공조에 적극 참여한다', pts:2},
+     {t:'다른 나라가 줄일 때까지 우리는 아무것도 하지 않는다', pts:1},
+     {t:'기후변화는 남의 나라 일이라며 협정에서 탈퇴한다', pts:0}],
+   why:'✅ 정답은 <b>국제 공조 참여</b>. 기후변화는 <b>전 지구적 문제</b>라 한 나라만으로 해결할 수 없다. <b>파리협정(2015)</b>에서 세계는 기온 상승 1.5~2℃ 억제에 합의했고, 각국의 감축 이행이 함께 있어야 실효를 낸다.'},
+  {emoji:'🌱', title:'2050 탄소중립, 어떻게?', desc:'우리 세대와 미래 세대를 위한 가장 지속가능한 기후 정책 방향은?',
+   opts:[
+     {t:'감축으로 배출을 줄이고 적응으로 대비하며, 비용·수용성까지 함께 고려한다', pts:2},
+     {t:'경제가 우선이니 배출은 나중에 생각한다', pts:1},
+     {t:'배출만 줄이면 되니 비용·시민 부담은 무시한다', pts:0}],
+   why:'✅ 정답은 <b>감축·적응 + 비용·수용성 통합 고려</b>. 지속가능한 기후 정책은 어느 하나만 앞세우지 않는다. 탄소중립은 <b>배출을 줄이면서 예산과 사회적 합의</b>를 함께 지킬 때 실현된다.'}
+];
+let mIdx=0; const mResult=new Array(MISSIONS.length).fill(null);
+function renderMission(){
+  const m=MISSIONS[mIdx];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<span class="emoji">${m.emoji}</span> <b>위기 ${mIdx+1}/${MISSIONS.length} · ${m.title}</b><br>${m.desc}`;
+  el('mScenario').style.animation='none'; void el('mScenario').offsetWidth; el('mScenario').style.animation='';
+  const chosen=mResult[mIdx];
+  el('mOpts').innerHTML=m.opts.map((o,i)=>{
+    let cls='';
+    if(chosen){ if(o.pts===2) cls=' best'; else if(o.pts===0) cls=' bad'; if(chosen.pick===i) cls+=' sel'; }
+    return `<button class="${cls.trim()}" ${chosen?'disabled':''} onclick="pickOpt(${i})">${o.t} <b style="float:right">${chosen?('+'+o.pts):''}</b></button>`;
+  }).join('');
+  el('mFeedback').innerHTML = chosen ? feedbackHTML(m, chosen.pts) : '';
+  el('mPrev').classList.toggle('hide', mIdx===0);
+  el('mNext').classList.toggle('hide', !chosen);
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function feedbackHTML(m, pts){
+  const cls = pts===2?'ok' : pts===1?'mid':'no';
+  const head = pts===2?'✅ 최선의 선택! (+2)' : pts===1?'🟡 나쁘진 않지만 더 나은 선택이 있어. (+1)':'❌ 균형을 놓친 선택! (+0)';
+  return `<div class="feedback ${cls}">${head}<br>${m.why}</div>`;
+}
+function pickOpt(i){
+  if(mResult[mIdx]) return;
+  const m=MISSIONS[mIdx];
+  mResult[mIdx]={pick:i, pts:m.opts[i].pts, emoji:m.emoji};
+  renderMission();
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+}
+function prevMission(){ if(mIdx>0){ mIdx--; renderMission(); } }
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mResult.reduce((s,r)=>s+(r?r.pts:0),0); }
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const m=lastM||metrics();
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  // 배경
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2f6b3c'); g.addColorStop(1,'#1f4d2a');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W-68,H-68,26); ctx.fill();
+  // 헤더
+  ctx.textAlign='center';
+  ctx.fillStyle='#1f4d2a'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌍 기후 정책 리포트', W/2, 104);
+  ctx.fillStyle='#5f6f57'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회1 Ⅲ 자연환경과 인간 · 기후변화 대응 [10통사1-03]', W/2, 140);
+  ctx.strokeStyle='#8cb369'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-120,162); ctx.lineTo(W/2+120,162); ctx.stroke();
+  // 이름
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1e2a1c'; ctx.font='bold 27px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+'의 2050 탄소중립 도전', W/2, 200);
+  // 목표 달성 배너
+  const bw=W-140, bx=70, by=224, bh=44;
+  ctx.fillStyle= m.goalMet?'#e6f5ec':'#fbeee6'; roundRect(ctx,bx,by,bw,bh,12); ctx.fill();
+  ctx.fillStyle= m.goalMet?'#1a7a44':'#9c4a1f'; ctx.font='bold 21px "Malgun Gothic",sans-serif'; ctx.textAlign='center';
+  ctx.fillText(m.goalMet?'🎯 2050 탄소중립 목표 달성!':'🎯 탄소중립 목표 미달성', W/2, by+29);
+  // 배출 경로 그래프
+  drawPathwayOn(ctx, 96, 300, W-190, 150, m.emi,
+    {bg:'#fbfdfa', fs:14, lw:4, dot:7, xlab:20});
+  ctx.fillStyle='#5f6f57'; ctx.font='14px "Malgun Gothic",sans-serif'; ctx.textAlign='center';
+  ctx.fillText('2050 연간 탄소배출 경로 (현행 유지 vs 내 정책)', W/2, 296);
+  // 3지표 요약
+  ctx.font='bold 20px "Malgun Gothic",sans-serif';
+  const rows=[['🏭 탄소배출', Math.round(m.emi), '#b23b37','낮을수록 ↑'],['💵 비용', Math.round(m.cost), '#b57a26','예산 '+BUDGET],['🤝 수용성', Math.round(m.acc), '#2c5f80','높을수록 ↑']];
+  let y=540; const colW=(W-160)/3;
+  rows.forEach((rw,i)=>{
+    const x=80+i*colW+colW/2;
+    ctx.textAlign='center'; ctx.fillStyle='#5f6f57'; ctx.font='17px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[0], x, y);
+    ctx.fillStyle=rw[2]; ctx.font='bold 32px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[1], x, y+36);
+    ctx.fillStyle='#a9b4a0'; ctx.font='13px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[3], x, y+58);
+  });
+  // 정책점수 게이지
+  const pct=m.score/100, cx=W/2, cy=690, r=80;
+  ctx.lineWidth=20; ctx.strokeStyle='#eef2ea'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.85?'#2f8b4e' : pct>=0.72?'#2f6b3c' : pct>=0.58?'#d8973c':'#c0562f';
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1e2a1c'; ctx.textAlign='center'; ctx.font='bold 48px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.score+'', cx, cy+2);
+  ctx.fillStyle='#5f6f57'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.fillText('정책점수', cx, cy+28);
+  ctx.fillStyle='#1f4d2a'; ctx.font='bold 25px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.gicon+' '+m.grade, cx, cy+r+44);
+  ctx.fillStyle='#5f7a52'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.badge, cx, cy+r+74);
+  // 미션 점수표
+  y=cy+r+114; ctx.textAlign='left'; ctx.fillStyle='#1f4d2a'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('기후 위기 미션  ('+missionTotal()+'/'+(MISSIONS.length*2)+')', 80, y); y+=30;
+  const mcolW=(W-160)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3);
+    const x=80+col*mcolW, yy=y+row*34;
+    const rr=mResult[i];
+    ctx.textAlign='left'; ctx.fillStyle='#1e2a1c'; ctx.font='19px "Malgun Gothic",sans-serif';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.fillStyle= rr? (rr.pts===2?'#2f8b4e':rr.pts===1?'#b57a26':'#c0562f') : '#a9b4a0';
+    ctx.font='bold 19px "Malgun Gothic",sans-serif';
+    ctx.fillText(rr? (rr.pts+'/2') : '–', x+34, yy);
+  }
+  // 푸터
+  ctx.textAlign='center'; ctx.fillStyle='#a9b4a0'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('예산·지표는 교육용 가정값입니다', W/2, H-70);
+  ctx.fillStyle='#8896a6'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 기후변화 대응 정책 시뮬레이터', W/2, H-46);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='기후정책리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  window.open(el('resultCanvas').toDataURL('image/png'), '_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let policyInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','policy','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='policy'){ if(!policyInit){ buildCards(); policyInit=true; } sync(true); }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ if(!lastM) metrics(); drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+buildCards(); policyInit=true; sync(false);
+</script>
+</body>
+</html>

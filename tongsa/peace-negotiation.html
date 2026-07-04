@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국제 갈등·평화 협상 시뮬레이터 · 통합사회2 Ⅳ 세계화와 평화</title>
+<style>
+  :root{
+    --primary:#3A7D44; --primary-d:#2b5e33;
+    --bg:#f4f8f4; --surface:#fff; --ink:#1e2a1f; --sub:#5f6b60;
+    --conflict:#d9534f; --peace:#3A7D44; --trust:#2e6fb7;
+    --gold:#e0a526; --line:#e4ebe2; --shadow:0 6px 20px rgba(40,60,40,.09);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--trust)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#eef4ee;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .spectrum{display:flex;align-items:stretch;gap:0;margin:14px 0;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  .spectrum .seg{flex:1;padding:12px 8px;text-align:center;font-size:12.5px;font-weight:700;color:#fff}
+  .spectrum .s0{background:#c0554f}
+  .spectrum .s1{background:#d99a4e}
+  .spectrum .s2{background:#6fa86f}
+  .spectrum .s3{background:var(--primary)}
+  .spectrum .seg small{display:block;font-weight:600;font-size:11px;opacity:.9;margin-top:2px}
+  .hide{display:none}
+  .pill{display:inline-block;background:#e9f2ec;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.warn{background:#f7e3e2;color:#b23c38}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  canvas{max-width:100%;height:auto}
+  /* 게이지 */
+  .gauges{margin:6px 0 4px}
+  .gauge{margin:11px 0}
+  .gauge .top{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:700;margin-bottom:4px}
+  .gauge .top .nm{display:flex;align-items:center;gap:6px}
+  .gauge .top .val{font-size:15px;font-weight:800}
+  .gauge .bar{height:16px;background:#eef1ee;border-radius:99px;overflow:hidden;position:relative}
+  .gauge .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .55s cubic-bezier(.22,1,.36,1)}
+  .gauge.conflict i{background:linear-gradient(90deg,#e88,#d9534f)}
+  .gauge.peace i{background:linear-gradient(90deg,#8fc79a,#3A7D44)}
+  .gauge.trust i{background:linear-gradient(90deg,#7db0e0,#2e6fb7)}
+  .flash{animation:flash .5s}
+  @keyframes flash{0%{filter:brightness(1.5)}100%{filter:brightness(1)}}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  @media(max-width:680px){.cards{grid-template-columns:1fr}}
+  .pcard{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:11px 12px;cursor:pointer;text-align:left;font-family:inherit;transition:.12s}
+  .pcard:active{transform:scale(.97)}
+  .pcard.peace{border-left:5px solid var(--peace)}
+  .pcard.force{border-left:5px solid var(--conflict)}
+  .pcard .ttl{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px}
+  .pcard .msg{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.4}
+  .pcard .badge{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;margin-left:auto}
+  .pcard .badge.p{background:#e7f2ea;color:var(--primary-d)}
+  .pcard .badge.f{background:#f7e3e2;color:#b23c38}
+  .pcard.play{animation:pop .35s}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .log{margin-top:12px;background:#f2f6f2;border:1px solid var(--line);border-radius:12px;padding:10px 12px;max-height:150px;overflow-y:auto;font-size:13px}
+  .log .li{padding:4px 0;border-bottom:1px dashed #dde6dd}
+  .log .li:last-child{border-bottom:none}
+  .log .li.re{color:#b23c38;font-weight:700}
+  .scen{background:#eef4f8;border:1px solid #cfe0ec;border-radius:12px;padding:14px;font-size:15px;margin-bottom:8px}
+  .scen .emoji{font-size:26px}
+  .scen .type{display:inline-block;font-size:11.5px;font-weight:800;background:var(--trust);color:#fff;border-radius:6px;padding:2px 8px;margin-bottom:6px}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.trust{background:var(--trust);color:#fff}
+  .btn.ghost{background:#e7ece7;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left;font-family:inherit}
+  .opts button:disabled{opacity:.9;cursor:default}
+  .opts button.picked-good{border-color:var(--primary);background:#e7f4ec}
+  .opts button.picked-mid{border-color:var(--gold);background:#fbf3df}
+  .opts button.picked-bad{border-color:var(--conflict);background:#fbe9e8}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#eef4ee;color:var(--ink)}
+  .progress{height:8px;background:#e7ece7;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px;font-family:inherit}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e7ece7;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:6px}
+  .quote{border-left:4px solid var(--primary);padding:6px 0 6px 12px;color:var(--sub);font-size:13.5px;font-style:italic;margin:12px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅳ 세계화와 평화 · 4-2 평화를 위한 국제사회의 노력</div>
+    <h1>🕊️ 국제 갈등·평화 협상 시뮬레이터</h1>
+    <p>국경의 강을 사이에 두고 두 나라가 총을 겨눈다. 지금 협상 테이블에 앉은 사람은 바로 너다. 무력으로 누를까, 손을 내밀까 — 네 선택이 평화를 만든다.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="lab">2. 협상 실습</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- 1. 개념 -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>평화는 '전쟁 없음'이 끝이 아니다</h2>
+      <p class="lead">평화학자 <b>요한 갈퉁</b>은 평화를 두 단계로 나눴다. 아래 스펙트럼에서 오른쪽으로 갈수록 '더 깊은 평화'다.</p>
+      <div class="spectrum">
+        <div class="seg s0">전쟁·폭력<small>직접적 폭력</small></div>
+        <div class="seg s1">휴전·정전<small>총성만 멎음</small></div>
+        <div class="seg s2">소극적 평화<small>직접 폭력의 부재</small></div>
+        <div class="seg s3">적극적 평화<small>구조·문화 폭력까지 해소</small></div>
+      </div>
+      <div class="grid2">
+        <div class="concept">
+          <h3 style="color:#b23c38">🔇 소극적 평화</h3>
+          전쟁·물리적 폭력 같은 <b>직접적 폭력이 없는 상태</b>. 하지만 빈곤·차별의 뿌리가 남아 있으면 <b>다시 터질 수 있다</b>.
+        </div>
+        <div class="concept">
+          <h3 style="color:var(--primary-d)">🌱 적극적 평화</h3>
+          빈곤·기아·차별·억압 같은 <b>구조적·문화적 폭력까지 해소</b>된 상태. 갈퉁이 말한 '진짜 평화', <b>지속가능한 평화</b>다.
+        </div>
+      </div>
+      <h3>⚔️ 갈퉁의 폭력 3분류</h3>
+      <div>
+        <span class="pill warn">직접적 폭력: 전쟁·폭행</span>
+        <span class="pill warn">구조적 폭력: 제도가 만든 불평등</span>
+        <span class="pill warn">문화적 폭력: 폭력을 정당화하는 관념</span>
+      </div>
+      <h3>🤝 평화를 위한 국제사회의 수단</h3>
+      <div>
+        <span class="pill">양자 협상·대화</span>
+        <span class="pill">국제기구 중재(UN·PKO)</span>
+        <span class="pill">군축·신뢰구축(CBM)</span>
+        <span class="pill">경제협력·공동개발</span>
+        <span class="pill">인도적 지원·난민 보호</span>
+        <span class="pill">개발원조·차별 해소</span>
+      </div>
+      <p class="note">※ UN(국제연합)은 안전보장이사회·PKO·ICJ·UNHCR 등으로 <b>중립적 제3자 중재·조정</b>을 한다. 다만 강제력에는 한계가 있어 '세계정부'는 아니다.</p>
+      <p class="quote">"평화는 갈등이 없는 상태가 아니라, 갈등을 폭력 없이 다룰 수 있는 능력이다." — 요한 갈퉁</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 개념 5분 설명 → '협상 실습'으로 카드별 지수 변화를 함께 관찰(무력 카드의 함정 발견) → 각자 '미션 6개' 도전 → 결과 리포트를 캡처해 제출·발표.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('lab')">협상 실습 시작하기 →</button></div>
+    </div>
+  </section>
+
+  <!-- 2. 협상 실습(샌드박스) -->
+  <section id="tab-lab">
+    <div class="card">
+      <h2><span class="dot"></span>협상 실습실 — 가상 분쟁 조정하기</h2>
+      <div class="scen">
+        <span class="type">자원 분쟁</span><br>
+        <span class="emoji">🌊</span> <b>A국과 B국의 국경 수자원 갈등</b><br>
+        국경을 흐르는 강의 상류 <b>A국</b>이 거대한 댐을 올렸다. 물길이 마르자 하류 <b>B국</b>은 "생존이 걸린 문제"라며 군대를 국경으로 밀어 올렸다. 강변엔 팽팽한 침묵. 중재자인 네가 첫 카드를 내려놓을 차례다.
+      </div>
+      <div class="gauges" id="gauges">
+        <div class="gauge conflict"><div class="top"><span class="nm">🔥 갈등지수 <small style="color:var(--sub);font-weight:600">(낮을수록 좋음)</small></span><span class="val" id="v_conflict">70</span></div><div class="bar"><i id="g_conflict"></i></div></div>
+        <div class="gauge peace"><div class="top"><span class="nm">🕊️ 평화지수 <small style="color:var(--sub);font-weight:600">(높을수록 좋음)</small></span><span class="val" id="v_peace">25</span></div><div class="bar"><i id="g_peace"></i></div></div>
+        <div class="gauge trust"><div class="top"><span class="nm">🤝 신뢰도 <small style="color:var(--sub);font-weight:600">(높을수록 좋음)</small></span><span class="val" id="v_trust">30</span></div><div class="bar"><i id="g_trust"></i></div></div>
+      </div>
+      <div class="note" id="labSub">🧪 이 화면은 <b>자유 실습(샌드박스)</b>이며 점수·등급(미션 결과)에 반영되지 않습니다. 평화지수 = 소극적 평화×0.4 + 적극적 평화×0.6 (적극적 평화에 가중치). 카드를 눌러 지수 변화를 관찰하자.</div>
+      <div class="cards" id="cardPalette"></div>
+      <div class="log" id="log"><div class="li">📋 협상 로그 — 카드를 선택하면 여기에 기록됩니다.</div></div>
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="resetLab()">↺ 초기화</button>
+        <button class="btn primary" onclick="startMission();go('mission')">미션 도전하기 →</button>
+      </div>
+      <p class="note">※ 수치는 이해를 돕기 위한 <b>예시 모델</b>이며, 실제 국제 분쟁은 훨씬 복잡합니다. 모든 국가·민족·지역은 <b>가상</b>입니다.</p>
+    </div>
+  </section>
+
+  <!-- 3. 미션 -->
+  <section id="tab-mission">
+    <div class="card">
+      <h2><span class="dot"></span>분쟁 시나리오 미션 (6)</h2>
+      <p class="lead">6개의 가상 분쟁이다. 정답이 하나는 아니지만, <b>구조적 원인 해소 + 신뢰 구축</b>이 가장 오래가는 평화를 만든다.</p>
+      <p class="note" id="mNote">✅ 미션은 <b>깨끗한 초기 상태</b>에서 시작·채점되며, 실습(샌드박스) 조작과는 무관합니다. 결과 리포트의 점수·등급은 <b>미션 선택만</b> 반영합니다.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <span></span>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 결과 -->
+  <section id="tab-result">
+    <div class="card">
+      <h2><span class="dot"></span>나의 평화 중재 리포트</h2>
+      <p class="lead">이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1040"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn trust" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="startMission();go('mission')">미션 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="#" onclick="savePNGtab();return false;" style="color:var(--trust);font-weight:700">📱 저장이 안 되면 여기(새 탭)</a> — 새 탭에서 이미지를 길게 눌러 저장하세요.</p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅳ 세계화와 평화 · 소극적/적극적 평화·국제사회의 노력 [10통사2-04-02] · 단일 HTML · 오프라인 동작<br>
+    모든 국가·민족·지역은 가상이며 특정 실존 대상을 지칭하지 않습니다.<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ===== 3대 지수 (평화지수는 negPeace/posPeace로 분리 누적) =====
+   S = 실습(샌드박스) 상태 · M = 미션 채점 상태 (완전 분리, 점수 오염 방지) */
+const START={conflict:70,negPeace:25,posPeace:25,trust:30};
+let S={...START};        // 실습 전용
+let M={...START};        // 미션 채점 전용 (결과 카드가 참조)
+let lastForce=false; // 직전 카드가 강압이었는지
+
+function peaceValOf(st){ return clamp(st.negPeace*0.4+st.posPeace*0.6,0,100); }
+function peaceVal(){ return peaceValOf(S); } // 실습 게이지용
+function renderGauges(flash){
+  const p=Math.round(peaceVal());
+  const set=(k,val)=>{ el('g_'+k).style.width=clamp(val,0,100)+'%'; el('v_'+k).textContent=Math.round(clamp(val,0,100));
+    if(flash){ const g=el('g_'+k); g.classList.remove('flash'); void g.offsetWidth; g.classList.add('flash'); } };
+  set('conflict',S.conflict); set('peace',p); set('trust',S.trust);
+}
+
+/* ===== 카드(수단) 8종 : {갈등Δ, 소극Δ, 적극Δ, 신뢰Δ} ===== */
+const CARDS=[
+  {id:'talk', emo:'💬', nm:'양자 대화·협상', kind:'peace', dc:-10,dn:12,dp:5,dt:10, msg:'당사자 직접 대화, 신뢰의 출발점'},
+  {id:'un',   emo:'🕊️', nm:'국제기구 중재(UN·PKO)', kind:'peace', dc:-15,dn:15,dp:8,dt:12, msg:'중립적 제3자 조정, 폭력 억제'},
+  {id:'econ', emo:'🤝', nm:'경제협력·공동개발', kind:'peace', dc:-8,dn:6,dp:15,dt:12, msg:'자원 공동관리로 구조적 원인 완화'},
+  {id:'cbm',  emo:'⚖️', nm:'군축·신뢰구축(CBM)', kind:'peace', dc:-12,dn:14,dp:6,dt:14, msg:'군비 축소로 안보 딜레마 해소'},
+  {id:'aid',  emo:'🏕️', nm:'인도적 지원·난민 보호', kind:'peace', dc:-5,dn:4,dp:16,dt:10, msg:'UNHCR 등, 인간 존엄 회복'},
+  {id:'dev',  emo:'📚', nm:'개발원조·차별 해소·교육', kind:'peace', dc:-4,dn:2,dp:18,dt:8, msg:'적극적 평화의 근본 처방'},
+  {id:'sanc', emo:'🚫', nm:'경제 제재', kind:'force', dc:3,dn:4,dp:-6,dt:-12, msg:'단기 압박이나 민간 피해·신뢰 훼손'},
+  {id:'mil',  emo:'⚔️', nm:'무력 개입·군사력', kind:'force', dc:-22,dn:8,dp:-20,dt:-25, msg:'갈등 겉만 진압, 적극평화 붕괴·재발'}
+];
+
+function buildPalette(){
+  el('cardPalette').innerHTML=CARDS.map((c,i)=>`
+    <button class="pcard ${c.kind}" onclick="onCard(${i},this)">
+      <div class="ttl">${c.emo} ${c.nm}
+        <span class="badge ${c.kind==='peace'?'p':'f'}">${c.kind==='peace'?'평화':'강압'}</span></div>
+      <div class="msg">${c.msg}</div>
+    </button>`).join('');
+}
+function logLine(html,cls){
+  const box=el('log');
+  const d=document.createElement('div'); d.className='li'+(cls?' '+cls:''); d.innerHTML=html;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+}
+function onCard(i,btn){
+  const c=CARDS[i];
+  btn.classList.remove('play'); void btn.offsetWidth; btn.classList.add('play');
+  let dc=c.dc, rebound=0;
+  // 재발(리바운드) 규칙: 직전이 강압 + 적극평화 부족이면 갈등 재상승
+  if(lastForce && S.posPeace<40){ rebound=6; dc+=rebound; }
+  S.conflict=clamp(S.conflict+dc,0,100);
+  S.negPeace=clamp(S.negPeace+c.dn,0,100);
+  S.posPeace=clamp(S.posPeace+c.dp,0,100);
+  S.trust=clamp(S.trust+c.dt,0,100);
+  renderGauges(true);
+  const sign=v=>(v>0?'+':'')+v;
+  logLine(`${c.emo} <b>${c.nm}</b> · 갈등 ${sign(dc)} · 평화(소${sign(c.dn)}/적${sign(c.dp)}) · 신뢰 ${sign(c.dt)}`);
+  if(rebound) logLine('⚠️ 구조적 원인이 남아 갈등이 재발합니다 (+'+rebound+')','re');
+  if(c.kind==='force') logLine('💡 무력·제재는 갈등지수를 낮춰도 적극평화·신뢰가 무너집니다.','re');
+  lastForce=(c.kind==='force');
+}
+function resetLab(){
+  S={...START}; lastForce=false;
+  el('log').innerHTML='<div class="li">📋 협상 로그 — 카드를 선택하면 여기에 기록됩니다.</div>';
+  renderGauges(false);
+}
+
+/* ===== 미션 6개 (가상·일반화) ===== */
+// 각 선택지: [텍스트, pts, 피드백, {dc,dn,dp,dt}]
+const MISSIONS=[
+  {type:'자원(수자원)', emoji:'🌊', txt:'국경을 흐르는 강의 상류 <b>A국</b>이 댐을 건설하자, 하류 <b>B국</b>이 물 부족을 항의한다. 긴장이 고조된다.',
+   opts:[
+     ['⚔️ B국에 무력 사용을 위협한다',0,'물리적 위협은 갈등을 키우고 안보 딜레마를 부른다. 근본 원인은 그대로다.',{dc:12,dn:0,dp:-10,dt:-18}],
+     ['🚫 A국에 댐 중단을 요구하며 제재한다',1,'압박이 되긴 하나 A국의 반발·민간 피해로 신뢰가 깨진다. 부분적 수단.',{dc:2,dn:4,dp:-4,dt:-8}],
+     ['🤝 유역 공동관리 협정 + 국제기구 중재',2,'물을 공동 자원으로 함께 관리해 구조적 원인을 해소한다. 지속가능한 해법.',{dc:-16,dn:10,dp:16,dt:16}]
+   ]},
+  {type:'영토', emoji:'🏝️', txt:'무인도와 주변 해양 자원을 두고 <b>A·B국</b>이 관할권을 주장하며 함정이 대치 중이다.',
+   opts:[
+     ['⚔️ 군사력을 추가 배치해 실력으로 밀어붙인다',0,'무력 대치는 우발 충돌 위험을 키운다. 이겨도 신뢰는 사라진다.',{dc:15,dn:2,dp:-12,dt:-20}],
+     ['🏴 일방적으로 실효 지배를 굳힌다',1,'단기적 점유는 가능하나 상대국의 반발로 갈등이 잠복·재발한다.',{dc:5,dn:2,dp:-4,dt:-10}],
+     ['⚖️ ICJ(국제사법재판소) 회부 + 공동개발구역 설정',2,'국제법에 따른 평화적 해결과 자원 공동개발로 상생한다.',{dc:-15,dn:12,dp:14,dt:16}]
+   ]},
+  {type:'민족·종교', emoji:'🕊️', txt:'한 국가 안에서 소수 <b>△△민족</b>이 차별을 받아 분리·유혈 충돌 위험이 커지고 있다.',
+   opts:[
+     ['⚔️ 군·경으로 시위를 무력 진압한다',0,'직접적 폭력으로 겉은 잠잠해도 구조적·문화적 폭력이 그대로라 재발한다.',{dc:-10,dn:6,dp:-18,dt:-22}],
+     ['🙈 별일 아니라며 현상을 방치한다',0,'방치는 구조적 폭력을 방관하는 것. 불만이 쌓여 더 크게 터진다.',{dc:8,dn:-4,dp:-8,dt:-6}],
+     ['📚 자치권 보장·차별 철폐(구조) + 대화',2,'구조적 폭력을 해소하고 대화로 신뢰를 쌓는 적극적 평화의 길.',{dc:-14,dn:8,dp:18,dt:15}]
+   ]},
+  {type:'난민', emoji:'🏕️', txt:'인접국 내전으로 대량 난민이 <b>C국</b>으로 유입돼 부담을 둘러싼 갈등이 생겼다.',
+   opts:[
+     ['🚧 국경을 봉쇄한다',0,'인도적 위기를 외면하는 선택. 인간 존엄을 훼손하고 국제 신뢰를 잃는다.',{dc:6,dn:0,dp:-12,dt:-14}],
+     ['↩️ 난민을 강제로 송환한다',0,'강제 송환은 국제법(농르풀망 원칙) 위반 소지가 크고 생명을 위협한다.',{dc:8,dn:-2,dp:-14,dt:-16}],
+     ['🤝 UNHCR 공동 분담 + 인도적 지원',2,'국제사회가 부담을 나누고 난민을 보호한다. 인간 존엄 회복.',{dc:-8,dn:6,dp:16,dt:14}]
+   ]},
+  {type:'군비 경쟁', emoji:'⚖️', txt:'<b>A·B국</b>이 서로를 불신해 경쟁적으로 군비를 늘린다(안보 딜레마).',
+   opts:[
+     ['🚀 선제적으로 군사 우위를 확보한다',0,'상대도 더 무장하게 만들어 군비 경쟁이 심화된다. 전형적 안보 딜레마.',{dc:14,dn:2,dp:-10,dt:-18}],
+     ['🙈 그냥 내버려 둔다',1,'당장 충돌은 없어도 불신이 쌓여 우발적 위기 가능성이 남는다.',{dc:4,dn:0,dp:-2,dt:-4}],
+     ['⚖️ 군축 협정 + 상호 사찰(CBM)',2,'군비를 함께 줄이고 검증해 안보 딜레마를 신뢰로 바꾼다.',{dc:-16,dn:14,dp:10,dt:18}]
+   ]},
+  {type:'종합·개념', emoji:'🌍', txt:'가장 <b>지속가능한 평화</b>는 무엇일까? 지금까지 배운 개념을 확인하자.',
+   opts:[
+     ['⚔️ 무력으로 신속히 종식시킨다',0,'직접적 폭력의 부재조차 무너뜨린다. 적극평화·신뢰가 붕괴하고 재발한다.',{dc:-8,dn:4,dp:-18,dt:-20}],
+     ['🚧 휴전선만 그으면 충분하다',1,'소극적 평화(폭력의 부재)일 뿐, 구조적 원인이 남아 다시 터질 수 있다.',{dc:-6,dn:10,dp:-4,dt:2}],
+     ['📚 구조적 폭력 해소 + 협력으로 적극적 평화',2,'빈곤·차별의 뿌리를 없애고 협력으로 신뢰를 쌓는 진짜 평화.',{dc:-14,dn:8,dp:20,dt:16}]
+   ]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+/* 미션 세션을 깨끗한 표준 초기값에서 시작 (실습 S와 독립) */
+function startMission(){
+  M={...START}; mIdx=0; mChoice.length=0; mPicked=false;
+  renderMission();
+}
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<div class="scen"><span class="type">${m.type}</span><br>
+    <span class="emoji">${m.emoji}</span> <b>미션 ${mIdx+1} / ${MISSIONS.length}</b><br>${m.txt}</div>`;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>`<button onclick="choose(${i},this)">${o[0]}</button>`).join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i,btn){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], o=m.opts[i], pts=o[1], d=o[3];
+  mChoice[mIdx]={i,pts,of:2};
+  // 미션 채점 상태 M에만 반영 (실습 S와 분리 → 점수 오염 방지)
+  M.conflict=clamp(M.conflict+d.dc,0,100);
+  M.negPeace=clamp(M.negPeace+d.dn,0,100);
+  M.posPeace=clamp(M.posPeace+d.dp,0,100);
+  M.trust=clamp(M.trust+d.dt,0,100);
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'picked-bad')); });
+  el('mFeedback').innerHTML=`<div class="feedback">${pts>=2?'🌟':pts===1?'💡':'🤔'} +${pts}점 · ${o[2]}</div>`;
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+
+/* ===== 결과 카드 ===== */
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+function peaceIndex(){ // 미션 상태 M만 반영
+  return Math.round( peaceValOf(M)*0.4 + M.trust*0.25 + (100-M.conflict)*0.15 + M.posPeace*0.2 );
+}
+function gradeOf(idx){
+  if(idx>=85) return {t:'🏆 평화의 설계자',s:'구조까지 손본 진짜 평화',c:'#3A7D44'};
+  if(idx>=70) return {t:'🕊️ 신뢰받는 중재자',s:'양쪽이 다시 찾는 이름',c:'#2e6fb7'};
+  if(idx>=50) return {t:'🤝 성장하는 협상가',s:'방향은 맞다, 한 걸음 더',c:'#e0a526'};
+  return {t:'💭 평화의 길을 배우는 중',s:'총성은 멎어도 불씨는 남았다',c:'#d9534f'};
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const idx=clamp(peaceIndex(),0,100), pctv=idx/100, g=gradeOf(idx);
+  // 배경
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#3A7D44'); bg.addColorStop(1,'#2b5e33');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,36,36,W-72,H-72,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#2b5e33'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('🕊️ 나의 평화 중재 리포트', W/2, 112);
+  ctx.fillStyle='#5f6b60'; ctx.font='19px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅳ 세계화와 평화 · 평화 협상 시뮬레이터', W/2, 148);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1e2a1f'; ctx.font='bold 28px "Malgun Gothic",sans-serif'; ctx.fillText(name+' 중재자', W/2, 200);
+  // 대형 지수 원
+  const cx=W/2, cy=326, r=92;
+  ctx.lineWidth=22; ctx.strokeStyle='#e7efe7'; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle=g.c; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pctv); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1e2a1f'; ctx.font='bold 54px "Malgun Gothic",sans-serif'; ctx.fillText(idx+'', cx, cy+6);
+  ctx.fillStyle='#5f6b60'; ctx.font='18px "Malgun Gothic",sans-serif'; ctx.fillText('평화 기여 지수', cx, cy+34);
+  // 등급 배지
+  ctx.fillStyle=g.c; ctx.font='bold 27px "Malgun Gothic",sans-serif'; ctx.fillText(g.t, W/2, cy+r+58);
+  if(g.s){ ctx.fillStyle='#5f6b60'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.fillText(g.s, W/2, cy+r+84); }
+  // 이중 막대: 소극 vs 적극 평화
+  let by=cy+r+118;
+  ctx.textAlign='left'; ctx.fillStyle='#1e2a1f'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('갈퉁의 평화 성분 비교', 72, by);
+  by+=22;
+  const barW=W-72-260, bx=200;
+  const drawBar=(label,val,col,yy)=>{
+    ctx.fillStyle='#5f6b60'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.textAlign='left';
+    ctx.fillText(label, 72, yy+18);
+    ctx.fillStyle='#eef1ee'; roundRect(ctx,bx,yy+3,barW,20,10); ctx.fill();
+    ctx.fillStyle=col; roundRect(ctx,bx,yy+3,Math.max(6,barW*clamp(val,0,100)/100),20,10); ctx.fill();
+    ctx.fillStyle='#1e2a1f'; ctx.font='bold 15px "Malgun Gothic",sans-serif'; ctx.textAlign='right';
+    ctx.fillText(Math.round(val), W-72, yy+18);
+  };
+  drawBar('소극적 평화', M.negPeace, '#8fb98f', by); by+=32;
+  drawBar('적극적 평화', M.posPeace, '#3A7D44', by); by+=44;
+  // 미션 요약
+  ctx.textAlign='left'; ctx.fillStyle='#1e2a1f'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('미션 선택 요약 ('+totalPts()+'/12점)', 72, by); by+=10;
+  ctx.font='16px "Malgun Gothic",sans-serif';
+  const colW=(W-144)/2;
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i], row=Math.floor(i/2), col=i%2;
+    const yy=by+22+row*30, xx=72+col*colW;
+    ctx.fillStyle='#1e2a1f'; ctx.textAlign='left';
+    ctx.fillText(`${MISSIONS[i].emoji} 미션 ${i+1}`, xx, yy);
+    ctx.textAlign='left';
+    if(c){ ctx.fillStyle=c.pts>=2?'#3A7D44':(c.pts===1?'#e0a526':'#d9534f'); ctx.fillText('  +'+c.pts, xx+120, yy); }
+    else { ctx.fillStyle='#aab0a8'; ctx.fillText('  미완료', xx+120, yy); }
+  }
+  by+=22+Math.ceil(MISSIONS.length/2)*30+20;
+  // 3지수 요약
+  ctx.textAlign='center';
+  ctx.fillStyle='#f2f6f2'; roundRect(ctx,72,by,W-144,52,14); ctx.fill();
+  const th=by+33, seg=(W-144)/3;
+  const mini=(label,val,col,ci)=>{ const mx=72+seg*ci+seg/2;
+    ctx.fillStyle=col; ctx.font='bold 22px "Malgun Gothic",sans-serif'; ctx.fillText(Math.round(val), mx, th);
+    ctx.fillStyle='#5f6b60'; ctx.font='14px "Malgun Gothic",sans-serif'; ctx.fillText(label, mx, th+18); };
+  mini('갈등', M.conflict, '#d9534f', 0);
+  mini('평화', peaceValOf(M), '#3A7D44', 1);
+  mini('신뢰', M.trust, '#2e6fb7', 2);
+  // 푸터
+  ctx.fillStyle='#aab0a8'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 국제 갈등·평화 협상 시뮬레이터', W/2, H-58);
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download=`평화중재리포트_${(el('studentName').value||'학생')}.png`;
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+/* 모바일 fallback: 다운로드가 막힌 브라우저용 — 사용자 제스처와 동기로 새 탭에 이미지를 연다 */
+function savePNGtab(){ drawResult(); const url=el('resultCanvas').toDataURL('image/png'); window.open(url,'_blank'); }
+
+/* ===== 탭 ===== */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','lab','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='lab') renderGauges(false);
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['lab','mission','result'].forEach(t=>el('tab-'+t).classList.add('hide'));
+buildPalette(); renderGauges(false); startMission();
+</script>
+</body>
+</html>

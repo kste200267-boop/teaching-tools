@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자본주의 발전사 인터랙티브 타임라인 · 통합사회2 Ⅲ 시장경제</title>
+<style>
+  :root{
+    --bg:#f3f5f9; --surface:#ffffff; --ink:#1b2432; --sub:#5a6675;
+    --primary:#3a5f8f; --primary-d:#264063; --gold:#c9a24b; --gold-d:#a5822f; --accent:#c0563e;
+    --intervene:#3a5f8f; --laissez:#c9a24b; --line:#e2e7ef; --ok:#2e8b6a; --no:#c0563e;
+    --shadow:0 6px 20px rgba(20,35,60,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;
+    background:radial-gradient(circle,rgba(201,162,75,.35),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:84px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#eaf0f8;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.gold{background:#f7efd9;color:var(--gold-d)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .concept{background:#f6f9fd;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+  /* 개념 chain */
+  .chain{display:flex;align-items:stretch;gap:4px;margin:14px 0;overflow-x:auto;padding-bottom:6px}
+  .chain .node{flex:1 1 0;min-width:96px;background:#f6f9fd;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid var(--line)}
+  .chain .node .emo{font-size:26px}
+  .chain .node .nm{font-size:12.5px;font-weight:800;margin-top:3px;color:var(--primary-d)}
+  .chain .node .er{font-size:11px;color:var(--sub)}
+  .chain .node .gv{font-size:11px;font-weight:800;margin-top:4px;border-radius:8px;padding:2px 4px}
+  .chain .node .gv.hi{background:#e7eef8;color:var(--intervene)}
+  .chain .node .gv.lo{background:#f7efd9;color:var(--gold-d)}
+  .chain .arrow{align-self:center;color:var(--sub);font-weight:800;font-size:18px}
+  .axis-note{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-top:2px}
+  .axis-note .a1{color:var(--intervene)} .axis-note .a2{color:var(--gold-d)}
+  /* 타임라인 배열 */
+  .tl-list{margin:10px 0}
+  .tl-item{display:flex;align-items:center;gap:10px;background:#f6f9fd;border:2px solid var(--line);
+    border-radius:12px;padding:10px 12px;margin:8px 0;transition:.15s;cursor:grab}
+  .tl-item.dragging{opacity:.5}
+  .tl-item.correct{border-color:var(--ok);background:#e8f6f0}
+  .tl-item.wrong{border-color:var(--no);background:#fbece8}
+  .tl-item .emo{font-size:26px;width:32px;text-align:center}
+  .tl-item .body{flex:1;min-width:0}
+  .tl-item .nm{font-weight:800;font-size:15px}
+  .tl-item .ft{font-size:12.5px;color:var(--sub)}
+  .tl-item .mark{font-size:20px;font-weight:800;width:22px;text-align:center}
+  .tl-item .mark.ok{color:var(--ok)} .tl-item .mark.no{color:var(--no)}
+  .tl-item .ord{display:flex;flex-direction:column;gap:3px}
+  .tl-item .ord button{border:none;background:var(--primary);color:#fff;border-radius:7px;
+    width:30px;height:24px;font-size:13px;font-weight:800;cursor:pointer;line-height:1}
+  .tl-item .ord button:disabled{background:#c3ccd8;cursor:default}
+  .tl-item .pos{width:22px;text-align:center;font-weight:800;color:var(--gold-d);font-size:15px}
+  .score-line{display:flex;gap:10px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+  .stat{background:#f2f6fb;border-radius:12px;padding:8px 16px;text-align:center;min-width:104px}
+  .stat .lab{font-size:12px;color:var(--sub);font-weight:700}
+  .stat .val{font-size:22px;font-weight:800}
+  .celebrate{animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
+  .toast{margin:8px 0;padding:12px;border-radius:10px;font-size:14px;font-weight:700}
+  .toast.ok{background:#e8f6f0;color:#1c7a58}
+  .toast.no{background:#fbece8;color:#a83c26}
+  .toast.info{background:#f2f6fb;color:var(--sub)}
+  /* 퀴즈 */
+  .mission-scenario{background:#fbf6e8;border:1px solid #ecdcae;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+  .opts button.sel{border-color:var(--primary);background:#eaf0f8}
+  .opts button:disabled{opacity:.9;cursor:default}
+  .opts button.correct{border-color:var(--ok);background:#e8f6f0;color:#1c7a58}
+  .opts button.wrong{border-color:var(--no);background:#fbece8;color:#a83c26}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e8f6f0;color:#1c7a58}
+  .feedback.no{background:#fbece8;color:#a83c26}
+  .qhead{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--sub)}
+  .combo{color:var(--gold-d)}
+  .progress{height:9px;background:#eef2f7;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--primary));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--gold);color:#2a2410}
+  .btn.ghost{background:#eef2f7;color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* 결과 */
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#eef2f7;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅲ 시장경제와 지속가능발전 · 3-1 자본주의의 전개</div>
+    <h1>🏛️ 자본주의 발전사 인터랙티브 타임라인</h1>
+    <p>물건을 사고파는 방식은 200년 사이 완전히 달라졌다. 상인의 시대에서 오늘 네 손안의 쇼핑까지 — 자본주의는 어떤 길을 걸어왔을까? 시대를 직접 줄 세워 보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="timeline">2. 타임라인</button>
+    <button data-tab="quiz">3. 매칭 퀴즈</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>자본주의는 어떻게 변해 왔을까?</h2>
+      <p class="lead">자본주의는 하나로 고정된 것이 아니라, <b>정부와 시장의 역할</b>을 조절하며 다섯 단계로 발전해 왔다. 핵심은 <b>정부 개입이 커졌다 작아졌다 진동</b>한다는 점이다.</p>
+      <div class="chain" id="conceptChain"></div>
+      <div class="axis-note"><span class="a1">🏛️ 정부 개입 강함</span><span class="a2">시장 자율(자유방임) 강함 🕊️</span></div>
+      <div class="grid2" style="margin-top:14px">
+        <div class="concept">
+          <h3>🕊️ 애덤 스미스 = 자유방임</h3>
+          <b>산업자본주의</b>의 사상. 『국부론』(1776)의 <b>'보이지 않는 손'</b> — 정부는 최소한(야경국가)만 하고 시장에 맡기면 조화를 이룬다.
+        </div>
+        <div class="concept">
+          <h3>🏛️ 케인스 = 정부 개입</h3>
+          <b>수정자본주의</b>의 사상. 『일반이론』(1936)의 <b>유효수요</b> — 대공황(1929) 이후 정부가 재정지출로 수요를 만들어야 한다.
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <span class="pill gold">상업: 중상주의(개입)</span>
+        <span class="pill">산업: 자유방임(최소)</span>
+        <span class="pill">독점: 독과점 심화</span>
+        <span class="pill gold">수정: 큰 정부(개입)</span>
+        <span class="pill">신자유: 다시 작은 정부</span>
+      </div>
+      <p class="note">⚠️ "자본주의는 갈수록 정부 개입이 커졌다"는 <b>틀린 생각</b>이다. 산업(최소)↔수정(최대)↔신자유(다시 축소)의 <b>진동</b>을 기억하자.</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 개념 한 컷으로 W자 진동을 설명한 뒤, '타임라인' 탭을 학생 개인 기기로 넘겨 직접 배열·퀴즈까지 풀게 하고 결과 카드를 제출받으세요.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('timeline')">타임라인 맞추기 →</button></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 타임라인 배열 ===== -->
+  <section id="tab-timeline" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>시대를 연대순으로 배열하라</h2>
+      <p class="lead">시간이 뒤죽박죽 섞였다. 5개 시대 카드를 <b>오래된 순서</b>로 다시 줄 세워 보자. <b>▲▼ 버튼</b>으로 옮기거나(모바일), 카드를 <b>끌어(drag)</b> 옮길 수 있다(PC). 순서가 맞아 들어가는 순간, 아래 그래프에 <b>정부 역할의 W자 진동</b>이 모습을 드러낸다.</p>
+      <div class="tl-list" id="tlList"></div>
+      <div class="score-line">
+        <div class="stat"><div class="lab">맞은 위치</div><div class="val" id="arrScore">–</div></div>
+        <div class="stat"><div class="lab">통과 기준</div><div class="val" style="font-size:16px;padding-top:6px">3 / 5 이상</div></div>
+      </div>
+      <div id="tlToast"></div>
+      <h3>정부 역할 진동 그래프 (개입 ↔ 자유방임)</h3>
+      <div id="graphWrap"><canvas id="wgraph" width="560" height="300"></canvas></div>
+      <p class="note">세로축이 위로 갈수록 <b>정부 개입</b>이 강하고, 아래로 갈수록 <b>시장 자율(자유방임)</b>이 강하다. 올바른 배열이면 <b>높다→낮다→높다→낮다</b>의 W자가 보인다.</p>
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="shuffleTimeline()">🔀 다시 섞기</button>
+        <button class="btn gold" onclick="checkTimeline()">순서 확인</button>
+        <button class="btn primary" id="toQuiz" disabled onclick="go('quiz')">매칭 퀴즈 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 매칭 퀴즈 ===== -->
+  <section id="tab-quiz" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>매칭 퀴즈 — 이 사건, 어느 시대의 얼굴일까?</h2>
+      <div class="qhead"><span id="qCount">문항 1 / 6</span><span class="combo" id="qCombo"></span></div>
+      <div class="progress"><i id="qProg"></i></div>
+      <div class="mission-scenario" id="qScenario"></div>
+      <div class="opts" id="qOpts"></div>
+      <div id="qFeedback"></div>
+      <div class="mnav">
+        <span class="stat" style="min-width:0;padding:6px 14px"><span class="lab">점수 </span><b id="qScore">0</b> / 6</span>
+        <button class="btn primary hide" id="qNext" onclick="nextQuiz()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>학습 결과 카드</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="980"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('timeline')">타임라인 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="#" onclick="openPNG(event)">📱 저장이 안 되면 여기(새 탭)</a></p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅲ 시장경제와 지속가능발전 · 자본주의의 전개 과정 [10통사2-03-01] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+var el = function(id){ return document.getElementById(id); };
+
+/* ============ 시대 데이터 ============ */
+var STAGES = {
+  commerce:{emoji:'🏛️',name:'상업자본주의',era:'16~18세기',gov:80,govLabel:'적극 개입(중상주의)',
+    feat:'대항해·삼각무역, 보호무역으로 자본 축적'},
+  industrial:{emoji:'🏭',name:'산업자본주의',era:'18C후~19C',gov:20,govLabel:'자유방임(야경국가)',
+    feat:'산업혁명·공장제 대량생산, 시장 자율'},
+  monopoly:{emoji:'💰',name:'독점자본주의',era:'19C말~20C초',gov:30,govLabel:'시장 자율 유지',
+    feat:'자본 집중→독과점·제국주의, 빈부격차'},
+  revised:{emoji:'🏦',name:'수정자본주의',era:'1930년대~',gov:85,govLabel:'큰 정부(적극 개입)',
+    feat:'대공황→뉴딜·복지국가, 케인스 유효수요'},
+  neoliberal:{emoji:'📉',name:'신자유주의',era:'1970년대말~',gov:25,govLabel:'다시 작은 정부',
+    feat:'규제완화·민영화·감세, 대처·레이건'}
+};
+var CORRECT = ['commerce','industrial','monopoly','revised','neoliberal'];
+var order = CORRECT.slice();
+var tlChecked = false;
+var tlPassed = false;
+var arrScore = 0;
+
+/* ============ 개념 chain 렌더 ============ */
+function renderConceptChain(){
+  var html = '';
+  for(var i=0;i<CORRECT.length;i++){
+    var s = STAGES[CORRECT[i]];
+    var hi = s.gov >= 50;
+    html += '<div class="node"><div class="emo">'+s.emoji+'</div>'+
+      '<div class="nm">'+s.name.replace('자본주의','')+'</div>'+
+      '<div class="er">'+s.era+'</div>'+
+      '<div class="gv '+(hi?'hi':'lo')+'">'+(hi?'개입 '+s.gov:'자유 '+s.gov)+'</div></div>';
+    if(i<CORRECT.length-1) html += '<div class="arrow">›</div>';
+  }
+  el('conceptChain').innerHTML = html;
+}
+
+/* ============ 타임라인 배열 ============ */
+function shuffleTimeline(){
+  var a = CORRECT.slice();
+  do{
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+  } while(sameOrder(a, CORRECT)); // 완전 정답으로 시작하지 않게
+  order = a;
+  tlChecked = false; tlPassed = false;
+  el('toQuiz').disabled = true;
+  el('tlToast').innerHTML = '';
+  el('arrScore').textContent = '–';
+  renderTimeline();
+  drawWGraph(null);
+}
+function sameOrder(a,b){ for(var i=0;i<a.length;i++){ if(a[i]!==b[i]) return false; } return true; }
+
+function renderTimeline(){
+  var html='';
+  for(var i=0;i<order.length;i++){
+    var s = STAGES[order[i]];
+    html += '<div class="tl-item" draggable="true" data-i="'+i+'">'+
+      '<span class="pos">'+(i+1)+'</span>'+
+      '<span class="emo">'+s.emoji+'</span>'+
+      '<span class="body"><span class="nm">'+s.name+'</span><br><span class="ft">'+s.era+' · '+s.feat+'</span></span>'+
+      '<span class="ord">'+
+        '<button onclick="moveItem('+i+',-1)"'+(i===0?' disabled':'')+'>▲</button>'+
+        '<button onclick="moveItem('+i+',1)"'+(i===order.length-1?' disabled':'')+'>▼</button>'+
+      '</span>'+
+      '<span class="mark" id="mark_'+i+'"></span>'+
+    '</div>';
+  }
+  el('tlList').innerHTML = html;
+  bindDrag();
+}
+function moveItem(i, dir){
+  var j = i + dir;
+  if(j<0 || j>=order.length) return;
+  var t=order[i]; order[i]=order[j]; order[j]=t;
+  tlChecked=false;
+  renderTimeline();
+  drawWGraph(null);
+}
+/* HTML5 드래그 */
+var dragFrom = -1;
+function bindDrag(){
+  var items = el('tlList').querySelectorAll('.tl-item');
+  items.forEach(function(it){
+    it.addEventListener('dragstart', function(){ dragFrom=+this.dataset.i; this.classList.add('dragging'); });
+    it.addEventListener('dragend', function(){ this.classList.remove('dragging'); });
+    it.addEventListener('dragover', function(e){ e.preventDefault(); });
+    it.addEventListener('drop', function(e){
+      e.preventDefault();
+      var to=+this.dataset.i;
+      if(dragFrom<0 || dragFrom===to) return;
+      var moved = order.splice(dragFrom,1)[0];
+      order.splice(to,0,moved);
+      tlChecked=false;
+      renderTimeline();
+      drawWGraph(null);
+    });
+  });
+}
+function checkTimeline(){
+  tlChecked = true;
+  arrScore = 0;
+  var marks = [];
+  for(var i=0;i<order.length;i++){
+    var ok = order[i]===CORRECT[i];
+    marks.push(ok);
+    if(ok) arrScore++;
+    var item = el('tlList').children[i];
+    var mk = el('mark_'+i);
+    item.classList.remove('correct','wrong');
+    item.classList.add(ok?'correct':'wrong');
+    mk.className = 'mark ' + (ok?'ok':'no');
+    mk.textContent = ok?'✓':'✗';
+  }
+  el('arrScore').textContent = arrScore + ' / 5';
+  drawWGraph(marks);
+  tlPassed = arrScore >= 3;
+  el('toQuiz').disabled = !tlPassed;
+  var t = el('tlToast');
+  if(arrScore===5){
+    t.className=''; t.innerHTML='<div class="toast ok">🏆 완벽하다! 정부 역할의 W자 진동이 선명하게 드러났다. 매칭 퀴즈로 넘어가자.</div>';
+    el('graphWrap').classList.remove('celebrate');
+    void el('graphWrap').offsetWidth;
+    el('graphWrap').classList.add('celebrate');
+    celebrateGraph();
+  } else if(tlPassed){
+    t.className=''; t.innerHTML='<div class="toast ok">👍 '+arrScore+'/5 통과! 매칭 퀴즈로 갈 수 있다. 5/5에 도전해 W자를 완성해 보자.</div>';
+  } else {
+    t.className=''; t.innerHTML='<div class="toast no">💪 '+arrScore+'/5. 아직 3개 미만이다. 힌트: 산업(자유방임)은 상업 다음, 수정(대공황)은 독점 다음이다. 다시 배열!</div>';
+  }
+}
+/* ============ W자 그래프 ============ */
+var wgFit=false, wgGlow=0;
+function drawWGraph(marks){
+  var cv = el('wgraph');
+  var dpr = window.devicePixelRatio||1;
+  if(!wgFit){ cv.width=560*dpr; cv.height=300*dpr; cv.style.aspectRatio='560/300';
+    cv.getContext('2d').scale(dpr,dpr); wgFit=true; }
+  var ctx = cv.getContext('2d');
+  var W=560, H=300;
+  ctx.clearRect(0,0,W,H);
+  var L=44, R=16, T=22, B=58;
+  var pw=W-L-R, ph=H-T-B;
+  // 배경 밴드: 위=개입, 아래=자유방임
+  var g1=ctx.createLinearGradient(0,T,0,T+ph);
+  g1.addColorStop(0,'rgba(58,95,143,.10)'); g1.addColorStop(1,'rgba(201,162,75,.10)');
+  ctx.fillStyle=g1; ctx.fillRect(L,T,pw,ph);
+  // 중앙선
+  ctx.strokeStyle='#d7deea'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  var midY = T + ph*0.5;
+  ctx.beginPath(); ctx.moveTo(L,midY); ctx.lineTo(L+pw,midY); ctx.stroke(); ctx.setLineDash([]);
+  // 축
+  ctx.strokeStyle='#c3cddb'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(L,T); ctx.lineTo(L,T+ph); ctx.lineTo(L+pw,T+ph); ctx.stroke();
+  // y축 라벨
+  ctx.fillStyle='#3a5f8f'; ctx.font='bold 11px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('개입 强', 4, T+10);
+  ctx.fillStyle='#a5822f'; ctx.fillText('자유 强', 4, T+ph);
+  // 좌표 계산
+  function X(i){ return L + (order.length===1?0.5:(i/(order.length-1))) * pw; }
+  function Y(v){ return T + (1 - v/100) * ph; }
+  // 꺾은선
+  ctx.strokeStyle='#c9a24b'; ctx.lineWidth=3.4 + wgGlow;
+  if(wgGlow>0){ ctx.shadowColor='rgba(201,162,75,.8)'; ctx.shadowBlur=12*wgGlow; }
+  ctx.beginPath();
+  for(var i=0;i<order.length;i++){
+    var xx=X(i), yy=Y(STAGES[order[i]].gov);
+    if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+  }
+  ctx.stroke(); ctx.shadowBlur=0;
+  // 점 + 라벨
+  for(var k=0;k<order.length;k++){
+    var s=STAGES[order[k]];
+    var cx=X(k), cy=Y(s.gov);
+    var dotCol='#3a5f8f';
+    if(marks){ dotCol = marks[k] ? '#2e8b6a' : '#c0563e'; }
+    ctx.fillStyle=dotCol; ctx.beginPath(); ctx.arc(cx,cy,7,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; ctx.stroke();
+    // 개입값
+    ctx.fillStyle='#1b2432'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(String(s.gov), cx, cy - 12);
+    // 시대 이모지 + 이름(축 아래)
+    ctx.font='16px sans-serif'; ctx.fillText(s.emoji, cx, T+ph+20);
+    ctx.fillStyle='#5a6675'; ctx.font='bold 11px sans-serif';
+    var shortNm = s.name.replace('자본주의','').replace('주의','');
+    ctx.fillText(shortNm, cx, T+ph+38);
+    ctx.fillStyle='#9aa6b5'; ctx.font='10px sans-serif';
+    ctx.fillText('('+(k+1)+')', cx, T+ph+51);
+  }
+}
+function celebrateGraph(){
+  var steps=0;
+  var iv=setInterval(function(){
+    steps++;
+    wgGlow = Math.sin(steps*0.6)*0.9 + 0.9;
+    drawWGraph(lastMarks());
+    if(steps>=10){ clearInterval(iv); wgGlow=0; drawWGraph(lastMarks()); }
+  },60);
+}
+function lastMarks(){
+  var m=[]; for(var i=0;i<order.length;i++) m.push(order[i]===CORRECT[i]); return m;
+}
+
+/* ============ 매칭 퀴즈 ============ */
+var stageOpts = ['commerce','industrial','monopoly','revised','neoliberal'];
+function stageLabel(k){ return STAGES[k].emoji + ' ' + STAGES[k].name; }
+var QUIZ = [
+  { emoji:'🕊️', txt:"\"'보이지 않는 손'에 맡기면 시장이 알아서 조화를 이룬다.\" — 애덤 스미스의 주장은 어느 시대와 짝일까?",
+    opts:[['🏛️ 상업자본주의','commerce'],['🏭 산업자본주의','industrial'],['💰 독점자본주의','monopoly'],['🏦 수정자본주의','revised'],['📉 신자유주의','neoliberal']],
+    ans:'industrial', why:"애덤 스미스 『국부론』(1776)·자유방임. 정부는 최소한(야경국가)만 하고 시장에 맡긴다 → 산업자본주의." },
+  { emoji:'📉', txt:"1929년 <b>대공황</b>으로 대량 실업과 수요 붕괴가 일어났다. 이 위기가 배경이 된 시대는?",
+    opts:[['🏛️ 상업자본주의','commerce'],['🏭 산업자본주의','industrial'],['💰 독점자본주의','monopoly'],['🏦 수정자본주의','revised'],['📉 신자유주의','neoliberal']],
+    ans:'revised', why:"대공황으로 시장 실패가 드러나 정부 개입 필요성이 대두 → 케인스·뉴딜의 수정자본주의 배경." },
+  { emoji:'🧠', txt:"<b>케인스</b>가 강조한 것은 무엇일까?",
+    opts:[["① '보이지 않는 손'에 맡기기",'no'],['② 유효수요·정부의 재정지출','yes']],
+    ans:'yes', why:"케인스=정부의 재정지출로 유효수요를 창출(수정자본주의). '보이지 않는 손'은 반대편인 애덤 스미스다. 둘을 섞지 말자." },
+  { emoji:'🏗️', txt:"루스벨트의 <b>뉴딜정책</b>: 공공사업으로 일자리를 만들어 경제를 살렸다. 어느 시대일까?",
+    opts:[['🏛️ 상업자본주의','commerce'],['🏭 산업자본주의','industrial'],['💰 독점자본주의','monopoly'],['🏦 수정자본주의','revised'],['📉 신자유주의','neoliberal']],
+    ans:'revised', why:"뉴딜=큰 정부·복지. 정부가 적극적으로 경제에 개입 → 수정자본주의의 대표 정책." },
+  { emoji:'💸', txt:"<b>규제 완화·공기업 민영화·감세</b>, 대처와 레이건. 이 특징의 시대는?",
+    opts:[['🏛️ 상업자본주의','commerce'],['🏭 산업자본주의','industrial'],['💰 독점자본주의','monopoly'],['🏦 수정자본주의','revised'],['📉 신자유주의','neoliberal']],
+    ans:'neoliberal', why:"스태그플레이션으로 케인스가 한계에 부딪히자 다시 작은 정부·시장 자율로 → 신자유주의." },
+  { emoji:'⚖️', txt:"정부 개입이 <b>가장 작은</b> 시대를 고르시오. (정부 역할의 진동 개념 확인)",
+    opts:[['🏭 산업자본주의','industrial'],['🏦 수정자본주의','revised'],['🏛️ 상업자본주의','commerce']],
+    ans:'industrial', why:"산업=자유방임(개입 최소), 수정·상업=적극 개입. 개입은 커지기만 하는 게 아니라 진동한다." }
+];
+var qIdx=0, qScore=0, qCombo=0, qMaxCombo=0, qPicked=false;
+var qResult = [];
+function renderQuiz(){
+  var q = QUIZ[qIdx]; qPicked=false;
+  el('qCount').textContent = '문항 '+(qIdx+1)+' / '+QUIZ.length;
+  el('qProg').style.width = (qIdx/QUIZ.length*100)+'%';
+  el('qScenario').innerHTML = '<span class="emoji">'+q.emoji+'</span> <b>Q'+(qIdx+1)+'.</b><br>'+q.txt;
+  el('qOpts').innerHTML = q.opts.map(function(o,i){
+    return '<button onclick="pickQuiz('+i+',this)">'+o[0]+'</button>';
+  }).join('');
+  el('qFeedback').innerHTML='';
+  el('qNext').classList.add('hide');
+  el('qScore').textContent = qScore;
+  updateCombo();
+}
+function updateCombo(){
+  el('qCombo').textContent = qCombo>=2 ? ('🔥 '+qCombo+' 콤보') : '';
+}
+function pickQuiz(i, btn){
+  if(qPicked) return; qPicked=true;
+  var q = QUIZ[qIdx];
+  var chosen = q.opts[i][1];
+  var ok = chosen === q.ans;
+  qResult[qIdx] = ok;
+  if(ok){ qScore++; qCombo++; if(qCombo>qMaxCombo) qMaxCombo=qCombo; }
+  else { qCombo=0; }
+  // 버튼 표시
+  var kids = el('qOpts').children;
+  for(var j=0;j<kids.length;j++){
+    kids[j].disabled = true;
+    if(q.opts[j][1]===q.ans) kids[j].classList.add('correct');
+  }
+  if(!ok) btn.classList.add('wrong');
+  el('qScore').textContent = qScore;
+  el('qProg').style.width = ((qIdx+1)/QUIZ.length*100)+'%';
+  updateCombo();
+  var bonus = (ok && qCombo>=2) ? ' · 🔥'+qCombo+' 콤보!' : '';
+  el('qFeedback').innerHTML = '<div class="feedback '+(ok?'ok':'no')+'">'+
+    (ok?'✅ 정답!'+bonus:'❌ 아쉬워요. 정답은 <b>'+stageAnsLabel(q)+'</b>')+'<br>'+q.why+'</div>';
+  el('qNext').classList.remove('hide');
+  if(qIdx===QUIZ.length-1) el('qNext').textContent='결과 보기 →';
+}
+function stageAnsLabel(q){
+  for(var i=0;i<q.opts.length;i++){ if(q.opts[i][1]===q.ans) return q.opts[i][0]; }
+  return '';
+}
+function nextQuiz(){
+  if(qIdx<QUIZ.length-1){ qIdx++; renderQuiz(); }
+  else { go('result'); drawResult(); }
+}
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function gradeInfo(pct){
+  if(pct>=0.9) return {g:'자본주의 역사가 🏆', c:'#c9a24b'};
+  if(pct>=0.7) return {g:'시대 분석가 📚', c:'#3a5f8f'};
+  if(pct>=0.5) return {g:'견습 경제사학도 🌱', c:'#2e8b6a'};
+  return {g:'다시 도전 💪', c:'#c0563e'};
+}
+function drawResult(){
+  var cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  var total = arrScore + qScore;      // 0~11
+  var max = 11;
+  var pct = total/max;
+  var gi = gradeInfo(pct);
+  // 배경
+  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#3a5f8f'); g.addColorStop(1,'#264063');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  // 금색 상단 띠
+  ctx.fillStyle='#c9a24b'; roundRect(ctx,40,40,W-80,10,6); ctx.fill();
+  // 헤더
+  ctx.textAlign='center';
+  ctx.fillStyle='#264063'; ctx.font='bold 38px "Malgun Gothic",sans-serif';
+  ctx.fillText('🏛️ 자본주의 발전사', W/2, 128);
+  ctx.fillStyle='#5a6675'; ctx.font='21px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅲ · 3-1 자본주의의 전개', W/2, 166);
+  // 이름
+  var name = (el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1b2432'; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+  ctx.fillText(name, W/2, 224);
+  // 점수 원형 게이지
+  var cx=W/2, cy=372, r=104;
+  ctx.lineWidth=24; ctx.strokeStyle='#e9edf4';
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle= gi.c; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1b2432'; ctx.font='bold 54px "Malgun Gothic",sans-serif';
+  ctx.fillText(String(total), cx, cy+2);
+  ctx.fillStyle='#5a6675'; ctx.font='20px "Malgun Gothic",sans-serif';
+  ctx.fillText('/ '+max+'점  ('+Math.round(pct*100)+'%)', cx, cy+36);
+  // 등급
+  ctx.fillStyle= gi.c; ctx.font='bold 28px "Malgun Gothic",sans-serif';
+  ctx.fillText(gi.g, W/2, cy+r+62);
+  // 세부 점수 2칸
+  var by = cy+r+96;
+  ctx.fillStyle='#f2f6fb'; roundRect(ctx,90,by,258,74,14); ctx.fill();
+  roundRect(ctx,372,by,258,74,14); ctx.fill();
+  ctx.fillStyle='#5a6675'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('타임라인 배열', 90+129, by+28);
+  ctx.fillText('매칭 퀴즈', 372+129, by+28);
+  ctx.fillStyle='#264063'; ctx.font='bold 26px "Malgun Gothic",sans-serif';
+  ctx.fillText(arrScore+' / 5', 90+129, by+58);
+  ctx.fillText(qScore+' / 6', 372+129, by+58);
+  // 퀴즈 문항별 O/X
+  ctx.textAlign='left'; ctx.font='bold 20px "Malgun Gothic",sans-serif';
+  var y = by+118;
+  ctx.fillStyle='#1b2432';
+  ctx.fillText('매칭 퀴즈 채점', 92, y);
+  y += 34;
+  ctx.font='19px "Malgun Gothic",sans-serif';
+  for(var i=0;i<QUIZ.length;i++){
+    var col = (i%2), rowX = 92 + col*270;
+    if(col===0 && i>0) {}
+    ctx.fillStyle='#1b2432';
+    ctx.fillText('Q'+(i+1), rowX, y);
+    var r2 = qResult[i];
+    ctx.fillStyle = (r2===true)?'#2e8b6a':(r2===false)?'#c0563e':'#9aa6b5';
+    ctx.fillText(r2===true?'⭕ 정답':(r2===false?'❌ 오답':'– 미완료'), rowX+52, y);
+    if(col===1) y += 34;
+  }
+  if(QUIZ.length%2===1) y += 34;
+  // 요약 한 줄
+  ctx.textAlign='center';
+  ctx.fillStyle='#264063'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  var wave = (arrScore===5) ? '정확히 이해했어요' : (arrScore>=3?'대체로 이해했어요':'더 연습해요');
+  ctx.fillText('정부 역할의 W자 진동(개입↔자유방임): '+wave, W/2, y+16);
+  // 푸터
+  ctx.fillStyle='#9aa6b5'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 자본주의 발전사 타임라인', W/2, H-64);
+}
+function savePNG(){
+  drawResult();
+  var a=document.createElement('a');
+  a.download='자본주의발전사_결과_'+(el('studentName').value||'학생')+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png');
+  a.click();
+}
+function openPNG(e){
+  if(e) e.preventDefault();
+  drawResult();
+  var url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+function go(tab){
+  var buttons = document.querySelectorAll('nav button');
+  buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
+  ['concept','timeline','quiz','result'].forEach(function(t){
+    el('tab-'+t).classList.toggle('hide', t!==tab);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='timeline') drawWGraph(tlChecked?lastMarks():null);
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(function(b){
+  b.addEventListener('click', function(){ go(b.dataset.tab); });
+});
+
+/* ============ 초기화 ============ */
+renderConceptChain();
+shuffleTimeline();
+renderQuiz();
+</script>
+</body>
+</html>

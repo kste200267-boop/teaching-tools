@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>분배 정의 시뮬레이터 · 통합사회2 Ⅱ 사회정의와 불평등</title>
+<style>
+  :root{
+    --bg:#eef1f6; --surface:#ffffff; --ink:#1b2536; --sub:#5a6577;
+    --primary:#2f4373; --primary-d:#1e2a44; --accent:#ff6b57; --gold:#e0a020;
+    --ability:#2e6fb7; --need:#1c9e6b; --merit:#e0a020;
+    --line:#dfe4ec; --shadow:0 6px 20px rgba(20,30,55,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:25px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:78px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:13.5px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+  h3{font-size:16px;margin:14px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .concept .tag2{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:2px 7px;margin-bottom:6px}
+  .pro{color:#12805a;font-weight:700}
+  .con{color:#b23a22;font-weight:700}
+  .hide{display:none}
+  .note{background:#fff7ed;border:1px solid #ffe1c2;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#8a5a1a;margin-top:12px}
+  /* 상황 카드 */
+  .sits{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .sits button{flex:1 1 30%;min-width:96px;border:1.5px solid var(--line);background:#fff;border-radius:12px;
+    padding:10px 6px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink);line-height:1.3}
+  .sits button .se{display:block;font-size:22px;margin-bottom:2px}
+  .sits button.sel{border-color:var(--primary);background:#eef2fa;color:var(--primary-d)}
+  .resbar{background:#eef2fa;border-radius:12px;padding:10px 14px;font-size:13.5px;font-weight:700;color:var(--primary-d);margin:10px 0}
+  /* 슬라이더 */
+  .slider-row{margin:12px 0}
+  .slider-row label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;margin-bottom:4px}
+  input[type=range]{width:100%;height:26px}
+  .s-ability{accent-color:var(--ability)} .s-need{accent-color:var(--need)} .s-merit{accent-color:var(--merit)}
+  .c-ability{color:var(--ability)} .c-need{color:var(--need)} .c-merit{color:var(--merit)}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 11px;
+    font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .presets button:active{transform:scale(.96)}
+  /* 배분 막대 */
+  .prow{margin:9px 0}
+  .pinfo{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;margin-bottom:3px;flex-wrap:wrap}
+  .pemoji{font-size:17px}
+  .attrs{margin-left:auto;display:flex;gap:4px}
+  .attrs i{font-style:normal;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 5px}
+  .attrs .ab{background:#e7f0fa;color:var(--ability)} .attrs .nd{background:#e4f6ee;color:var(--need)} .attrs .mr{background:#fbf1dc;color:#a9760f}
+  .bar{position:relative;height:26px;background:#f0f3f8;border-radius:8px;overflow:hidden}
+  .barfill{height:100%;width:0;border-radius:8px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .barfill.ab{background:linear-gradient(90deg,#3f82c9,#2e6fb7)}
+  .barfill.nd{background:linear-gradient(90deg,#2bb47e,#1c9e6b)}
+  .barfill.mr{background:linear-gradient(90deg,#efc056,#e0a020)}
+  .bamt{position:absolute;top:0;left:8px;height:26px;display:flex;align-items:center;font-size:12px;font-weight:800;color:#1b2536;text-shadow:0 1px 2px rgba(255,255,255,.6)}
+  /* 지표 게이지 */
+  .gauges{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px}
+  @media(max-width:560px){.gauges{grid-template-columns:1fr}}
+  .gauge{background:#f6f8fc;border-radius:12px;padding:10px 12px}
+  .gauge .gl{font-size:12px;font-weight:800;color:var(--sub);display:flex;justify-content:space-between}
+  .gauge .gv{font-size:20px;font-weight:800}
+  .gtrack{height:8px;background:#e6ebf2;border-radius:99px;overflow:hidden;margin-top:5px}
+  .gtrack i{display:block;height:100%;width:0;transition:width .5s}
+  .g-eq i{background:var(--need)} .g-ef i{background:var(--ability)} .g-sa i{background:var(--gold)}
+  /* 트레이드오프 */
+  .trade{margin-top:12px}
+  .trade .tl{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--sub)}
+  .tbar{position:relative;height:14px;border-radius:99px;margin-top:5px;
+    background:linear-gradient(90deg,var(--need),#c9cfd8 50%,var(--ability))}
+  .tbar i{position:absolute;top:-4px;width:6px;height:22px;border-radius:4px;background:#1b2536;box-shadow:0 0 0 2px #fff;transition:left .5s}
+  .fb{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:13.5px;font-weight:600;background:#eef2fa;color:var(--primary-d)}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.accent{background:var(--accent);color:#fff}
+  .btn.ghost{background:#e9edf3;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* 미션 */
+  .mission-scenario{background:#fff7ed;border:1px solid #ffe1c2;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:24px}
+  .q{margin:12px 0}
+  .q .qt{font-weight:800;font-size:14.5px;margin-bottom:6px}
+  .opts{display:flex;flex-direction:column;gap:7px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;
+    font-weight:700;font-size:13.5px;cursor:pointer;text-align:left}
+  .opts button.sel{border-color:var(--primary);background:#eef2fa;color:var(--primary-d)}
+  .opts button.correct{border-color:var(--need);background:#e7f7ef;color:#12805a}
+  .opts button.wrong{border-color:var(--accent);background:#fdece8;color:#b23a22}
+  .feedback{margin-top:10px;padding:12px;border-radius:10px;font-size:13.5px;font-weight:600}
+  .feedback.ok{background:#e7f7ef;color:#12805a}
+  .feedback.no{background:#fdece8;color:#b23a22}
+  .progress{height:8px;background:#e9edf3;border-radius:99px;overflow:hidden;margin:8px 0 16px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  .demo{margin-top:14px;padding:12px;background:#f6f8fc;border:1px solid var(--line);border-radius:12px}
+  .demo h4{margin:0 0 8px;font-size:13.5px;color:var(--primary-d)}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e9edf3;border-radius:6px;padding:2px 7px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅱ 사회정의와 불평등</div>
+    <h1>⚖️ 분배 정의 시뮬레이터</h1>
+    <p>장학금 300만원, 신청자는 30명. 성적순으로? 형편순으로? 노력순으로? 네가 직접 나눠 보면 '공정'이 얼마나 어려운지 안다. 능력·필요·업적으로 자원을 갈라 보며 형평성과 효율성 사이에서 정의로운 분배를 찾아보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="explore">2. 분배 실험</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>무엇을 어떻게 나누어야 정의로울까?</h2>
+      <p class="lead"><b>분배적 정의</b>는 사회적·경제적 가치(소득·기회·자원 등)를 <b>공정하게</b> 나누는 문제다.
+        핵심은 "무엇을 기준으로 나눌 것인가"이며, 대표적 기준이 <b>능력·필요·업적</b> 세 가지다.
+        어느 것이 옳은지는 <b>상황에 따라 다르며 가치 판단</b>이 필요하다 — 정답을 하나로 강요할 수 없다.</p>
+      <div class="grid3">
+        <div class="concept">
+          <span class="tag2" style="background:#e7f0fa;color:var(--ability)">능력</span>
+          <div><b>능력에 따른 분배</b> — 개인의 능력·재능만큼 나눈다.</div>
+          <div style="margin-top:6px"><span class="pro">장점</span> 잠재력·능력 발휘를 북돋아 효율↑</div>
+          <div><span class="con">단점</span> 타고난 환경·운의 영향, 약자 배려 부족, 능력 평가 기준 모호</div>
+        </div>
+        <div class="concept">
+          <span class="tag2" style="background:#e4f6ee;color:var(--need)">필요</span>
+          <div><b>필요에 따른 분배</b> — 인간다운 삶에 필요한 정도만큼 나눈다.</div>
+          <div style="margin-top:6px"><span class="pro">장점</span> 사회적 약자 보호, 인간다운 삶 보장</div>
+          <div><span class="con">단점</span> 자원이 한정돼 모든 필요 충족 곤란, 생산 동기·효율 저하 우려</div>
+        </div>
+        <div class="concept">
+          <span class="tag2" style="background:#fbf1dc;color:#a9760f">업적·기여</span>
+          <div><b>업적에 따른 분배</b> — 성과·기여도만큼 나눈다.</div>
+          <div style="margin-top:6px"><span class="pro">장점</span> 객관적 평가 쉬움, 성취 동기 자극, 기여 보상</div>
+          <div><span class="con">단점</span> 서로 다른 업적 비교 곤란, 과열 경쟁, 약자 배려 부족</div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:12px">
+        <div class="concept">
+          <h3 style="margin-top:0">⚖️ 형평성 vs 효율성</h3>
+          <b>형평성</b>은 몫을 공정하게 나누는 것, <b>효율성</b>은 자원을 낭비 없이 생산적으로 쓰는 것.
+          둘은 흔히 <b>상충(트레이드오프)</b>한다. 정의로운 사회는 하나만 좇지 않고 <b>상황에 맞는 균형</b>을 찾는다.
+        </div>
+        <div class="concept">
+          <h3 style="margin-top:0">🟰 절대적 평등 vs 상대적 평등</h3>
+          <b>절대적(산술적) 평등</b>은 모두 똑같이 나눈다.
+          <b>상대적(비례적) 평등</b>은 "같은 것은 같게, 다른 것은 다르게" — 능력·필요·업적 차이에 따라 다르게 나눈다.
+          어떤 차이를 인정할지가 곧 정의의 쟁점이다.
+        </div>
+      </div>
+      <div class="note">💡 어떤 기준도 <b>완벽하지 않다.</b> 재난 현장, 회사 성과급, 학교 장학금처럼 <b>맥락</b>에 따라
+        적절한 기준이 달라진다. 다음 화면에서 직접 자원을 나눠 보며 그 차이를 느껴 보자.</div>
+      <div class="note" style="background:#eef2fa;border-color:#cdd8ee;color:var(--primary-d)">👩‍🏫 <b>이렇게 쓰세요:</b>
+        먼저 학생 각자 자기 손으로 자원을 나눠 보게 하고(개인 배분) → 모둠에서 서로의 배분을 겹쳐 비교한 뒤(모둠 비교) →
+        "왜 다르게 나눴을까?"를 실마리로 토론을 엽니다. 정답 맞히기가 아니라 <b>가치 판단의 근거</b>를 말로 꺼내게 하는 게 핵심이에요.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('explore')">자원 직접 나눠보기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 분배 실험 ===== -->
+  <section id="tab-explore" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>분배 실험 — 기준의 무게를 조절하라</h2>
+      <p class="lead">상황을 고르고, 세 기준의 <b>가중치</b>를 움직여 자원을 나눠 보자. 형평성·효율성·만족도가 실시간으로 바뀐다.</p>
+      <div class="sits" id="sits"></div>
+      <div class="resbar" id="resbar"></div>
+
+      <div class="slider-row">
+        <label><span class="c-ability">🎯 능력 가중치</span><span id="wAlab">33%</span></label>
+        <input type="range" id="wA" class="s-ability" min="0" max="100" value="33">
+      </div>
+      <div class="slider-row">
+        <label><span class="c-need">🤝 필요 가중치</span><span id="wNlab">33%</span></label>
+        <input type="range" id="wN" class="s-need" min="0" max="100" value="33">
+      </div>
+      <div class="slider-row">
+        <label><span class="c-merit">🏅 업적 가중치</span><span id="wMlab">34%</span></label>
+        <input type="range" id="wM" class="s-merit" min="0" max="100" value="34">
+      </div>
+      <div class="presets">
+        <button onclick="setW(70,15,15)">능력 중심</button>
+        <button onclick="setW(10,80,10)">필요 중심</button>
+        <button onclick="setW(15,15,70)">업적 중심</button>
+        <button onclick="setW(34,33,33)">균형</button>
+      </div>
+
+      <h3>배분 결과</h3>
+      <div id="peopleList"></div>
+
+      <h3>형평-효율 지표</h3>
+      <div class="gauges">
+        <div class="gauge"><div class="gl"><span>🤝 형평성</span><span id="eqV" class="c-need">0</span></div>
+          <div class="gtrack g-eq"><i id="eqBar"></i></div></div>
+        <div class="gauge"><div class="gl"><span>⚙️ 효율성</span><span id="efV" class="c-ability">0</span></div>
+          <div class="gtrack g-ef"><i id="efBar"></i></div></div>
+        <div class="gauge"><div class="gl"><span>😊 만족도</span><span id="saV" style="color:var(--gold)">0</span></div>
+          <div class="gtrack g-sa"><i id="saBar"></i></div></div>
+      </div>
+      <div class="trade">
+        <div class="tl"><span>형평성 쪽</span><span>트레이드오프</span><span>효율성 쪽</span></div>
+        <div class="tbar"><i id="tMark" style="left:50%"></i></div>
+      </div>
+      <div class="fb" id="expFb"></div>
+
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="setW(34,33,33)">가중치 초기화</button>
+        <button class="btn primary" onclick="go('mission')">미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>미션 — 정의로운 분배를 판단하라</h2>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div id="mQuestions"></div>
+      <div id="mFeedback"></div>
+      <div id="mDemoWrap"></div>
+      <div class="mnav">
+        <button class="btn ghost" id="mCheck" onclick="checkMission()">판정</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>학습 결과</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="960"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn accent" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+      <div style="text-align:center;margin-top:10px">
+        <a href="#" onclick="openPNG();return false;" style="color:var(--sub);font-size:13px;font-weight:700;text-decoration:underline">📱 저장이 안 되면 여기(새 탭)</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅱ 사회정의와 불평등 · 분배적 정의의 기준(능력·필요·업적) [10통사2-02] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+const clamp = v=>Math.max(0,Math.min(100,v));
+
+/* ============ 상황·수혜자 데이터 ============ */
+const SITS = {
+  school:{
+    emoji:'🎓', title:'학교 장학금', resource:'장학금', pool:1000, unit:'만원',
+    desc:'형편도 성적도 제각각인 다섯 학생. 이 장학금을 누구에게 얼마씩 줘야 원망이 없을까?',
+    recW:{A:20,N:45,M:35},
+    note:'장학금은 형편이 어려운 학생(필요)과 노력·성취(업적)를 함께 보는 경우가 많아요. 능력만으로 나누면 기회 불평등이 커질 수 있어요.',
+    people:[
+      {name:'지훈', emoji:'🧑‍🎓', ability:82, need:25, merit:85},
+      {name:'서연', emoji:'👩‍🎓', ability:55, need:90, merit:62},
+      {name:'민준', emoji:'🧑‍🎓', ability:60, need:55, merit:55},
+      {name:'하은', emoji:'👩‍🎓', ability:70, need:48, merit:78},
+      {name:'도윤', emoji:'🧑‍🎓', ability:45, need:88, merit:40}
+    ]
+  },
+  disaster:{
+    emoji:'🚑', title:'재난 의료자원', resource:'의료 자원', pool:100, unit:'',
+    desc:'대형 재난으로 병상도 의료진도 모자란다. 지금 이 순간, 한정된 치료 자원을 누구에게 먼저 돌릴 것인가?',
+    recW:{A:20,N:70,M:10},
+    note:'응급·재난에서는 생명이 위급한 정도(필요)가 최우선이에요. 지위·업적으로 생명을 나눌 수 없어요. 다만 회복 가능성(효율)도 현실 트리아지에서 함께 고려돼요.',
+    people:[
+      {name:'환자 A', emoji:'🤕', ability:70, need:95, merit:40},
+      {name:'환자 B', emoji:'👵', ability:35, need:90, merit:30},
+      {name:'환자 C', emoji:'🧑', ability:80, need:40, merit:55},
+      {name:'환자 D', emoji:'👨', ability:60, need:85, merit:45},
+      {name:'환자 E', emoji:'🧒', ability:75, need:32, merit:50}
+    ]
+  },
+  company:{
+    emoji:'🏢', title:'기업 성과급', resource:'성과급', pool:3000, unit:'만원',
+    desc:'팀에 성과급이 떨어졌다. 실적왕, 궂은일 도맡은 사람, 형편 어려운 사람… 이 돈을 어떻게 갈라야 팀이 안 깨질까?',
+    recW:{A:35,N:15,M:50},
+    note:'성과급은 기여·성과(업적)와 능력에 따른 분배가 원칙이에요. 다만 지나친 격차와 저성과자의 생계(필요)도 최소한 배려하면 갈등이 줄어요.',
+    people:[
+      {name:'상우', emoji:'💼', ability:80, need:40, merit:92},
+      {name:'예린', emoji:'💼', ability:65, need:55, merit:60},
+      {name:'준호', emoji:'💼', ability:70, need:60, merit:40},
+      {name:'미나', emoji:'💼', ability:85, need:50, merit:50},
+      {name:'태현', emoji:'💼', ability:45, need:90, merit:30}
+    ]
+  }
+};
+const CRIT = {A:'능력', N:'필요', M:'업적'};
+
+/* ============ 분배 계산 ============ */
+function distribute(people, w){
+  const s = (w.A+w.N+w.M) || 1;
+  const wA=w.A/s, wN=w.N/s, wM=w.M/s;
+  const scores = people.map(p=>wA*p.ability + wN*p.need + wM*p.merit);
+  const sum = scores.reduce((a,b)=>a+b,0) || 1;
+  const shares = scores.map(x=>x/sum);
+  const needs = people.map(p=>p.need);
+  const prods = people.map(p=>p.ability*0.6 + p.merit*0.4);
+  const minN=Math.min.apply(null,needs), maxN=Math.max.apply(null,needs);
+  const minP=Math.min.apply(null,prods), maxP=Math.max.apply(null,prods);
+  let equityRaw=0, effRaw=0;
+  shares.forEach((sh,i)=>{ equityRaw+=sh*needs[i]; effRaw+=sh*prods[i]; });
+  const equity = clamp(Math.round((equityRaw-minN)/((maxN-minN)||1)*100));
+  const eff    = clamp(Math.round((effRaw-minP)/((maxP-minP)||1)*100));
+  const bests = people.map(p=>Math.max(p.ability,p.need,p.merit));
+  const bsum = bests.reduce((a,b)=>a+b,0) || 1;
+  let short=0;
+  shares.forEach((sh,i)=>{ const exp=bests[i]/bsum; if(exp>sh) short+=exp-sh; });
+  const conflict = clamp(Math.round(short*140));
+  return {wA,wN,wM, shares, equity, eff, conflict, satisfaction:clamp(100-conflict)};
+}
+function dominant(w){ // 최대 기준 키 반환
+  if(w.A>=w.N && w.A>=w.M) return 'A';
+  if(w.N>=w.M) return 'N';
+  return 'M';
+}
+
+/* ============ 막대 렌더 ============ */
+function critClass(p){
+  const m=Math.max(p.ability,p.need,p.merit);
+  if(m===p.ability) return 'ab';
+  if(m===p.need) return 'nd';
+  return 'mr';
+}
+function buildBars(host, people){
+  host.innerHTML = people.map((p,i)=>
+    '<div class="prow"><div class="pinfo"><span class="pemoji">'+p.emoji+'</span>'+
+    '<span class="pname">'+p.name+'</span>'+
+    '<span class="attrs"><i class="ab">능 '+p.ability+'</i><i class="nd">필 '+p.need+'</i><i class="mr">업 '+p.merit+'</i></span></div>'+
+    '<div class="bar"><div class="barfill '+critClass(p)+'" data-i="'+i+'"></div>'+
+    '<span class="bamt" data-i="'+i+'"></span></div></div>'
+  ).join('');
+}
+function paintBars(host, people, res, pool, unit){
+  const shares=res.shares; const maxS=Math.max.apply(null,shares)||1;
+  host.querySelectorAll('.barfill').forEach(b=>{ const i=+b.dataset.i; b.style.width=(shares[i]/maxS*100).toFixed(1)+'%'; });
+  host.querySelectorAll('.bamt').forEach(t=>{ const i=+t.dataset.i;
+    t.textContent = Math.round(pool*shares[i]) + unit + ' · ' + (shares[i]*100).toFixed(0) + '%'; });
+}
+
+/* ============ 분배 실험 화면 ============ */
+let curSit = 'school';
+function buildSits(){
+  el('sits').innerHTML = Object.keys(SITS).map(k=>{
+    const s=SITS[k];
+    return '<button data-k="'+k+'" onclick="pickSit(\''+k+'\')"><span class="se">'+s.emoji+'</span>'+s.title+'</button>';
+  }).join('');
+}
+function pickSit(k){
+  curSit=k;
+  document.querySelectorAll('#sits button').forEach(b=>b.classList.toggle('sel',b.dataset.k===k));
+  const s=SITS[k];
+  el('resbar').innerHTML='📦 '+s.desc+' &nbsp;/ &nbsp;총 자원: <b>'+s.pool+s.unit+'</b>';
+  buildBars(el('peopleList'), s.people);
+  syncExplore();
+}
+function getW(){ return {A:+el('wA').value, N:+el('wN').value, M:+el('wM').value}; }
+function setW(a,n,m){ el('wA').value=a; el('wN').value=n; el('wM').value=m; syncExplore(); }
+function syncExplore(){
+  const w=getW(); const s=(w.A+w.N+w.M)||1;
+  el('wAlab').textContent=Math.round(w.A/s*100)+'%';
+  el('wNlab').textContent=Math.round(w.N/s*100)+'%';
+  el('wMlab').textContent=Math.round(w.M/s*100)+'%';
+  const sit=SITS[curSit];
+  const res=distribute(sit.people, w);
+  paintBars(el('peopleList'), sit.people, res, sit.pool, sit.unit);
+  el('eqV').textContent=res.equity; el('eqBar').style.width=res.equity+'%';
+  el('efV').textContent=res.eff; el('efBar').style.width=res.eff+'%';
+  el('saV').textContent=res.satisfaction; el('saBar').style.width=res.satisfaction+'%';
+  const denom=(res.eff+res.equity)||1;
+  el('tMark').style.left=(res.eff/denom*100).toFixed(0)+'%';
+  el('expFb').innerHTML=feedbackFor(sit, w, res);
+}
+function feedbackFor(sit, w, res){
+  const userDom=dominant(w), recDom=dominant(sit.recW);
+  let msg='';
+  const ns=(w.A+w.N+w.M)||1; const wM=w.M/ns, wN=w.N/ns;
+  if(curSit==='disaster' && wM>0.35){
+    msg+='⚠️ <b>재난 상황에서 생명을 \'업적\'으로 나누는 것은 정의롭지 않아요.</b> ';
+  }
+  if(userDom===recDom){
+    msg+='👍 이 상황엔 <b>'+CRIT[recDom]+'</b> 기준을 중시하는 게 대체로 적절해요. '+sit.note;
+  } else {
+    msg+='🤔 지금은 <b>'+CRIT[userDom]+'</b> 기준에 치우쳐 있어요. 이 상황에선 <b>'+CRIT[recDom]+'</b> 기준도 크게 고려해 보세요. '+sit.note;
+  }
+  if(res.conflict>55){
+    msg+='<br><br>😖 <b>갈등·불만이 큽니다</b>(만족도 '+res.satisfaction+'). 특정 기준에 치우쳐 소외되는 집단이 있어요.';
+  } else if(Math.abs(res.equity-res.eff)<=12){
+    msg+='<br><br>⚖️ 형평성과 효율성이 비교적 <b>균형</b>을 이루고 있어요.';
+  }
+  return msg;
+}
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {type:'sit', sit:'disaster', emoji:'🚑', title:'재난 현장의 의료 자원',
+   txt:'사이렌이 멈추지 않는다. 병상도 의료진도 턱없이 모자란 지금, 밀려드는 환자들에게 한정된 치료 자원을 어떻게 배분해야 할까?',
+   q:[
+     {qt:'① 이 상황에서 가장 우선해야 할 분배 기준은?',
+      opts:[['필요(생명의 위급도)에 따라',true],['업적(사회적 지위·기여)에 따라',false],['능력(치료비 지불 능력)에 따라',false]],
+      why:'재난·응급에서는 생명이 위급한 정도(필요)가 최우선이다. 지위·재산·업적으로 생명을 나눌 수 없다.'},
+     {qt:'② \'필요\' 기준만 따를 때의 현실적 한계는?',
+      opts:[['자원이 한정돼 모든 필요를 다 채우기 어렵다',true],['측정이 너무 쉬워 문제가 된다',false],['성취 동기를 지나치게 높인다',false]],
+      why:'필요 기준은 약자를 보호하지만, 자원이 한정돼 모든 필요를 충족하기 어렵고 "누구부터" 우선할지 판단이 필요하다.'}
+   ]},
+  {type:'sit', sit:'company', emoji:'🏢', title:'회사의 성과급',
+   txt:'연말, 팀에 성과급 봉투가 내려왔다. 실적이 압도적인 사람, 묵묵히 성실한 사람, 형편이 빠듯한 사람이 한 팀에 섞여 있다. 이 돈, 어떻게 갈라야 할까?',
+   q:[
+     {qt:'① 성과급 분배의 기본 원칙으로 가장 알맞은 기준은?',
+      opts:[['업적(성과·기여도)에 따라',true],['필요(생계 형편)에 따라만',false],['모두에게 똑같이(절대적 평등)',false]],
+      why:'성과급은 일에 대한 기여·성과(업적)에 따른 분배가 원칙이다. 다만 과도한 격차나 저성과자 배려도 함께 고려하면 갈등이 줄어든다.'},
+     {qt:'② 업적에 따른 분배의 단점으로 알맞은 것은?',
+      opts:[['서로 다른 종류의 업적은 비교가 어렵고 과열 경쟁을 부른다',true],['약자를 지나치게 우대한다',false],['성취 동기를 떨어뜨린다',false]],
+      why:'업적 기준은 객관적이고 동기를 자극하지만, 이질적 업적의 비교가 어렵고 경쟁 과열·약자 소외의 단점이 있다.'}
+   ]},
+  {type:'sit', sit:'school', emoji:'🎓', title:'학교 장학금',
+   txt:'학교 장학금 심사 날. 성적은 최상위지만 집이 넉넉한 학생, 성적은 중간이어도 형편이 빠듯한 학생… 저마다 사정이 다르다. 이 장학금, 누구에게 돌아가야 할까?',
+   q:[
+     {qt:'① 장학금 분배에서 함께 고려하면 좋은 두 기준은?',
+      opts:[['필요(가정 형편)와 업적(노력·성취)',true],['능력과 지위(신분)',false],['오직 능력 하나만',false]],
+      why:'장학금은 기회의 평등을 위해 형편(필요)을 배려하면서, 노력·성취(업적)도 함께 고려하는 경우가 많다.'},
+     {qt:'② 능력에만 따라 장학금을 주면 생기는 문제는?',
+      opts:[['타고난 환경 차이로 기회 불평등이 대물림될 수 있다',true],['형평성이 완벽히 실현된다',false],['효율성이 반드시 낮아진다',false]],
+      why:'능력은 가정환경·교육 여건 등 개인이 통제하기 어려운 요인에 크게 영향받는다. 능력만 강조하면 출발선의 불평등이 대물림될 수 있다.'}
+   ]},
+  {type:'con', emoji:'🟰', title:'절대적 평등 vs 상대적 평등',
+   txt:'"똑같이 나누면 공정할까, 다르게 나누면 공정할까?" 분배 방식을 두고 의견이 갈린다.',
+   q:[
+     {qt:'① 절대적(산술적) 평등의 문제점으로 알맞은 것은?',
+      opts:[['기여·필요의 차이를 무시해 오히려 불공정·비효율이 될 수 있다',true],['개인차를 잘 반영한다',false],['항상 가장 정의롭다',false]],
+      why:'절대적 평등은 모두에게 똑같이 나눈다. 그러나 기여·필요가 다른데 똑같이 주면 열심히 한 사람의 불만과 더 필요한 사람의 결핍이 생겨 상대적(비례적) 평등이 필요할 때가 많다.'},
+     {qt:'② 상대적(비례적) 평등의 핵심은?',
+      opts:[['능력·필요·업적 등 차이에 따라 다르게 분배한다',true],['모두 똑같은 양을 받는다',false],['분배 자체를 하지 않는다',false]],
+      why:'상대적 평등은 "같은 것은 같게, 다른 것은 다르게" 나누는 것으로, 어떤 기준으로 다르게 나눌지가 분배 정의의 핵심 쟁점이 된다.'}
+   ]},
+  {type:'con', emoji:'⚙️', title:'형평성과 효율성 사이',
+   txt:'복지를 늘려 형평성을 높이면 효율성이 떨어질 수 있다는 우려가 있다.',
+   q:[
+     {qt:'① 형평성과 효율성의 관계로 가장 알맞은 것은?',
+      opts:[['흔히 상충하지만, 사회는 상황에 맞게 조화·균형을 추구한다',true],['둘은 항상 완전히 일치한다',false],['효율성만 높이면 정의가 완성된다',false]],
+      why:'형평성(공정한 분배)과 효율성(자원의 생산적 활용)은 자주 트레이드오프 관계다. 정의로운 사회는 둘 중 하나만이 아니라 상황에 맞는 균형점을 찾는다.'},
+     {qt:'② 다음 중 옳은 설명은?',
+      opts:[['정의로운 분배 기준은 상황(맥락)에 따라 달라질 수 있다',true],['모든 상황에 통하는 하나의 정답 기준이 있다',false],['분배 기준 선택은 가치 판단과 무관하다',false]],
+      why:'분배 정의는 가치 판단이 개입하는 문제로, 어떤 기준이 적절한지는 상황과 사회적 합의에 따라 달라진다. 하나의 정답을 강요할 수 없다.'}
+   ]},
+  {type:'con', emoji:'🎯', title:'능력에 따른 분배의 두 얼굴',
+   txt:'"능력 있는 사람이 더 많이 갖는 것이 공정하다"는 주장을 들여다본다.',
+   q:[
+     {qt:'① 능력에 따른 분배의 장점은?',
+      opts:[['개인의 잠재력·능력 발휘를 북돋아 효율을 높인다',true],['사회적 약자를 가장 잘 보호한다',false],['필요를 완벽히 충족한다',false]],
+      why:'능력에 따른 분배는 재능과 노력을 자극해 사회 전체의 생산성·효율을 높이는 장점이 있다.'},
+     {qt:'② 능력에 따른 분배의 대표적 단점은?',
+      opts:[['타고난 환경·운의 영향을 무시해 약자 배려가 부족하다',true],['성취 동기를 떨어뜨린다',false],['능력 평가가 언제나 완벽하다',false]],
+      why:'능력은 선천적 재능·가정환경 등 개인이 통제하기 어려운 요인에 영향받는다. 능력만 강조하면 약자 배려가 어렵고 불평등이 대물림될 수 있다.'}
+   ]}
+];
+let mIdx=0; const mResult=[]; let mAnswers=[]; let mChecked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mChecked=false; mAnswers=[null,null];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+' / '+MISSIONS.length+' · '+m.title+'</b><br>'+m.txt;
+  el('mQuestions').innerHTML=m.q.map((q,qi)=>
+    '<div class="q"><div class="qt">'+q.qt+'</div><div class="opts" data-q="'+qi+'">'+
+    q.opts.map((o,oi)=>'<button onclick="pickM('+qi+','+oi+',this)">'+o[0]+'</button>').join('')+
+    '</div></div>').join('');
+  el('mFeedback').innerHTML='';
+  el('mDemoWrap').innerHTML='';
+  el('mCheck').classList.remove('hide'); el('mNext').classList.add('hide');
+}
+function pickM(qi,oi,btn){
+  if(mChecked) return;
+  mAnswers[qi]=oi;
+  if(btn&&btn.parentNode)[].forEach.call(btn.parentNode.children,b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function checkMission(){
+  const m=MISSIONS[mIdx];
+  if(mAnswers[0]==null || mAnswers[1]==null){
+    el('mFeedback').innerHTML='<div class="feedback no">두 문항을 모두 골라줘!</div>'; return;
+  }
+  mChecked=true;
+  let score=0;
+  m.q.forEach((q,qi)=>{
+    const correctIdx=q.opts.findIndex(o=>o[1]===true);
+    if(mAnswers[qi]===correctIdx) score++;
+    const grp=document.querySelector('.opts[data-q="'+qi+'"]');
+    [].forEach.call(grp.children,(b,bi)=>{
+      if(bi===correctIdx) b.classList.add('correct');
+      if(bi===mAnswers[qi] && bi!==correctIdx) b.classList.add('wrong');
+    });
+  });
+  mResult[mIdx]={score, of:2, emoji:m.emoji, title:m.title};
+  const allOk=score===2;
+  el('mFeedback').innerHTML='<div class="feedback '+(allOk?'ok':'no')+'">'+
+    (allOk?'✅ 정확해요!':'💡 다시 확인!')+' ('+score+'/2)<br>'+
+    '① '+m.q[0].why+'<br>② '+m.q[1].why+'</div>';
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mCheck').classList.add('hide'); el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+  // 상황형 미션: 권장 가중치로 배분 시연
+  if(m.type==='sit'){
+    const sit=SITS[m.sit];
+    el('mDemoWrap').innerHTML='<div class="demo"><h4>📊 이 상황에 적절한 분배 예시 ('+CRIT[dominant(sit.recW)]+' 중심)</h4><div id="mDemoBars"></div></div>';
+    const host=el('mDemoBars');
+    buildBars(host, sit.people);
+    const res=distribute(sit.people, sit.recW);
+    setTimeout(function(){ paintBars(host, sit.people, res, sit.pool, sit.unit); },60);
+  }
+}
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else { go('result'); drawResult(); }
+}
+
+/* ============ 결과 카드 (PNG) ============ */
+function totalScore(){ return mResult.reduce((s,r)=>s+(r?r.score:0),0); }
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const total=totalScore(), max=MISSIONS.length*2;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2f4373'); g.addColorStop(1,'#1e2a44');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.fillStyle='#2f4373'; ctx.textAlign='center'; ctx.font='bold 40px "Malgun Gothic",sans-serif';
+  ctx.fillText('⚖️ 분배 정의', W/2, 128);
+  ctx.fillText('학습 결과 카드', W/2, 178);
+  ctx.fillStyle='#5a6577'; ctx.font='21px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅱ 사회정의와 불평등 · 능력·필요·업적', W/2, 216);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1b2536'; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+  ctx.fillText(name, W/2, 280);
+  const pct = max? total/max : 0;
+  const cx=W/2, cy=418, r=108;
+  ctx.lineWidth=24; ctx.strokeStyle='#eef2f7'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.8?'#1c9e6b':(pct>=0.5?'#e0a020':'#ff6b57'); ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*Math.max(pct,0.001)); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1b2536'; ctx.textAlign='center'; ctx.font='bold 54px "Malgun Gothic",sans-serif';
+  ctx.fillText(total+'', cx, cy+6);
+  ctx.fillStyle='#5a6577'; ctx.font='21px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+40);
+  const grade = pct>=0.9?'분배 정의 판사 ⚖️':pct>=0.7?'정의 설계자 🏛️':pct>=0.5?'공정 견습생 🌱':'다시 도전 💪';
+  ctx.fillStyle='#2f4373'; ctx.font='bold 27px "Malgun Gothic",sans-serif'; ctx.fillText(grade, W/2, cy+r+66);
+  ctx.textAlign='left'; ctx.font='21px "Malgun Gothic",sans-serif';
+  let y=cy+r+120;
+  for(let i=0;i<MISSIONS.length;i++){
+    const rr=mResult[i]; const x=86;
+    ctx.fillStyle='#1b2536';
+    ctx.fillText(MISSIONS[i].emoji+' '+MISSIONS[i].title, x, y);
+    ctx.textAlign='right';
+    if(rr){ ctx.fillStyle= rr.score===2?'#1c9e6b':(rr.score>0?'#e0a020':'#ff6b57');
+      ctx.fillText(rr.score+'/2', W-86, y); }
+    else { ctx.fillStyle='#94a3b4'; ctx.fillText('미완료', W-86, y); }
+    ctx.textAlign='left'; y+=40;
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#8a93a3'; ctx.font='italic 18px "Malgun Gothic",sans-serif';
+  ctx.fillText('정의로운 분배엔 하나의 정답이 없다 — 맥락에 맞는 균형을 찾자', W/2, H-108);
+  ctx.fillStyle='#94a3b4'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 분배 정의 시뮬레이터', W/2, H-70);
+}
+function savePNG(){
+  drawResult();
+  const cv=el('resultCanvas');
+  const a=document.createElement('a');
+  a.download='분배정의_결과_'+(el('studentName').value||'학생')+'.png';
+  a.href=cv.toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  const cv=el('resultCanvas');
+  window.open(cv.toDataURL('image/png'),'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','explore','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='explore') syncExplore();
+  if(tab==='mission' && mResult.length===0 && mIdx===0) renderMission();
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['wA','wN','wM'].forEach(id=>el(id).addEventListener('input',syncExplore));
+
+/* 초기화 */
+buildSits();
+pickSit('school');
+renderMission();
+mIdx=0; mResult.length=0;
+</script>
+</body>
+</html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국제분업·비교우위 무역 시뮬레이터 · 통합사회2 Ⅳ 세계화</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --surface:#ffffff; --ink:#1c2733; --sub:#5b6b7c;
+    --primary:#2457C5; --primary-d:#183a8c; --accent:#f59e0b;
+    --rice:#e0a526; --cloth:#2f8fd6; --gain:#1c9e6b; --loss:#e0563e;
+    --line:#e3e9f0; --shadow:0 6px 20px rgba(20,40,70,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:25px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:84px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#eaf1fa;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .concept{background:#f7faff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .cty{display:flex;gap:12px;margin:12px 0}
+  .cty .box{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .cty .box.ga{border-color:#bcd0f2;background:#f2f6fe}
+  .cty .box.eu{border-color:#f4d9ad;background:#fdf7ec}
+  .cty .flag{font-size:30px}
+  .cty .nm{font-weight:800;font-size:16px;margin-top:2px}
+  .cty .sm{font-size:12.5px;color:var(--sub)}
+  /* 생산성 슬라이더 */
+  .prodgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 4px}
+  @media(max-width:560px){.prodgrid{grid-template-columns:1fr}}
+  .pcountry{border:1.5px solid var(--line);border-radius:12px;padding:12px}
+  .pcountry.ga{border-color:#bcd0f2;background:#f7faff}
+  .pcountry.eu{border-color:#f4d9ad;background:#fdfaf3}
+  .ptitle{font-weight:800;font-size:15px;margin-bottom:8px}
+  .prow{display:flex;align-items:center;gap:8px;margin:8px 0}
+  .prow span.lb{width:92px;font-size:13px;font-weight:700}
+  .prow input[type=range]{flex:1;accent-color:var(--primary);height:24px}
+  .prow b.vv{width:26px;text-align:center;font-size:16px;color:var(--primary-d)}
+  /* 표 */
+  .octable{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  .octable th,.octable td{border:1px solid var(--line);padding:8px 6px;text-align:center}
+  .octable thead th{background:#eef3fb;color:var(--primary-d);font-size:12.5px}
+  .octable tbody th{background:#f7faff;font-weight:800}
+  .octable tr.ga tbody th,.octable tr.ga th{color:var(--primary-d)}
+  .octable td.oc{font-weight:700}
+  .octable tr.judge th{background:#eef3fb}
+  .octable td b{color:var(--primary-d)}
+  .pop{animation:pop .4s ease}
+  @keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  /* 배지 */
+  .badgewrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  @media(max-width:560px){.badgewrap{grid-template-columns:1fr}}
+  .bgood{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+  .bgood .gt{font-weight:800;font-size:14px;margin-bottom:4px}
+  .bd{display:inline-block;border-radius:8px;padding:3px 9px;font-size:12.5px;font-weight:800;margin:2px 4px 2px 0}
+  .bd.abs{background:#eceff3;color:#5b6b7c}
+  .bd.comp{background:#e6eefc;color:var(--primary)}
+  /* 교역 */
+  .tradebox{background:#f7faff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+  .slider-row{margin:10px 0}
+  .slider-row label{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;margin-bottom:4px}
+  .slider-row input[type=range]{width:100%;accent-color:var(--accent);height:24px}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+  .winwin{margin-top:12px;padding:12px;border-radius:12px;font-weight:800;font-size:15px;text-align:center;
+    background:#e7f7ef;color:#12805a;border:1.5px solid #b6e6cf}
+  .winwin.pulse{animation:pulse 1s ease}
+  @keyframes pulse{0%{transform:scale(.9)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .gaininfo{font-size:13.5px;color:var(--ink);margin-top:8px;line-height:1.7}
+  .worldnote{font-size:12.5px;color:var(--sub);margin-top:8px;background:#eef3fb;border-radius:10px;padding:9px 11px}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.accent{background:var(--accent);color:#fff}
+  .btn.ghost{background:#eef2f7;color:var(--ink)}
+  .btn.sm{padding:9px 13px;font-size:13.5px}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px;align-items:center}
+  .presets .plab{font-weight:700;font-size:13px;color:var(--sub)}
+  .presets button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer}
+  .presets button.a{border-color:#f4d9ad;color:#b8791a}
+  .presets button.b{border-color:#bcd0f2;color:var(--primary)}
+  /* 미션 */
+  .refcard{background:#eef3fb;border:1px solid #cddcf5;border-radius:12px;padding:12px;font-size:13px;margin-bottom:12px}
+  .refcard b{color:var(--primary-d)}
+  .refmini{font-size:12px;color:var(--sub);margin-top:4px}
+  .mission-scenario{background:#fff8ec;border:1px solid #f6e2bd;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+  .opts button.good{border-color:var(--gain);background:#e7f7ef;color:#12805a}
+  .opts button.bad{border-color:var(--loss);background:#fdece8;color:#b23a22}
+  .opts button:disabled{cursor:default}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e7f7ef;color:#12805a}
+  .feedback.no{background:#fdece8;color:#b23a22}
+  .feedback.retry{background:#fff4e0;color:#a86a12}
+  .hintbox{margin-top:10px}
+  .hintpop{display:none;margin-top:8px;background:#eef3fb;border:1px dashed #b9cdf0;border-radius:10px;padding:10px;font-size:13px;color:var(--primary-d)}
+  .hintpop.show{display:block}
+  .progress{height:8px;background:#eef2f7;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:.3s}
+  .mnav{display:flex;justify-content:flex-end;margin-top:14px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#eef2f7;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅳ 세계화와 평화 · 4-1 세계화의 양상과 문제</div>
+    <h1>🌐 국제분업·비교우위 무역 시뮬레이터</h1>
+    <p>한 나라가 뭐든 더 잘 만든다면, 굳이 다른 나라와 사고팔 이유가 있을까? 놀랍게도 '있다'. 갑국과 을국이 되어 직접 거래해 보면 안다.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="explore">2. 조작·판정</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>왜 무역을 할까?</h2>
+      <p class="lead">"다 잘하는 나라는 혼자 다 만들면 되지 않나?" 여기서 상식이 뒤집힌다. 각 나라는 <b>국제 분업</b>으로 잘 만드는 것에 <b>특화</b>하고 서로 <b>교역</b>하는데, 그 진짜 기준은 절대 실력이 아니라 <b>비교우위</b>다.</p>
+      <div class="cty">
+        <div class="box ga"><div class="flag">🟦</div><div class="nm">갑국</div><div class="sm">쌀·옷을 생산</div></div>
+        <div class="box eu"><div class="flag">🟧</div><div class="nm">을국</div><div class="sm">쌀·옷을 생산</div></div>
+      </div>
+      <div class="grid2">
+        <div class="concept">
+          <h3>💪 절대우위</h3>
+          한 명이 같은 시간에 <b>더 많이</b> 만들 수 있으면 그 재화에 <b>절대우위</b>. → <b>생산성 숫자</b>가 큰 나라.
+        </div>
+        <div class="concept">
+          <h3>⚖️ 비교우위</h3>
+          그 재화를 만들 때 <b>포기하는 다른 재화(기회비용)</b>가 더 <b>적은</b> 나라가 <b>비교우위</b>. → 교역의 진짜 기준!
+        </div>
+      </div>
+      <div class="concept" style="margin-top:12px">
+        <h3>🔑 기회비용이 핵심</h3>
+        쌀 1가마의 기회비용 = 포기하는 옷 = <b>옷 생산성 ÷ 쌀 생산성</b>.
+        한 나라가 <b>둘 다 절대우위</b>여도, 비교우위는 반드시 <b>서로 다른 재화</b>로 갈린다.
+        그래서 <b>절대우위가 하나도 없는 나라도</b> 특화·교역하면 이득을 본다.
+      </div>
+      <div style="margin-top:10px">
+        <span class="pill">국제 분업</span>
+        <span class="pill">특화(specialization)</span>
+        <span class="pill">교역의 이득</span>
+        <span class="pill" style="background:#eceff3;color:#5b6b7c">절대우위 ≠ 비교우위</span>
+      </div>
+      <p class="note">※ 노동자 각국 10명·정수 생산성으로 단순화한 모형입니다.</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 먼저 "다 잘하는 나라가 왜 무역을?"로 도발 발문 → 학생이 [조작·판정] 탭에서 슬라이더로 직접 절대우위·비교우위가 갈리는 순간을 목격 → [미션]으로 개념 확인 순으로 15분이면 한 차시 도입이 됩니다.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('explore')">생산성 직접 조절해보기 →</button></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 조작·판정 ===== -->
+  <section id="tab-explore" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>생산성 조절 → 기회비용·비교우위 판정</h2>
+      <div class="presets">
+        <span class="plab">프리셋:</span>
+        <button class="a" onclick="preset('warm')">① 절대우위형(워밍업)</button>
+        <button class="b" onclick="preset('comp')">② 비교우위형(도전·기본)</button>
+      </div>
+      <p class="lead">한 명이 하루에 만드는 양(1~9)을 조절하자. 아래 표와 판정이 실시간으로 바뀐다.</p>
+
+      <div class="prodgrid">
+        <div class="pcountry ga">
+          <div class="ptitle">🟦 갑국</div>
+          <div class="prow"><span class="lb">🌾 쌀 생산성</span><input id="s_gRice" type="range" min="1" max="9" value="6"><b class="vv" id="v_gRice">6</b></div>
+          <div class="prow"><span class="lb">👕 옷 생산성</span><input id="s_gCloth" type="range" min="1" max="9" value="3"><b class="vv" id="v_gCloth">3</b></div>
+        </div>
+        <div class="pcountry eu">
+          <div class="ptitle">🟧 을국</div>
+          <div class="prow"><span class="lb">🌾 쌀 생산성</span><input id="s_eRice" type="range" min="1" max="9" value="1"><b class="vv" id="v_eRice">1</b></div>
+          <div class="prow"><span class="lb">👕 옷 생산성</span><input id="s_eCloth" type="range" min="1" max="9" value="2"><b class="vv" id="v_eCloth">2</b></div>
+        </div>
+      </div>
+
+      <table class="octable">
+        <thead><tr>
+          <th>구분</th><th>쌀 생산성<br>(1명/일)</th><th>옷 생산성<br>(1명/일)</th>
+          <th>쌀 1가마의<br>기회비용</th><th>옷 1벌의<br>기회비용</th>
+        </tr></thead>
+        <tbody>
+          <tr class="ga"><th>갑국</th><td id="t_gRice">6</td><td id="t_gCloth">3</td><td class="oc" id="t_gOCrice">?</td><td class="oc" id="t_gOCcloth">?</td></tr>
+          <tr class="eu"><th>을국</th><td id="t_eRice">1</td><td id="t_eCloth">2</td><td class="oc" id="t_eOCrice">?</td><td class="oc" id="t_eOCcloth">?</td></tr>
+          <tr class="judge hide" id="judgeRow"><th>비교우위</th><td>–</td><td>–</td><td id="t_caRice">–</td><td id="t_caCloth">–</td></tr>
+        </tbody>
+      </table>
+
+      <div class="rowbtns">
+        <button class="btn accent sm" id="btnCalc" onclick="calcOC()">① 기회비용 계산하기</button>
+        <button class="btn primary sm" id="btnJudge" onclick="judgeCA()" disabled>② 비교우위 판정하기</button>
+      </div>
+
+      <div id="badgeArea" class="hide" style="margin-top:14px">
+        <div class="badgewrap">
+          <div class="bgood"><div class="gt">🌾 쌀</div><div id="bd_rice"></div></div>
+          <div class="bgood"><div class="gt">👕 옷</div><div id="bd_cloth"></div></div>
+        </div>
+        <p class="note" id="caHint"></p>
+      </div>
+
+      <!-- 특화·교역 -->
+      <div id="tradeSection" class="tradebox hide">
+        <h3 style="margin-top:0">특화하고 교역하자 (노동자 각국 10명)</h3>
+        <p class="lead" id="specText"></p>
+        <div id="tradeCtrls">
+          <div class="slider-row">
+            <label><span>🔁 교역조건 (옷 1벌 = 쌀 몇 가마)</span><span id="totVal">1</span></label>
+            <input id="s_tot" type="range" min="0.5" max="2" step="0.05" value="1">
+          </div>
+          <div class="slider-row">
+            <label><span>📦 교역량 (옷 몇 벌 거래)</span><span id="qVal">8</span></label>
+            <input id="s_q" type="range" min="0" max="20" step="1" value="8">
+          </div>
+          <canvas id="tradeChart" width="560" height="300"></canvas>
+          <div class="winwin" id="winwin"></div>
+          <div class="gaininfo" id="gainInfo"></div>
+          <div class="worldnote" id="worldNote"></div>
+        </div>
+        <div id="tradeWarn" class="feedback no hide" style="margin-top:0"></div>
+      </div>
+
+      <div class="rowbtns">
+        <button class="btn ghost sm" onclick="preset('comp')">기본값으로 초기화</button>
+        <button class="btn primary" onclick="go('mission')">미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>특화하고 교역하자 — 미션 6</h2>
+      <div class="refcard">
+        🧭 <b>비교우위 = 기회비용이 더 낮은 나라</b>
+        <div class="refmini">참조표(비교우위형): 갑국 쌀 6·옷 3 / 을국 쌀 1·옷 2 &nbsp;|&nbsp; 쌀 기회비용 갑 0.5·을 2 / 옷 기회비용 갑 2·을 0.5</div>
+      </div>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div class="hintbox">
+        <button class="btn ghost sm" id="hintBtn" onclick="toggleHint()">💡 힌트 (감점 없음)</button>
+        <div class="hintpop" id="hintPop"></div>
+      </div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>비교우위 이해도 리포트</h2>
+      <p class="lead">이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost sm" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="1020"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn accent" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn ghost sm" onclick="openPNG()">📱 저장이 안 되면 여기(새 탭)</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅳ 세계화와 평화 · 국제분업·비교우위·교역의 이득 [10통사2-04-01] · 단일 HTML · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+const WORKERS = 10;
+const RICE='#e0a526', CLOTH='#2f8fd6', PRIMARY='#2457C5';
+
+/* ===== 상태 ===== */
+const PRESETS={
+  warm:{gRice:6,gCloth:2,eRice:2,eCloth:6, tot:1, q:20},
+  comp:{gRice:6,gCloth:3,eRice:1,eCloth:2, tot:1, q:8}
+};
+const state={gRice:6,gCloth:3,eRice:1,eCloth:2, tot:1, q:8};
+let reveal=0; // 0 생산성만 / 1 기회비용 / 2 판정+교역
+
+function fmt(n){ const r=Math.round(n*100)/100; return (Math.abs(r)<1e-9?0:r).toString(); }
+
+/* ===== 계산 엔진 ===== */
+function compute(){
+  const g=state;
+  const gOCrice=g.gCloth/g.gRice, gOCcloth=g.gRice/g.gCloth;
+  const eOCrice=g.eCloth/g.eRice, eOCcloth=g.eRice/g.eCloth;
+  const aaRice = g.gRice>g.eRice?'갑국': g.gRice<g.eRice?'을국':'동일';
+  const aaCloth= g.gCloth>g.eCloth?'갑국': g.gCloth<g.eCloth?'을국':'동일';
+  const caRice = gOCrice<eOCrice?'갑국': gOCrice>eOCrice?'을국':'동일';
+  const caCloth= gOCcloth<eOCcloth?'갑국': gOCcloth>eOCcloth?'을국':'동일';
+  const degenerate = (caRice==='동일');
+
+  // 자급자족(노동 5:5)
+  const half=WORKERS/2;
+  const autGa={rice:half*g.gRice, cloth:half*g.gCloth};
+  const autEu={rice:half*g.eRice, cloth:half*g.eCloth};
+
+  let riceC='갑국', clothC='을국', prodRice=0, prodCloth=0;
+  let conGa={rice:0,cloth:0}, conEu={rice:0,cloth:0};
+  let ocClothGa=gOCcloth, ocClothEu=eOCcloth;
+  let lowOC=Math.min(ocClothGa,ocClothEu), highOC=Math.max(ocClothGa,ocClothEu);
+  let tot=state.tot, q=state.q, maxQ=0;
+
+  if(!degenerate){
+    riceC = caRice; clothC = (riceC==='갑국')?'을국':'갑국';
+    prodRice = (riceC==='갑국')? WORKERS*g.gRice : WORKERS*g.eRice;
+    prodCloth= (clothC==='갑국')? WORKERS*g.gCloth : WORKERS*g.eCloth;
+    // 교역조건 범위 [lowOC, highOC] (쌀/옷)
+    if(tot<lowOC) tot=lowOC; if(tot>highOC) tot=highOC;
+    maxQ = Math.max(0, Math.floor(Math.min(prodCloth, prodRice/tot)));
+    if(q>maxQ) q=maxQ; if(q<0) q=0;
+    // 소비: clothC가 q벌 수출, q*tot 쌀 수입
+    const riceCon={rice:prodRice-q*tot, cloth:q};
+    const clothCon={cloth:prodCloth-q, rice:q*tot};
+    if(riceC==='갑국'){ conGa=riceCon; conEu=clothCon; } else { conEu=riceCon; conGa=clothCon; }
+    state.tot=tot; state.q=q;
+  }
+  return {gOCrice,gOCcloth,eOCrice,eOCcloth,aaRice,aaCloth,caRice,caCloth,degenerate,
+    autGa,autEu,conGa,conEu,riceC,clothC,prodRice,prodCloth,lowOC,highOC,tot,q,maxQ};
+}
+
+/* ===== 렌더 ===== */
+function setCell(id,txt,anim){ const e=el(id); e.innerHTML=txt; if(anim){ e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } }
+
+function render(anim){
+  const g=state;
+  ['gRice','gCloth','eRice','eCloth'].forEach(k=>{ el('v_'+k).textContent=g[k]; el('t_'+k).textContent=g[k]; });
+  const c=compute();
+
+  if(reveal>=1){
+    setCell('t_gOCrice', g.gCloth+'÷'+g.gRice+' = <b>'+fmt(c.gOCrice)+'</b>벌', anim);
+    setCell('t_gOCcloth', g.gRice+'÷'+g.gCloth+' = <b>'+fmt(c.gOCcloth)+'</b>가마', anim);
+    setCell('t_eOCrice', g.eCloth+'÷'+g.eRice+' = <b>'+fmt(c.eOCrice)+'</b>벌', anim);
+    setCell('t_eOCcloth', g.eRice+'÷'+g.eCloth+' = <b>'+fmt(c.eOCcloth)+'</b>가마', anim);
+    el('btnJudge').disabled=false;
+  } else {
+    ['t_gOCrice','t_gOCcloth','t_eOCrice','t_eOCcloth'].forEach(id=>el(id).textContent='?');
+    el('btnJudge').disabled=true;
+  }
+
+  if(reveal>=2){
+    el('judgeRow').classList.remove('hide');
+    el('badgeArea').classList.remove('hide');
+    el('t_caRice').innerHTML = c.degenerate?'<b>동일</b>':'<b>'+c.caRice+'</b>';
+    el('t_caCloth').innerHTML= c.degenerate?'<b>동일</b>':'<b>'+c.caCloth+'</b>';
+    // 배지: 절대우위(회색) + 비교우위(파랑) 나란히
+    el('bd_rice').innerHTML  ='<span class="bd abs">절대우위 '+c.aaRice+'</span><span class="bd comp">비교우위 '+c.caRice+'</span>';
+    el('bd_cloth').innerHTML ='<span class="bd abs">절대우위 '+c.aaCloth+'</span><span class="bd comp">비교우위 '+c.caCloth+'</span>';
+    if(c.degenerate){
+      el('caHint').innerHTML='⚠️ 두 나라의 기회비용이 같아 비교우위가 갈리지 않습니다. 생산성을 바꿔보세요.';
+    } else if(c.aaRice===c.aaCloth && c.aaRice!=='동일'){
+      el('caHint').innerHTML='👀 <b>'+c.aaRice+'</b>이 쌀·옷 <b>둘 다 절대우위</b>지만, 비교우위는 쌀=<b>'+c.caRice+'</b>·옷=<b>'+c.caCloth+'</b>로 갈립니다 — 이것이 핵심!';
+    } else {
+      el('caHint').innerHTML='서로 다른 재화에 우위가 있습니다. 각국은 비교우위 재화에 특화하면 이득!';
+    }
+    renderTrade(c);
+  } else {
+    el('judgeRow').classList.add('hide');
+    el('badgeArea').classList.add('hide');
+    el('tradeSection').classList.add('hide');
+  }
+}
+
+function renderTrade(c){
+  const sec=el('tradeSection'); sec.classList.remove('hide');
+  if(c.degenerate){
+    el('tradeCtrls').classList.add('hide');
+    el('tradeWarn').classList.remove('hide');
+    el('tradeWarn').textContent='비교우위가 없어 교역의 이득이 발생하지 않습니다. 생산성을 다르게 조절해 보세요.';
+    return;
+  }
+  el('tradeCtrls').classList.remove('hide');
+  el('tradeWarn').classList.add('hide');
+  el('specText').innerHTML='특화: <b>'+c.riceC+'</b>은 🌾쌀에, <b>'+c.clothC+'</b>은 👕옷에 노동 전부 투입 → '
+    +c.riceC+' 쌀 <b>'+c.prodRice+'</b>가마, '+c.clothC+' 옷 <b>'+c.prodCloth+'</b>벌 생산.';
+  // 슬라이더 범위
+  const totS=el('s_tot');
+  totS.min=c.lowOC.toFixed(2); totS.max=c.highOC.toFixed(2); totS.step=0.05; totS.value=c.tot;
+  el('totVal').textContent=fmt(c.tot)+' 가마';
+  const qS=el('s_q');
+  qS.min=0; qS.max=c.maxQ; qS.step=1; qS.value=c.q;
+  el('qVal').textContent=c.q+' 벌';
+  // 차트
+  drawTradeChart(el('tradeChart'), c);
+  // 이득 요약
+  const dGaR=c.conGa.rice-c.autGa.rice, dGaC=c.conGa.cloth-c.autGa.cloth;
+  const dEuR=c.conEu.rice-c.autEu.rice, dEuC=c.conEu.cloth-c.autEu.cloth;
+  const netGa=(c.conGa.rice+c.conGa.cloth*c.tot)-(c.autGa.rice+c.autGa.cloth*c.tot);
+  const netEu=(c.conEu.rice+c.conEu.cloth*c.tot)-(c.autEu.rice+c.autEu.cloth*c.tot);
+  const bothGa = dGaR>-0.01 && dGaC>-0.01;
+  const bothEu = dEuR>-0.01 && dEuC>-0.01;
+  const win=el('winwin');
+  if(netGa>0.01 && netEu>0.01){
+    win.textContent = (bothGa&&bothEu) ? '🎉 WIN-WIN! 두 나라 모두 두 재화 다 이득!' : '🎉 WIN-WIN! 두 나라 모두 교역으로 이득';
+    win.classList.remove('pulse'); void win.offsetWidth; win.classList.add('pulse');
+  } else {
+    win.textContent='교역량·교역조건을 조절해 두 나라 모두 이득이 되는 지점을 찾아보자.';
+  }
+  const arrow=v=> v>0.01?('<span style="color:var(--gain);font-weight:800">▲+'+fmt(v)+'</span>')
+                : v<-0.01?('<span style="color:var(--loss);font-weight:800">▼'+fmt(v)+'</span>')
+                : '<span style="color:var(--sub)">±0</span>';
+  el('gainInfo').innerHTML=
+    '🟦 갑국: 쌀 '+fmt(c.autGa.rice)+'→'+fmt(c.conGa.rice)+' '+arrow(dGaR)+' · 옷 '+fmt(c.autGa.cloth)+'→'+fmt(c.conGa.cloth)+' '+arrow(dGaC)
+    +' <span class="pill">쌀 환산 순이득 '+arrow(netGa)+'</span><br>'
+    +'🟧 을국: 쌀 '+fmt(c.autEu.rice)+'→'+fmt(c.conEu.rice)+' '+arrow(dEuR)+' · 옷 '+fmt(c.autEu.cloth)+'→'+fmt(c.conEu.cloth)+' '+arrow(dEuC)
+    +' <span class="pill">쌀 환산 순이득 '+arrow(netEu)+'</span>';
+  // 세계 총생산 정직 표기
+  const wAutR=c.autGa.rice+c.autEu.rice, wAutC=c.autGa.cloth+c.autEu.cloth;
+  let wn='세계 총생산 — 자급자족: 쌀 '+fmt(wAutR)+'·옷 '+fmt(wAutC)+' → 완전특화: 쌀 '+fmt(c.prodRice)+'·옷 '+fmt(c.prodCloth)+'. ';
+  if(c.prodCloth<wAutC-0.01 || c.prodRice<wAutR-0.01){
+    wn+='한 재화 총량은 줄 수 있지만, 각국은 자급자족으론 불가능한(생산가능곡선 밖) 소비 조합에 도달해 이득을 본다.';
+  } else {
+    wn+='두 재화 세계 총생산이 모두 늘어 나눌 몫이 커진다.';
+  }
+  el('worldNote').textContent=wn;
+}
+
+/* ===== 캔버스 ===== */
+function fitDPR(cv){
+  const dpr=window.devicePixelRatio||1; const w=cv.width, h=cv.height;
+  if(cv._fit) return cv.getContext('2d');
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true; return ctx;
+}
+function drawTradeChart(cv,c){
+  const ctx=fitDPR(cv); ctx.clearRect(0,0,cv._lw,cv._lh);
+  const groups=[
+    {lab:'🟦갑 🌾', a:c.autGa.rice, b:c.conGa.rice, col:RICE},
+    {lab:'🟦갑 👕', a:c.autGa.cloth,b:c.conGa.cloth,col:CLOTH},
+    {lab:'🟧을 🌾', a:c.autEu.rice, b:c.conEu.rice, col:RICE},
+    {lab:'🟧을 👕', a:c.autEu.cloth,b:c.conEu.cloth,col:CLOTH}
+  ];
+  const L=34,R=14,T=34,B=52, W=cv._lw-L-R, H=cv._lh-T-B;
+  let mx=0; groups.forEach(g=>{mx=Math.max(mx,g.a,g.b);}); mx=(mx*1.2)||1;
+  ctx.strokeStyle='#c9d4df'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(L,T+H); ctx.lineTo(L+W,T+H); ctx.stroke();
+  const gw=W/groups.length;
+  groups.forEach((g,i)=>{
+    const gx=L+i*gw, bw=Math.min(30,gw*0.26), gap=8;
+    const x1=gx+gw/2-bw-gap/2, x2=gx+gw/2+gap/2;
+    const h1=g.a/mx*H, h2=g.b/mx*H;
+    ctx.fillStyle='#cfd8e3'; ctx.fillRect(x1,T+H-h1,bw,h1);
+    ctx.fillStyle=g.col; ctx.fillRect(x2,T+H-h2,bw,h2);
+    ctx.textAlign='center';
+    ctx.fillStyle='#5b6b7c'; ctx.font='11px sans-serif'; ctx.fillText(fmt(g.a), x1+bw/2, T+H-h1-5);
+    ctx.fillStyle='#1c2733'; ctx.font='bold 12px sans-serif'; ctx.fillText(fmt(g.b), x2+bw/2, T+H-h2-5);
+    const d=g.b-g.a; ctx.font='bold 11px sans-serif';
+    ctx.fillStyle= d>0.01?'#1c9e6b':(d<-0.01?'#e0563e':'#94a3b4');
+    ctx.fillText(d>0.01?'▲+'+fmt(d):(d<-0.01?'▼'+fmt(d):'='), x2+bw/2, T+H-Math.max(h1,h2)-20);
+    ctx.fillStyle='#1c2733'; ctx.font='bold 12px sans-serif'; ctx.fillText(g.lab, gx+gw/2, T+H+18);
+  });
+  ctx.textAlign='left'; ctx.font='11px sans-serif';
+  ctx.fillStyle='#cfd8e3'; ctx.fillRect(L,8,12,12); ctx.fillStyle='#5b6b7c'; ctx.fillText('자급자족 소비',L+16,18);
+  ctx.fillStyle=PRIMARY; ctx.fillRect(L+112,8,12,12); ctx.fillStyle='#5b6b7c'; ctx.fillText('특화·교역 후 소비',L+128,18);
+}
+
+/* ===== 버튼/조작 ===== */
+function calcOC(){ reveal=Math.max(reveal,1); render(true); }
+function judgeCA(){ if(reveal<1) reveal=1; reveal=2; render(true); }
+function preset(name){
+  Object.assign(state, PRESETS[name]);
+  ['gRice','gCloth','eRice','eCloth'].forEach(k=>{ el('s_'+k).value=state[k]; });
+  render(false);
+}
+['gRice','gCloth','eRice','eCloth'].forEach(k=>{
+  el('s_'+k).addEventListener('input',e=>{ state[k]=+e.target.value; render(false); });
+});
+el('s_tot').addEventListener('input',e=>{ state.tot=+e.target.value; render(false); });
+el('s_q').addEventListener('input',e=>{ state.q=+e.target.value; render(false); });
+
+/* ===== 미션 ===== */
+const MISSIONS=[
+  {emoji:'💪', q:'쌀과 옷을 한 명이 <b>더 많이</b> 만드는 나라는? (생산성 숫자 비교)',
+   opts:[['갑국 — 쌀·옷 둘 다',true],['을국 — 쌀·옷 둘 다',false],['쌀은 갑국, 옷은 을국',false],['두 나라가 똑같다',false]],
+   hint:'생산성 숫자만 비교하자. 쌀 6 vs 1, 옷 3 vs 2 → 둘 다 갑국이 큽니다.',
+   explain:'갑국이 쌀(6&gt;1)·옷(3&gt;2) 모두 <b>절대우위</b>. 하지만 절대우위 ≠ 비교우위! 다음 문항에서 확인하자.'},
+  {emoji:'🔑', q:'갑국이 쌀 1가마를 더 만들려면 <b>포기하는 옷</b>의 양은?',
+   opts:[['0.5벌',true],['2벌',false],['1벌',false],['6벌',false]],
+   hint:'쌀 1가마의 기회비용 = 옷 생산성 ÷ 쌀 생산성 = 3 ÷ 6',
+   explain:'3 ÷ 6 = <b>0.5벌</b>. 갑국은 쌀 1가마를 얻으려 옷 0.5벌을 포기합니다.'},
+  {emoji:'⚖️', q:'쌀·옷의 <b>비교우위</b>는 각각 어느 나라? (기회비용이 낮은 쪽)',
+   opts:[['쌀 = 갑국, 옷 = 을국',true],['쌀 = 을국, 옷 = 갑국',false],['둘 다 갑국',false],['둘 다 을국',false]],
+   hint:'쌀 기회비용 갑 0.5 &lt; 을 2 → 쌀은 갑국. 옷 기회비용 을 0.5 &lt; 갑 2 → 옷은 을국.',
+   explain:'절대우위는 둘 다 갑국이지만 <b>비교우위는 쌀=갑국·옷=을국</b>으로 갈립니다. 이것이 핵심!'},
+  {emoji:'🎯', q:'각국은 <b>무엇에 특화</b>해야 이득일까?',
+   opts:[['갑국은 쌀, 을국은 옷',true],['갑국은 옷, 을국은 쌀',false],['갑국이 둘 다 생산',false],['특화하지 않는 게 낫다',false]],
+   hint:'각국은 자기 비교우위(기회비용이 낮은) 재화에 완전특화합니다.',
+   explain:'갑국=쌀, 을국=옷에 완전특화 → 세계 생산이 효율적으로 커지고, 교역으로 나눕니다.'},
+  {emoji:'🤝', q:'절대우위가 <b>하나도 없는 을국</b>도 특화·교역하면 이득일까?',
+   opts:[['예 — 쌀·옷 둘 다 늘어난다',true],['아니오 — 손해만 본다',false],['쌀만 늘어난다',false],['옷만 늘어난다',false]],
+   hint:'자급자족 을국 쌀5·옷10 → 교역 후 쌀8·옷12 (조작 화면 막대그래프 확인).',
+   explain:'을국은 옷에 특화(20벌)→8벌 수출하고 쌀 8가마 수입. 쌀 5→8, 옷 10→12 <b>둘 다 이득!</b> 절대우위 없어도 비교우위가 있으면 교역은 이득.'},
+  {emoji:'🧠', q:'"갑국은 다 잘하니 혼자 다 만들고 <b>교역 안 하는 게 이득</b>이다?"',
+   opts:[['아니다 — 비교우위 특화·교역이 더 이득',true],['맞다 — 절대우위국은 교역이 손해',false]],
+   hint:'교역 후 갑국 소비를 쌀로 환산하면 자급자족보다 순이득(+8가마).',
+   explain:'갑국도 쌀 특화·교역 시 쌀 30→52(+22), 옷 15→8(−7). 쌀로 환산하면 <b>순이득</b>. 두 나라 모두 자기 생산가능곡선 <b>밖</b>의 소비에 도달 → 교역은 서로 이득.'}
+];
+let mIdx=0; const mRes=[]; let mLocked=false; let mAttempt=0;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mLocked=false; mAttempt=0;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+' / '+MISSIONS.length+'</b><br>'+m.q;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>'<button onclick="chooseM('+i+',this)">'+o[0]+'</button>').join('');
+  el('mFeedback').innerHTML='';
+  el('hintPop').className='hintpop'; el('hintPop').innerHTML='💡 '+m.hint;
+  el('mNext').classList.add('hide');
+}
+function toggleHint(){ el('hintPop').classList.toggle('show'); }
+function lockReveal(pickIdx){
+  const m=MISSIONS[mIdx]; mLocked=true;
+  [...el('mOpts').children].forEach((b,j)=>{
+    b.disabled=true;
+    if(m.opts[j][1]) b.classList.add('good');
+    else if(j===pickIdx) b.classList.add('bad');
+  });
+  const ok=m.opts[pickIdx][1];
+  el('mFeedback').innerHTML='<div class="feedback '+(ok?'ok':'no')+'">'+(ok?'✅ 정답!':'❌ 오답')+' '+m.explain+'</div>';
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function chooseM(i,btn){
+  if(mLocked) return;
+  const m=MISSIONS[mIdx], isCorrect=m.opts[i][1];
+  if(mAttempt===0){
+    if(isCorrect){ mRes[mIdx]={correct:true}; lockReveal(i); }
+    else {
+      mAttempt=1; btn.disabled=true; btn.classList.add('bad');
+      el('mFeedback').innerHTML='<div class="feedback retry">🤔 다시 기회비용표를 보자. 한 번 더 선택할 수 있어! (재선택은 점수에 반영되지 않아요)</div>';
+    }
+  } else {
+    mRes[mIdx]={correct:false};
+    lockReveal(i);
+  }
+}
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+
+/* ===== 결과 카드 (PNG) ===== */
+function totalScore(){ return mRes.reduce((s,r)=>s+(r&&r.correct?1:0),0); }
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const total=totalScore(), max=MISSIONS.length, pct=max?total/max:0;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2457C5'); g.addColorStop(1,'#183a8c');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#2457C5'; ctx.font='bold 38px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌐 비교우위 무역 이해도 리포트', W/2, 120);
+  ctx.fillStyle='#5b6b7c'; ctx.font='20px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅳ 세계화 · 비교우위와 교역의 이득', W/2, 158);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1c2733'; ctx.font='bold 30px "Malgun Gothic",sans-serif'; ctx.fillText(name, W/2, 214);
+  // 점수 도넛
+  const cx=W/2, cy=350, r=104;
+  ctx.lineWidth=24; ctx.strokeStyle='#e8eef8'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.8?'#1c9e6b':(pct>=0.34?'#f59e0b':'#e0563e');
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.fillStyle='#1c2733'; ctx.font='bold 54px "Malgun Gothic",sans-serif'; ctx.fillText(total+'', cx, cy+6);
+  ctx.fillStyle='#5b6b7c'; ctx.font='20px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+38);
+  const grade = total>=6?'교역의 이득, 완벽 이해 🏆':(total>=4?'비교우위, 감 잡았다 🤝':(total>=2?'절대우위까진 통과 🌱':'개념부터 한 번 더 💭'));
+  ctx.fillStyle='#2457C5'; ctx.font='bold 27px "Malgun Gothic",sans-serif'; ctx.fillText(grade, W/2, cy+r+58);
+  // 요약 3줄
+  ctx.textAlign='left'; ctx.fillStyle='#1c2733'; ctx.font='19px "Malgun Gothic",sans-serif';
+  let y=cy+r+108;
+  const lines=[
+    '① 특화 판정: 갑국 = 🌾쌀, 을국 = 👕옷',
+    '② 을국 교역 이득: 쌀 +3가마, 옷 +2벌 (둘 다 증가!)',
+    '③ "절대우위가 없어도 비교우위가 있으면 교역은 이득"'
+  ];
+  lines.forEach(t=>{ ctx.fillText(t, 78, y); y+=34; });
+  // 미션 O/X
+  ctx.fillStyle='#5b6b7c'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  ctx.fillText('미션 결과', 78, y+8); y+=34;
+  ctx.font='19px "Malgun Gothic",sans-serif';
+  for(let i=0;i<MISSIONS.length;i++){
+    const rr=mRes[i];
+    ctx.textAlign='left'; ctx.fillStyle='#1c2733';
+    ctx.fillText(MISSIONS[i].emoji+' 미션 '+(i+1), 90, y);
+    ctx.textAlign='right';
+    if(rr){ ctx.fillStyle=rr.correct?'#1c9e6b':'#e0563e'; ctx.fillText(rr.correct?'⭕ 정답':'❌ 오답', W-90, y); }
+    else { ctx.fillStyle='#94a3b4'; ctx.fillText('미완료', W-90, y); }
+    y+=32;
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#94a3b4'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 비교우위 무역 시뮬레이터', W/2, H-60);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='비교우위리포트_'+(el('studentName').value||'학생')+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ===== 탭 ===== */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','explore','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='explore') render(false);
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+renderMission();
+render(false);
+</script>
+</body>
+</html>

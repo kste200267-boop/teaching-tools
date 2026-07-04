@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에너지 전환 시뮬레이터 · 통합사회2 Ⅴ 미래와 지속가능한 삶</title>
+<style>
+  :root{
+    --bg:#0D1117; --surface:#161B22; --elev:#1C2128; --panel:#20262E;
+    --ink:#C9D1D9; --ink2:#E6EDF3; --sub:#8B949E; --line:#30363D;
+    --primary:#22D3A8; --primary-d:#0FA07C; --secondary:#58A6FF; --accent:#F778BA;
+    --carbon:#FF7B72; --carbon-d:#F85149;      /* 탄소배출: 높을수록 나쁨(빨강) */
+    --cost:#F0883E; --cost-d:#DB6D28;           /* 전기요금 */
+    --stab:#58A6FF; --stab-d:#388BFD;           /* 공급안정성 */
+    --safe:#3FD07E; --safe-d:#2EA043;           /* 안전성 */
+    --ok:#3FB950; --warn:#F85149;
+    --shadow:0 8px 26px rgba(0,0,0,.45);
+    --coal:#9AA4B2; --gas:#F0883E; --nuclear:#A371F7; --solar:#F2CC60; --wind:#58A6FF; --hydro:#3FB6E8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo","나눔스퀘어","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:960px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,#132C42,#0D1117 70%);
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;border:1px solid var(--line)}
+  header::after{content:"";position:absolute;right:-30px;bottom:-46px;width:190px;height:190px;
+    background:radial-gradient(circle,rgba(34,211,168,.28),transparent 70%);border-radius:50%}
+  header::before{content:"";position:absolute;left:0;top:0;width:100%;height:100%;
+    background:repeating-linear-gradient(90deg,rgba(88,166,255,.05) 0 1px,transparent 1px 26px);pointer-events:none}
+  header .kicker{font-size:13px;letter-spacing:1px;color:var(--primary);font-weight:800;position:relative}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800;color:#fff;position:relative}
+  header p{margin:0;font-size:14px;color:#c6d3e2;position:relative}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:78px;border:1px solid var(--line);border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+  nav button.active{background:var(--primary);color:#06231b;border-color:var(--primary)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px;color:var(--ink2)}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--primary);box-shadow:0 0 8px var(--primary)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  b{color:var(--ink2)}
+  .pill{display:inline-block;background:#132a24;color:var(--primary);border:1px solid #1c4a3d;border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:var(--elev);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary)}
+  .hide{display:none}
+  .srcbox{border-radius:12px;padding:12px 13px;font-size:13px;border:1px solid var(--line);background:var(--elev)}
+  .srcbox h3{margin:0 0 4px;font-size:14.5px;display:flex;align-items:center;gap:6px}
+  .srcbox .tag2{font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:auto}
+  .srcbox small{color:var(--sub)}
+  /* 믹스 설계 화면 */
+  .designgrid{display:grid;grid-template-columns:1.02fr 1fr;gap:16px}
+  @media(max-width:760px){.designgrid{grid-template-columns:1fr}}
+  canvas{max-width:100%;height:auto;display:block}
+  #donut{width:100%;max-width:300px;margin:0 auto;background:transparent}
+  .legend{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px 10px;margin:10px 2px 4px}
+  @media(max-width:420px){.legend{grid-template-columns:1fr 1fr}}
+  .legend .li{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700}
+  .legend .sw{width:11px;height:11px;border-radius:3px;flex:none}
+  .legend .lp{margin-left:auto;color:var(--sub);font-weight:800}
+  .gauges{margin-top:12px}
+  .gauge{margin:9px 0}
+  .gauge .glab{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:3px}
+  .gauge .glab small{font-weight:700;color:var(--sub);font-size:11px}
+  .gauge .track{height:15px;background:#0c1013;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .gauge .track i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.4,1.3,.5,1)}
+  .gauge.carbon .track i{background:linear-gradient(90deg,#ffb3ad,var(--carbon))}
+  .gauge.cost .track i{background:linear-gradient(90deg,#f6c08a,var(--cost))}
+  .gauge.stab .track i{background:linear-gradient(90deg,#9ac8ff,var(--stab))}
+  .gauge.safe .track i{background:linear-gradient(90deg,#8fe6b4,var(--safe))}
+  .gauge.carbon .glab .v{color:var(--carbon)} .gauge.cost .glab .v{color:var(--cost)}
+  .gauge.stab .glab .v{color:var(--stab)} .gauge.safe .glab .v{color:var(--safe)}
+  .sumbar{display:flex;align-items:center;gap:10px;background:var(--elev);border:1px solid var(--line);
+    border-radius:12px;padding:10px 13px;margin-bottom:10px;font-size:13.5px;font-weight:700}
+  .sumbar .big{color:var(--primary);font-weight:800}
+  .scorebox{display:flex;align-items:center;gap:12px;background:var(--elev);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-top:12px}
+  .scorebox .big{font-size:30px;font-weight:800;color:var(--primary);min-width:54px;text-align:center;line-height:1.05}
+  .scorebox .big small{display:block;font-size:11px;color:var(--sub);font-weight:700}
+  .scorebar{flex:1}
+  .scorebar .track{height:12px;background:#0c1013;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .scorebar .track i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--carbon),var(--cost),var(--primary));transition:.4s}
+  .scorebar .glab{font-size:13px;font-weight:800;margin-top:4px;color:var(--ink2)}
+  .warnbadge{display:none;background:#3a1518;border:1px solid #7d2b2b;color:#ffb0ab;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-top:10px}
+  .warnbadge b{color:#fff}
+  .warnbadge.on{display:block;animation:pulse 1.2s infinite}
+  .warnbadge.win{background:#0f2e1c;border-color:#1f6b3f;color:#7ee2a8}
+  .warnbadge.win b{color:#c9ffdd}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(248,81,73,.30)}50%{box-shadow:0 0 0 6px rgba(248,81,73,0)}}
+  .scard{border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--elev);margin-bottom:9px;transition:.15s}
+  .scard.on{border-color:var(--primary);background:#111e1a}
+  .scard .top{display:flex;align-items:center;gap:7px}
+  .scard .emo{font-size:20px}
+  .scard .nm{font-weight:800;font-size:14px;line-height:1.2;color:var(--ink2)}
+  .scard .typ{margin-left:auto;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 7px}
+  .typ.f{background:#3a2a17;color:#f0b78a} .typ.l{background:#2a1f42;color:#c4a6f7} .typ.r{background:#0f2e24;color:#6fe3bf}
+  .scard .chips{display:flex;gap:4px;margin:7px 0 6px;flex-wrap:wrap}
+  .scard .ch{font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 6px;border:1px solid var(--line)}
+  .ch.good{background:#0f2e20;color:#5fd39a;border-color:#1c4a3a}
+  .ch.bad{background:#3a1518;color:#ff9b95;border-color:#6b2626}
+  .ch.mid{background:#20262e;color:#a9b4c0}
+  .scard .slrow{display:flex;align-items:center;gap:10px}
+  .scard input[type=range]{flex:1;accent-color:var(--primary);height:22px}
+  .scard .pct{font-weight:800;min-width:42px;text-align:right;font-size:15px;color:var(--primary)}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#06231b}
+  .btn.blue{background:var(--secondary);color:#06192e}
+  .btn.ghost{background:var(--elev);color:var(--ink);border:1px solid var(--line)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+  .presets button{border:1px solid var(--line);background:var(--elev);border-radius:10px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;color:var(--ink)}
+  .presets button:active{transform:scale(.96)}
+  /* 미션 */
+  .mission-scenario{background:#101c2b;border:1px solid #24425f;border-radius:12px;padding:15px;font-size:15px;animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .mission-scenario .emoji{font-size:28px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:var(--elev);border-radius:11px;padding:11px 13px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left;transition:.12s;color:var(--ink)}
+  .opts button:hover{border-color:var(--secondary)}
+  .opts button.sel{border-color:var(--secondary);background:#122436}
+  .opts button.best{border-color:var(--ok);background:#0f2e1c;color:#9ce6b8}
+  .opts button.bad{border-color:var(--warn);background:#3a1518;color:#ffa8a2}
+  .opts button:disabled{cursor:default}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#0f2e1c;color:#9ce6b8;border:1px solid #1f6b3f}
+  .feedback.mid{background:#33280f;color:#f0cf8a;border:1px solid #6b551f}
+  .feedback.no{background:#3a1518;color:#ffa8a2;border:1px solid #6b2626}
+  .feedback b{color:#fff}
+  .progress{height:8px;background:#0c1013;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin:10px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary),var(--accent));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{background:var(--elev);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:15px;width:56%;max-width:220px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:var(--elev);border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);background:var(--elev);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅴ 미래와 지속가능한 삶 · 에너지 전환</div>
+    <h1>⚡ 에너지 전환 시뮬레이터 — 2050 탄소중립 컨트롤룸</h1>
+    <p>네가 스위치를 켜는 순간, 어딘가에선 석탄이 타고 원자로가 돈다. <b>탄소도 줄이고 정전도 막을 전력</b>, 오늘은 네가 직접 짜본다. 발전원(화석·원자력·재생) 비중을 조절해 <b>탄소배출·전기요금·공급안정성·안전성</b> 4지표의 트레이드오프를 풀고, <b>2050 탄소중립 + 안정공급</b>을 동시에 달성하자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="mix">2. 에너지믹스</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>에너지 전환이란? — 발전원 믹스와 전력</h2>
+      <p class="lead"><b>에너지 전환</b>은 <b>탄소를 많이 배출하는 화석연료(석탄·가스) 중심의 전력 생산</b>을, <b>저탄소 전원(재생에너지·원자력)</b> 중심으로 바꾸는 것이다. 핵심은 <b>발전원 믹스(mix)</b>, 즉 전기를 어떤 발전원으로 얼마씩 만들지의 조합이다.</p>
+
+      <h3>발전원마다 장단점이 다르다</h3>
+      <div class="grid3">
+        <div class="srcbox"><h3>🏭 석탄 <span class="tag2 typ f" style="background:#3a2a17;color:#f0b78a">화석</span></h3>값싸고 <b>안정적</b>이지만 <b>탄소배출이 가장 많고</b> 대기오염을 일으킨다.</div>
+        <div class="srcbox"><h3>🔥 천연가스 <span class="tag2" style="background:#3a2a17;color:#f0b78a">화석</span></h3>석탄보다 탄소가 <b>절반</b>이고 출력 조절이 빨라 백업에 유리하나, 연료를 <b>수입</b>해 가격이 출렁인다.</div>
+        <div class="srcbox"><h3>⚛️ 원자력 <span class="tag2" style="background:#2a1f42;color:#c4a6f7">저탄소</span></h3>탄소가 거의 없고 <b>24시간 안정</b> 공급되나, <b>사고 위험·핵폐기물</b> 처리라는 안전 딜레마가 있다.</div>
+        <div class="srcbox"><h3>☀️ 태양광 <span class="tag2" style="background:#0f2e24;color:#6fe3bf">재생</span></h3>저탄소·안전하지만 <b>밤·흐린 날엔 못 만든다</b>(간헐성). 안정공급이 약하다.</div>
+        <div class="srcbox"><h3>💨 풍력 <span class="tag2" style="background:#0f2e24;color:#6fe3bf">재생</span></h3>저탄소·안전하나 <b>바람에 따라</b> 출력이 들쭉날쭉해 간헐성이 크다.</div>
+        <div class="srcbox"><h3>💧 수력 <span class="tag2" style="background:#0f2e24;color:#6fe3bf">재생</span></h3>저탄소이고 <b>비교적 안정적</b>이지만 지을 곳이 한정되고 생태계 영향이 있다.</div>
+      </div>
+
+      <h3>에너지 전환의 딜레마 (트레이드오프)</h3>
+      <div class="grid2">
+        <div class="concept">🌿 <b>재생에너지</b>는 저탄소·안전하지만 <b>간헐성</b> 때문에 공급안정성이 약하고, 초기 투자·저장장치 <b>비용</b>이 든다.</div>
+        <div class="concept">⚛️ <b>원자력</b>은 저탄소이면서 <b>안정</b>적이지만, <b>사고 위험과 핵폐기물</b>이라는 안전 문제를 안고 있다.</div>
+      </div>
+      <p class="lead" style="margin-top:10px">그래서 <b>탄소 ↓ · 요금 ↓ · 안정 ↑ · 안전 ↑</b> 네 가지를 동시에 만족시키는 완벽한 발전원은 없다. 한쪽에 <b>몰빵</b>하면 반드시 다른 지표가 무너진다. 발전원을 <b>영리하게 조합</b>해야 한다.</p>
+
+      <h3>함께 생각할 이슈</h3>
+      <div>
+        <span class="pill">🎯 2050 탄소중립</span>
+        <span class="pill">🔌 안정적 전력 공급</span>
+        <span class="pill">🛡️ 에너지 안보(자립도)</span>
+        <span class="pill">🤝 정의로운 전환</span>
+        <span class="pill">🔋 에너지 저장(ESS)</span>
+        <span class="pill">♻️ 핵폐기물 관리</span>
+      </div>
+      <div class="note">🎯 <b>도전 목표</b> — 탄소배출 지수 <b>≤ 20</b>(탄소중립 근접)이면서 공급안정성 <b>≥ 60</b>(안정공급)을 동시에 달성! ※ 수치는 개념 이해를 돕기 위한 <b>교육용 단순 가정값</b>이며 실제 발전 통계가 아닙니다.</div>
+      <div class="note">👩‍🏫 <b>이렇게 쓰세요</b> — 모둠별로 믹스를 설계해 전환점수 경쟁을 붙인 뒤, "왜 어떤 지표는 올리면 다른 지표가 내려갔나"로 트레이드오프 토론을 이어가세요.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mix')">에너지믹스를 설계하러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 에너지믹스 ===== -->
+  <section id="tab-mix" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>에너지믹스 컨트롤룸 · 발전원 비중을 조절하자</h2>
+      <p class="lead">여기가 오늘 밤 전국의 전기를 책임질 관제실. 슬라이더를 밀 때마다 <b>합은 항상 100%</b>로 다시 맞춰지고, <b>탄소·요금·안정·안전</b> 4지표 계기판과 도넛이 곧바로 요동친다. 임무는 하나 — <b>탄소 ≤20 · 안정 ≥60</b> 동시 달성!</p>
+
+      <div class="sumbar" id="sumBar">
+        <span>🔀 발전원 비중 합계</span>
+        <span class="big" id="sumTxt">100%</span>
+        <span style="margin-left:auto;color:var(--sub);font-weight:700">항상 100%로 유지됩니다</span>
+      </div>
+
+      <div class="designgrid">
+        <div>
+          <canvas id="donut" width="300" height="300"></canvas>
+          <div class="legend" id="legend"></div>
+          <div class="gauges">
+            <div class="gauge carbon"><div class="glab"><span>🌫️ 탄소배출 <small>(낮을수록 좋음)</small></span><span class="v" id="gvCarbon">0</span></div><div class="track"><i id="gCarbon"></i></div></div>
+            <div class="gauge cost"><div class="glab"><span>💵 전기요금 <small>(낮을수록 좋음)</small></span><span class="v" id="gvCost">0</span></div><div class="track"><i id="gCost"></i></div></div>
+            <div class="gauge stab"><div class="glab"><span>🔌 공급안정성 <small>(높을수록 좋음)</small></span><span class="v" id="gvStab">0</span></div><div class="track"><i id="gStab"></i></div></div>
+            <div class="gauge safe"><div class="glab"><span>🛡️ 안전성 <small>(높을수록 좋음)</small></span><span class="v" id="gvSafe">0</span></div><div class="track"><i id="gSafe"></i></div></div>
+          </div>
+          <div class="scorebox">
+            <div class="big" id="scoreNum">0<small>전환점수</small></div>
+            <div class="scorebar">
+              <div class="track"><i id="scoreBar"></i></div>
+              <div class="glab" id="scoreGrade">발전원을 조절해 보자</div>
+            </div>
+          </div>
+          <div class="warnbadge" id="warnBadge"></div>
+        </div>
+        <div>
+          <div class="presets">
+            <button onclick="applyPreset('fossil')">🏭 화석 중심</button>
+            <button onclick="applyPreset('nuke')">⚛️ 원자력 확대</button>
+            <button onclick="applyPreset('renew')">🌿 재생 몰빵</button>
+            <button onclick="applyPreset('balance')">⚖️ 균형 전환</button>
+            <button onclick="applyPreset('reset')">↺ 초기화</button>
+          </div>
+          <div id="sliderList"></div>
+        </div>
+      </div>
+
+      <div class="note">슬라이더 하나를 올리면 나머지 발전원이 <b>비례해서 줄어</b> 합이 100%로 유지됩니다. 한 발전원이 <b>60%를 넘으면 편중(몰빵) 경고</b>가 뜹니다. 재생 몰빵은 탄소·안전은 좋지만 <b>공급안정성</b>이 무너지고, 원자력·화석 몰빵은 <b>안전·탄소</b>에서 대가를 치릅니다.</div>
+      <div class="rowbtns">
+        <button class="btn blue" onclick="go('mission')">에너지 위기 미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>에너지 위기 시나리오 (6)</h2>
+      <p class="lead">관제실로 긴급 상황 6건이 들어온다. 폭염·정세 불안·주민 반발까지 — 발전원의 장단점·트레이드오프·에너지 안보·정의로운 전환을 근거로 관제사의 결정을 내려보자. (선택마다 0~2점)</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn ghost hide" id="mPrev" onclick="prevMission()">← 이전</button>
+        <button class="btn blue hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>에너지 전환 리포트</h2>
+      <p class="lead">오늘 밤 관제 근무 성적표. 이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="1150"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn primary" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mix')">믹스 다시 설계</button>
+      </div>
+      <div style="text-align:center;margin-top:10px">
+        <a href="#" onclick="openPNG(event)" style="color:var(--secondary);font-size:12.5px;font-weight:700;text-decoration:underline">📱 저장이 안 되면 여기(새 탭)</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅴ 미래와 지속가능한 삶 · 에너지 전환·발전원 믹스·2050 탄소중립·에너지 안보·정의로운 전환 [10통사2-11] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    수치는 교육용 가정값입니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+
+/* ============ 데이터: 발전원 프로필(0~100 지수) ============ */
+/* carbon=탄소배출지수(높을수록 나쁨), cost=요금지수(높을수록 비쌈),
+   stab=공급안정성(높을수록 좋음), safe=안전성(높을수록 좋음) */
+const SOURCES = [
+  {k:'coal',    nm:'석탄',     emo:'🏭', col:'#9AA4B2', type:'화석',   tc:'f', carbon:100, cost:42, stab:90, safe:32},
+  {k:'gas',     nm:'천연가스', emo:'🔥', col:'#F0883E', type:'화석',   tc:'f', carbon:55,  cost:66, stab:84, safe:56},
+  {k:'nuclear', nm:'원자력',   emo:'⚛️', col:'#A371F7', type:'저탄소', tc:'l', carbon:6,   cost:52, stab:95, safe:30},
+  {k:'solar',   nm:'태양광',   emo:'☀️', col:'#F2CC60', type:'재생',   tc:'r', carbon:8,   cost:50, stab:24, safe:92},
+  {k:'wind',    nm:'풍력',     emo:'💨', col:'#58A6FF', type:'재생',   tc:'r', carbon:7,   cost:48, stab:28, safe:90},
+  {k:'hydro',   nm:'수력',     emo:'💧', col:'#3FB6E8', type:'재생',   tc:'r', carbon:12,  cost:40, stab:68, safe:80}
+];
+const SMAP = {}; SOURCES.forEach(s=>SMAP[s.k]=s);
+// 초기 믹스: 화석 의존 출발점(전환 이전) — 합 100
+let mix = {coal:34, gas:26, nuclear:26, solar:7, wind:4, hydro:3};
+
+/* ============ 계산 ============ */
+const CARBON_GOAL = 20, STAB_GOAL = 60;
+function metrics(){
+  let carbon=0, cost=0, stab=0, safe=0;
+  SOURCES.forEach(s=>{ const f=mix[s.k]/100; carbon+=s.carbon*f; cost+=s.cost*f; stab+=s.stab*f; safe+=s.safe*f; });
+  const renew   = mix.solar+mix.wind+mix.hydro;
+  const lowC    = renew+mix.nuclear;
+  const fossil  = mix.coal+mix.gas;
+  // 지표별 점수(0~100)
+  const carbonScore = clamp((90-carbon)/(90-CARBON_GOAL)*100, 0,100);
+  const stabScore   = clamp((stab-20)/(STAB_GOAL-20)*100, 0,100);
+  const costScore   = clamp((90-cost)/(90-45)*100, 0,100);
+  const safeScore   = clamp((safe-30)/(70-30)*100, 0,100);
+  const score = Math.round(0.30*carbonScore + 0.30*stabScore + 0.20*costScore + 0.20*safeScore);
+  const goalMet = (carbon<=CARBON_GOAL) && (stab>=STAB_GOAL);
+  // 최대 비중 발전원(편중 판정)
+  let maxK='coal', maxV=-1;
+  SOURCES.forEach(s=>{ if(mix[s.k]>maxV){ maxV=mix[s.k]; maxK=s.k; } });
+  const concentrated = maxV>60;
+  // 등급
+  let grade, gicon;
+  if(goalMet && score>=88){ grade='탄소중립 마스터'; gicon='🏆'; }
+  else if(goalMet){ grade='2050 탄소중립·안정공급 달성'; gicon='⚡'; }
+  else if(score>=74){ grade='에너지 전환 우수'; gicon='🔋'; }
+  else if(score>=58){ grade='전환 진행 중'; gicon='🌤️'; }
+  else { grade='화석 의존 심각'; gicon='⚠️'; }
+  // 성향 뱃지
+  let badge;
+  if(concentrated) badge = SMAP[maxK].emo+' '+SMAP[maxK].nm+' 편중('+Math.round(maxV)+'%)';
+  else if(renew>=55) badge='🌿 재생에너지 중심';
+  else if(mix.nuclear>=40) badge='⚛️ 원자력 중심';
+  else if(fossil>=50) badge='🏭 화석연료 의존';
+  else badge='⚖️ 균형 에너지믹스';
+  return {carbon,cost,stab,safe,renew,lowC,fossil,score,goalMet,grade,gicon,badge,concentrated,maxK,maxV,
+          carbonScore,stabScore,costScore,safeScore};
+}
+
+/* ============ 도넛(에너지믹스) ============ */
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+// disp={coal,gas,...}(비중 %) 를 도넛으로. o로 스타일 조정
+function drawDonutOn(ctx, cx, cy, R, th, disp, o){
+  o=o||{};
+  const total = SOURCES.reduce((s,x)=>s+disp[x.k],0) || 1;
+  let start=-Math.PI/2;
+  SOURCES.forEach(s=>{
+    const frac=disp[s.k]/total;
+    if(frac<=0.0001) return;
+    const end=start+frac*2*Math.PI;
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,start,end);
+    ctx.arc(cx,cy,R-th,end,start,true);
+    ctx.closePath();
+    ctx.fillStyle=s.col; ctx.fill();
+    ctx.strokeStyle=o.sep||'#0D1117'; ctx.lineWidth=o.sepw||2.4; ctx.stroke();
+    start=end;
+  });
+  // 가운데: 저탄소 발전 비중
+  const lowC = disp.nuclear+disp.solar+disp.wind+disp.hydro;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle=o.big||'#E6EDF3'; ctx.font='bold '+(o.bigfs||34)+'px "Malgun Gothic",sans-serif';
+  ctx.fillText(Math.round(lowC)+'%', cx, cy-8);
+  ctx.fillStyle=o.sub||'#8B949E'; ctx.font=(o.subfs||13)+'px "Malgun Gothic",sans-serif';
+  ctx.fillText('저탄소 발전', cx, cy+16);
+  ctx.textBaseline='alphabetic';
+}
+let donutDisp={}, donutTimer=null;
+SOURCES.forEach(s=>donutDisp[s.k]=mix[s.k]);
+function drawDonut(){
+  const cv=el('donut'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  drawDonutOn(ctx, cv._lw/2, cv._lh/2, 118, 46, donutDisp, {});
+}
+function animateDonut(){
+  if(donutTimer) clearInterval(donutTimer);
+  donutTimer=setInterval(()=>{
+    let done=true;
+    SOURCES.forEach(s=>{ const d=mix[s.k]-donutDisp[s.k];
+      if(Math.abs(d)>0.4){ donutDisp[s.k]+=d*0.30; done=false; } else donutDisp[s.k]=mix[s.k]; });
+    drawDonut();
+    if(done){ clearInterval(donutTimer); donutTimer=null; }
+  },20);
+}
+
+/* ============ 비중 재분배(합 100 유지) ============ */
+function setShare(k, newVal){
+  newVal = clamp(newVal, 0, 100);
+  const others = SOURCES.filter(s=>s.k!==k);
+  const oldOthers = others.reduce((s,o)=>s+mix[o.k], 0);
+  const remain = 100 - newVal;
+  if(oldOthers <= 0.0001){
+    others.forEach(o=>mix[o.k] = remain/others.length);
+  } else {
+    others.forEach(o=>mix[o.k] = mix[o.k]/oldOthers*remain);
+  }
+  mix[k] = newVal;
+}
+
+/* ============ 설계 UI ============ */
+function qual(v, goodHigh){
+  const good = goodHigh ? v>=64 : v<=36;
+  const bad  = goodHigh ? v<=36 : v>=64;
+  return good?'good':bad?'bad':'mid';
+}
+function word(v, goodHigh){ return v>=64?(goodHigh?'높음':'높음') : v<=36?'낮음':'보통'; }
+function buildSliders(){
+  el('sliderList').innerHTML = SOURCES.map(s=>{
+    const chips =
+      `<span class="ch ${qual(s.carbon,false)}">🌫️탄소 ${word(s.carbon)}</span>`+
+      `<span class="ch ${qual(s.cost,false)}">💵요금 ${word(s.cost)}</span>`+
+      `<span class="ch ${qual(s.stab,true)}">🔌안정 ${word(s.stab)}</span>`+
+      `<span class="ch ${qual(s.safe,true)}">🛡️안전 ${word(s.safe)}</span>`;
+    const tlab = s.type;
+    return `<div class="scard" id="sc-${s.k}">
+      <div class="top"><span class="emo">${s.emo}</span><span class="nm">${s.nm}</span><span class="typ ${s.tc}">${tlab}</span></div>
+      <div class="chips">${chips}</div>
+      <div class="slrow">
+        <input type="range" min="0" max="100" step="1" value="${Math.round(mix[s.k])}" id="sl-${s.k}"
+          oninput="onSlide('${s.k}', this.value)" aria-label="${s.nm} 발전 비중">
+        <span class="pct" id="pct-${s.k}">${Math.round(mix[s.k])}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function refreshSliders(){
+  SOURCES.forEach(s=>{
+    const v=Math.round(mix[s.k]);
+    const sl=el('sl-'+s.k); if(sl && document.activeElement!==sl) sl.value=v;
+    el('pct-'+s.k).textContent=v+'%';
+    el('sc-'+s.k).classList.toggle('on', mix[s.k]>0.5);
+  });
+}
+function buildLegend(){
+  el('legend').innerHTML = SOURCES.map(s=>
+    `<div class="li"><span class="sw" style="background:${s.col}"></span>${s.nm}<span class="lp" id="lg-${s.k}">0%</span></div>`
+  ).join('');
+}
+function onSlide(k,v){ setShare(k, +v); sync(true); }
+function applyPreset(kind){
+  if(kind==='fossil')  mix={coal:40, gas:28, nuclear:20, solar:7, wind:3, hydro:2};
+  if(kind==='nuke')    mix={coal:8,  gas:14, nuclear:55, solar:12, wind:8, hydro:3};
+  if(kind==='renew')   mix={coal:0,  gas:8,  nuclear:2,  solar:45, wind:35, hydro:10};
+  if(kind==='balance') mix={coal:3,  gas:12, nuclear:30, solar:23, wind:20, hydro:12};
+  if(kind==='reset')   mix={coal:34, gas:26, nuclear:26, solar:7, wind:4, hydro:3};
+  buildSliders();
+  sync(true);
+}
+let lastM=null;
+function sync(animated){
+  const m=metrics(); lastM=m;
+  refreshSliders();
+  // 범례 %
+  SOURCES.forEach(s=>{ el('lg-'+s.k).textContent=Math.round(mix[s.k])+'%'; });
+  // 합계(항상 100)
+  el('sumTxt').textContent=Math.round(SOURCES.reduce((a,s)=>a+mix[s.k],0))+'%';
+  // 게이지
+  el('gCarbon').style.width=m.carbon+'%'; el('gvCarbon').textContent=Math.round(m.carbon);
+  el('gCost').style.width=m.cost+'%';     el('gvCost').textContent=Math.round(m.cost);
+  el('gStab').style.width=m.stab+'%';     el('gvStab').textContent=Math.round(m.stab);
+  el('gSafe').style.width=m.safe+'%';     el('gvSafe').textContent=Math.round(m.safe);
+  // 전환점수
+  el('scoreNum').innerHTML=m.score+'<small>전환점수</small>';
+  el('scoreBar').style.width=m.score+'%';
+  el('scoreGrade').textContent=m.gicon+' '+m.grade+' · '+m.badge;
+  // 경고/성공
+  const wb=el('warnBadge'); wb.classList.remove('win');
+  if(m.goalMet){ wb.classList.add('on','win');
+    wb.innerHTML='🎉 <b>목표 달성!</b> 탄소중립(탄소≤'+CARBON_GOAL+')과 안정공급(안정≥'+STAB_GOAL+')을 동시에 달성했어요. 발전원을 균형 있게 조합한 결과입니다.';
+  } else if(m.concentrated){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>편중(몰빵) 경고!</b> '+SMAP[m.maxK].nm+'이(가) '+Math.round(m.maxV)+'%로 한쪽에 쏠렸습니다. 완벽한 발전원은 없어요 — 여러 전원을 <b>고르게</b> 섞어야 합니다.';
+  } else if(m.carbon>50){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>탄소배출 과다:</b> 화석연료 비중이 높습니다. 저탄소 전원(재생·원자력)을 늘려 배출을 줄이세요.';
+  } else if(m.stab<45){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>블랙아웃 위험!</b> 간헐성 큰 재생에너지에 치우쳐 공급안정성이 무너졌습니다. 원자력·수력·가스 등 안정 전원을 함께 두세요.';
+  } else if(m.safe<42){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>안전·폐기물 우려:</b> 원자력·석탄 비중이 높습니다. 사고 위험·핵폐기물·대기오염을 고려해 재생에너지도 함께 늘리세요.';
+  } else if(m.cost>72){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>전기요금 급등:</b> 비싼 전원 비중이 큽니다. 요금 부담과 저탄소 전환 사이의 균형을 찾으세요.';
+  } else wb.classList.remove('on');
+  // 도넛
+  if(animated) animateDonut();
+  else { SOURCES.forEach(s=>donutDisp[s.k]=mix[s.k]); drawDonut(); }
+}
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {emoji:'🔌', title:'폭염 블랙아웃 위기', desc:'기록적 폭염으로 전력 수요가 폭증했다. 그런데 태양광·풍력만으로는 밤이나 바람 없는 날 공급이 끊긴다. 어떻게 대응할까?',
+   opts:[
+     {t:'재생에너지를 키우되 원자력·수력·가스 등 안정적 전원과 에너지저장장치(ESS)로 간헐성을 보완한다', pts:2},
+     {t:'재생에너지가 불안하니 전부 접고 값싼 석탄발전만 최대로 돌린다', pts:1},
+     {t:'정전은 어쩔 수 없다며 아무 대비도 하지 않는다', pts:0}],
+   why:'✅ 정답은 <b>재생 확대 + 안정 전원·저장장치 보완</b>. 재생에너지는 저탄소·안전하지만 <b>간헐성</b> 때문에 공급안정성이 약하다. 백업 전원과 ESS로 이를 메워야 블랙아웃을 막는다. 석탄 회귀는 탄소·안전을 다시 악화시킨다.'},
+  {emoji:'⚛️', title:'원전 안전·핵폐기물 논란', desc:'원자력은 탄소가 거의 없고 24시간 안정적이지만, 사고 위험과 핵폐기물 처리를 둘러싼 논란이 뜨겁다. 성숙한 태도는?',
+   opts:[
+     {t:'안전 기준을 강화하고 폐기물 관리를 투명화하되, 재생에너지도 함께 늘려 특정 전원 의존을 줄인다', pts:2},
+     {t:'위험하니 원전을 즉시 전부 폐쇄하고 부족분을 석탄·가스로 메운다', pts:1},
+     {t:'사고는 안 난다며 안전·폐기물 대책 없이 원전만 무한 증설한다', pts:0}],
+   why:'✅ 정답은 <b>안전 강화 + 전원 다변화</b>. 원자력은 저탄소·안정이라는 장점과 안전·폐기물이라는 딜레마를 동시에 지닌다. 안전을 높이며 여러 전원과 균형을 맞추는 게 답. 즉시 전면 폐쇄는 탄소 급증, 무한 증설은 안전 위험을 키운다.'},
+  {emoji:'🛢️', title:'에너지 안보 위기', desc:'국제 정세가 불안해지며 수입에 의존하던 석탄·가스 가격이 폭등하고 공급마저 끊길 위험이 커졌다. 무엇을 우선할까?',
+   opts:[
+     {t:'국내에서 생산 가능한 재생에너지·원자력 비중을 높여 에너지 안보(자립도)를 강화한다', pts:2},
+     {t:'값이 크게 올랐지만 그냥 수입 화석연료 의존을 그대로 유지한다', pts:1},
+     {t:'모자라면 이웃 나라 자원을 힘으로 빼앗아 오면 된다', pts:0}],
+   why:'✅ 정답은 <b>국내 전원(재생·원자력) 확대</b>. 화석연료 대부분을 수입에 의존하면 국제 가격·정세에 전력이 휘둘린다. 국내에서 만들 수 있는 전원을 키우면 <b>에너지 안보(자립도)</b>가 올라간다.'},
+  {emoji:'🎯', title:'2050 탄소중립 압박', desc:'국제사회가 2050 탄소중립 이행을 요구한다. 발전 부문의 탄소를 획기적으로 줄여야 한다. 가장 효과적인 방향은?',
+   opts:[
+     {t:'석탄·가스를 줄이고 재생에너지·원자력 등 저탄소 전원으로 전환하며 안정공급도 함께 설계한다', pts:2},
+     {t:'탄소는 나중 문제이니 당장 값싼 석탄발전을 계속 늘린다', pts:1},
+     {t:'목표만 그럴듯하게 선언하고 실제 발전원은 그대로 둔다', pts:0}],
+   why:'✅ 정답은 <b>저탄소 전원 전환 + 안정공급 병행</b>. 발전 부문 탄소의 핵심 원인은 화석연료다. 저탄소 전원으로 바꾸되 간헐성을 보완해 안정공급까지 지켜야 지속가능한 탄소중립이 된다.'},
+  {emoji:'🤝', title:'정의로운 전환', desc:'탄소를 줄이려 석탄발전소를 닫자, 그곳에서 일하던 노동자와 지역경제가 무너질 위기에 놓였다. 어떻게 해야 할까?',
+   opts:[
+     {t:'노동자 재교육·재생에너지 일자리·지역 지원으로 아무도 뒤처지지 않는 "정의로운 전환"을 함께 추진한다', pts:2},
+     {t:'전환이 급하니 노동자와 지역 사정은 신경 쓰지 않고 발전소만 서둘러 닫는다', pts:1},
+     {t:'일자리가 걸렸으니 탄소가 많아도 석탄발전을 영원히 유지한다', pts:0}],
+   why:'✅ 정답은 <b>정의로운 전환</b>. 에너지 전환의 부담은 석탄 지역·노동자에게 집중될 수 있다. 재교육·새 일자리·지역 지원으로 <b>피해가 한쪽에 쏠리지 않게</b> 하는 것이 정의로운 전환이다. 방치도, 무기한 유지도 답이 아니다.'},
+  {emoji:'⚖️', title:'미래 에너지믹스의 방향', desc:'미래 세대를 위한 가장 지속가능한 에너지믹스 방향은 무엇일까?',
+   opts:[
+     {t:'탄소배출·전기요금·공급안정성·안전성을 함께 고려해 한 발전원에 몰빵하지 않고 균형을 맞춘다', pts:2},
+     {t:'전기요금만 싸면 되니 환경·안전 문제는 무시한다', pts:1},
+     {t:'가장 좋아 보이는 발전원 한 가지를 100%로 밀어붙이면 된다', pts:0}],
+   why:'✅ 정답은 <b>4지표 균형 조합</b>. 탄소·요금·안정·안전을 모두 만족시키는 완벽한 발전원은 없다. 각 전원의 장단점을 이해하고 <b>고르게 조합</b>하는 것이 지속가능한 에너지 전환의 핵심이다.'}
+];
+let mIdx=0; const mResult=new Array(MISSIONS.length).fill(null);
+function renderMission(){
+  const m=MISSIONS[mIdx];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<span class="emoji">${m.emoji}</span> <b>위기 ${mIdx+1}/${MISSIONS.length} · ${m.title}</b><br>${m.desc}`;
+  el('mScenario').style.animation='none'; void el('mScenario').offsetWidth; el('mScenario').style.animation='';
+  const chosen=mResult[mIdx];
+  el('mOpts').innerHTML=m.opts.map((o,i)=>{
+    let cls='';
+    if(chosen){ if(o.pts===2) cls=' best'; else if(o.pts===0) cls=' bad'; if(chosen.pick===i) cls+=' sel'; }
+    return `<button class="${cls.trim()}" ${chosen?'disabled':''} onclick="pickOpt(${i})">${o.t} <b style="float:right">${chosen?('+'+o.pts):''}</b></button>`;
+  }).join('');
+  el('mFeedback').innerHTML = chosen ? feedbackHTML(m, chosen.pts) : '';
+  el('mPrev').classList.toggle('hide', mIdx===0);
+  el('mNext').classList.toggle('hide', !chosen);
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function feedbackHTML(m, pts){
+  const cls = pts===2?'ok' : pts===1?'mid':'no';
+  const head = pts===2?'✅ 최선의 선택! (+2)' : pts===1?'🟡 나쁘진 않지만 더 나은 선택이 있어. (+1)':'❌ 균형을 놓친 선택! (+0)';
+  return `<div class="feedback ${cls}">${head}<br>${m.why}</div>`;
+}
+function pickOpt(i){
+  if(mResult[mIdx]) return;
+  const m=MISSIONS[mIdx];
+  mResult[mIdx]={pick:i, pts:m.opts[i].pts, emoji:m.emoji};
+  renderMission();
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+}
+function prevMission(){ if(mIdx>0){ mIdx--; renderMission(); } }
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mResult.reduce((s,r)=>s+(r?r.pts:0),0); }
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const m=lastM||metrics();
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  // 배경(테크 다크)
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0D1117'); g.addColorStop(1,'#05070A');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // 내부 패널
+  ctx.fillStyle='#161B22'; roundRect(ctx,30,30,W-60,H-60,26); ctx.fill();
+  ctx.strokeStyle='#30363D'; ctx.lineWidth=1.5; roundRect(ctx,30,30,W-60,H-60,26); ctx.stroke();
+  // 헤더
+  ctx.textAlign='center';
+  ctx.fillStyle='#22D3A8'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('⚡ 에너지 전환 리포트', W/2, 100);
+  ctx.fillStyle='#8B949E'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅴ 미래와 지속가능한 삶 · 에너지 전환 [10통사2-11]', W/2, 134);
+  ctx.strokeStyle='#22D3A8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-120,156); ctx.lineTo(W/2+120,156); ctx.stroke();
+  // 이름
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#E6EDF3'; ctx.font='bold 26px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+'의 2050 에너지믹스', W/2, 196);
+  // 목표 달성 배너
+  const bx=64, by=218, bw=W-128, bh=42;
+  ctx.fillStyle= m.goalMet?'#0f2e1c':'#3a1518'; roundRect(ctx,bx,by,bw,bh,12); ctx.fill();
+  ctx.strokeStyle= m.goalMet?'#1f6b3f':'#6b2626'; ctx.lineWidth=1.5; roundRect(ctx,bx,by,bw,bh,12); ctx.stroke();
+  ctx.fillStyle= m.goalMet?'#7ee2a8':'#ffa8a2'; ctx.font='bold 20px "Malgun Gothic",sans-serif'; ctx.textAlign='center';
+  ctx.fillText(m.goalMet?'🎯 탄소중립 + 안정공급 목표 달성!':'🎯 목표 미달성 (탄소≤20 · 안정≥60)', W/2, by+28);
+  // 도넛
+  drawDonutOn(ctx, W/2, 396, 96, 40, mix,
+    {sep:'#161B22', sepw:2.6, big:'#E6EDF3', sub:'#8B949E', bigfs:32, subfs:13});
+  // 도넛 범례(3열)
+  ctx.font='bold 15px "Malgun Gothic",sans-serif';
+  let ly=506; const lcolW=(W-140)/3;
+  SOURCES.forEach((s,i)=>{
+    const col=i%3, row=Math.floor(i/3);
+    const x=70+col*lcolW, yy=ly+row*30;
+    ctx.fillStyle=s.col; roundRect(ctx,x,yy-11,13,13,3); ctx.fill();
+    ctx.fillStyle='#C9D1D9'; ctx.textAlign='left';
+    ctx.fillText(s.nm+' '+Math.round(mix[s.k])+'%', x+20, yy);
+  });
+  // 4지표
+  ctx.textAlign='center';
+  const rows=[['🌫️ 탄소배출', Math.round(m.carbon), '#FF7B72','낮을수록 ↑'],
+              ['💵 전기요금', Math.round(m.cost), '#F0883E','낮을수록 ↑'],
+              ['🔌 공급안정', Math.round(m.stab), '#58A6FF','높을수록 ↑'],
+              ['🛡️ 안전성', Math.round(m.safe), '#3FD07E','높을수록 ↑']];
+  let y=610; const colW=(W-120)/4;
+  rows.forEach((rw,i)=>{
+    const x=60+i*colW+colW/2;
+    ctx.fillStyle='#8B949E'; ctx.font='15px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[0], x, y);
+    ctx.fillStyle=rw[2]; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[1], x, y+34);
+    ctx.fillStyle='#5c6672'; ctx.font='12px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[3], x, y+54);
+  });
+  // 전환점수 게이지
+  const pct=m.score/100, cx=W/2, cy=750, r=78;
+  ctx.lineWidth=18; ctx.strokeStyle='#20262E'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.88?'#22D3A8' : pct>=0.74?'#3FD07E' : pct>=0.58?'#F0883E':'#FF7B72';
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#E6EDF3'; ctx.textAlign='center'; ctx.font='bold 46px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.score+'', cx, cy+4);
+  ctx.fillStyle='#8B949E'; ctx.font='15px "Malgun Gothic",sans-serif'; ctx.fillText('전환점수', cx, cy+28);
+  ctx.fillStyle='#22D3A8'; ctx.font='bold 24px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.gicon+' '+m.grade, cx, cy+r+42);
+  ctx.fillStyle='#58A6FF'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.badge, cx, cy+r+72);
+  // 미션 점수표
+  y=cy+r+112; ctx.textAlign='left'; ctx.fillStyle='#22D3A8'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('에너지 위기 미션  ('+missionTotal()+'/'+(MISSIONS.length*2)+')', 64, y); y+=32;
+  const mcolW=(W-128)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3);
+    const x=64+col*mcolW, yy=y+row*34;
+    const rr=mResult[i];
+    ctx.textAlign='left'; ctx.fillStyle='#C9D1D9'; ctx.font='19px "Malgun Gothic",sans-serif';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.fillStyle= rr? (rr.pts===2?'#3FD07E':rr.pts===1?'#F0883E':'#FF7B72') : '#5c6672';
+    ctx.font='bold 19px "Malgun Gothic",sans-serif';
+    ctx.fillText(rr? (rr.pts+'/2') : '–', x+34, yy);
+  }
+  // 푸터
+  ctx.textAlign='center'; ctx.fillStyle='#5c6672'; ctx.font='14px "Malgun Gothic",sans-serif';
+  ctx.fillText('수치는 교육용 가정값입니다', W/2, H-66);
+  ctx.fillStyle='#58A6FF'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 에너지 전환 시뮬레이터', W/2, H-44);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='에너지전환리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(e){
+  if(e) e.preventDefault();
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let mixInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','mix','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='mix'){ if(!mixInit){ buildLegend(); buildSliders(); mixInit=true; } sync(true); }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ if(!lastM) metrics(); drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+buildLegend(); buildSliders(); mixInit=true; sync(false);
+</script>
+</body>
+</html>

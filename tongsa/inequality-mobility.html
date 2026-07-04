@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사회 불평등·계층이동 탐구 시뮬레이터 · 통합사회2 Ⅱ 사회정의와 불평등</title>
+<style>
+  :root{
+    /* 팔레트 id 09 · 데이터 블루 */
+    --bg:#eef3fa; --surface:#ffffff; --ink:#152233; --sub:#57697d;
+    --primary:#1f6fd6; --primary-d:#12508f; --accent:#f2a03d; --accent-d:#c77c17;
+    --low:#e0765a; --mid:#1f6fd6; --high:#2a9d8f;
+    --line:#dde5f0; --ok:#2a9d8f; --warn:#d9663d;
+    --shadow:0 6px 20px rgba(20,45,80,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;
+    background:radial-gradient(circle,rgba(242,160,61,.35),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.9;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.93}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:80px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#e6effb;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:#f5f9ff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .concept h3{margin:0 0 5px}
+  .hide{display:none}
+  table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 6px;text-align:center}
+  table.cmp th{background:#e9f1fb;color:var(--primary-d);font-weight:800}
+  table.cmp td.a{font-weight:800;text-align:left}
+  .chip{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+  .graphwrap{position:relative;width:100%;max-width:560px;margin:0 auto}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+  .readout{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .stat{background:#eef4fb;border-radius:12px;padding:10px 14px;text-align:center;min-width:104px}
+  .stat .lab{font-size:12px;color:var(--sub);font-weight:700}
+  .stat .val{font-size:21px;font-weight:800}
+  /* 지니 게이지 */
+  .gauge{display:flex;align-items:center;gap:12px;background:#f5f9ff;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-top:12px}
+  .gauge .big{font-size:28px;font-weight:800;color:var(--primary-d);min-width:70px;text-align:center}
+  .gauge .bar{flex:1}
+  .gauge .track{height:14px;background:#e2eaf4;border-radius:99px;overflow:hidden;position:relative}
+  .gauge .track i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s}
+  .gauge .glab{font-size:12.5px;font-weight:800;margin-top:4px}
+  /* 분위 슬라이더 */
+  .qrow{display:flex;align-items:center;gap:9px;margin:8px 0}
+  .qrow .ic{width:60px;font-size:12.5px;font-weight:800;color:var(--primary-d)}
+  .qrow input[type=range]{flex:1;height:24px;accent-color:var(--primary)}
+  .qrow .pc{width:46px;text-align:right;font-weight:800;font-size:14px}
+  .warnbadge{display:none;background:#fdece7;border:1px solid #f2c3b2;color:#a5401f;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-top:10px}
+  .warnbadge.on{display:block}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;color:var(--primary-d)}
+  .presets button:active{transform:scale(.96)}
+  .shapetag{display:inline-block;border-radius:8px;padding:3px 10px;font-size:13px;font-weight:800;margin-left:6px}
+  .shapetag.dia{background:#e3f4f0;color:#1c7a6c}
+  .shapetag.pyr{background:#fbeae2;color:#b4511f}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--accent);color:#4a3208}
+  .btn.ghost{background:#e9eff6;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .subcard{background:#f7faff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-top:14px}
+  /* 정책 슬라이더 */
+  .polrow{margin:10px 0}
+  .polrow label{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;margin-bottom:2px}
+  .polrow input[type=range]{width:100%;height:24px;accent-color:var(--high)}
+  /* 사다리 + 이동 막대 */
+  .ladderwrap{display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-top:10px}
+  .ladderwrap .lad{flex:0 0 150px;max-width:170px}
+  .ladderwrap .movebox{flex:1 1 220px;min-width:200px}
+  .mv{margin:7px 0}
+  .mv .top{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:3px}
+  .mv .track{height:16px;background:#e2eaf4;border-radius:8px;overflow:hidden}
+  .mv .track i{display:block;height:100%;width:0;transition:width .5s}
+  /* 미션 */
+  .progress{height:8px;background:#e9eff6;border-radius:99px;overflow:hidden;margin:10px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0;transition:.3s}
+  .mission-scenario{background:#f2f8ff;border:1px solid #cfe1f6;border-radius:12px;padding:15px;font-size:15px;
+    animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .mission-scenario .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left;transition:.12s}
+  .opts button:hover{border-color:var(--primary)}
+  .opts button.sel{border-color:var(--primary);background:#e6effb;color:var(--primary-d)}
+  .opts button.best{border-color:var(--ok);background:#e3f4f0;color:#12805a}
+  .opts button.bad{border-color:var(--warn);background:#fdece7;color:#a5401f}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e3f4f0;color:#12805a}
+  .feedback.mid{background:#fbf3e0;color:#8a6a1a}
+  .feedback.no{background:#fdece7;color:#a5401f}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#e9eff6;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);background:#eef4fb;border-radius:8px;padding:9px 11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅱ 사회정의와 불평등 · 사회 불평등의 양상과 계층 이동</div>
+    <h1>📊 사회 불평등·계층이동 탐구 시뮬레이터</h1>
+    <p>우리는 정말 같은 출발선에 서 있을까? 소득 사다리의 칸을 직접 옮겨 보면, 왜 누군가는 위로 오르기가 이토록 힘든지 눈에 들어온다. 소득 몫을 손수 나눠 <b>로렌츠 곡선·지니계수·계층 구조</b>를 관찰하고, 교육·조세·복지 정책으로 <b>계층 이동</b>이 어떻게 달라지는지 직접 확인해 보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="explore">2. 탐구</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>사회 불평등의 여러 양상</h2>
+      <p class="lead">불평등은 소득만이 아니다. 여러 자원과 기회가 <b>불균등하게</b> 나뉘며 서로 얽혀 대물림된다.</p>
+      <div class="grid2">
+        <div class="concept"><h3>💰 소득·자산 불평등</h3>버는 돈(소득)과 쌓인 재산(자산)의 격차. 자산 불평등이 소득보다 <b>더 크고</b> 대물림되기 쉽다.</div>
+        <div class="concept"><h3>🎓 교육 불평등</h3>사교육·정보·문화 자본의 격차. 교육은 <b>계층 이동의 사다리</b>이자, 반대로 <b>불평등을 대물림</b>하는 통로가 되기도 한다.</div>
+        <div class="concept"><h3>🏙️ 공간 불평등</h3>지역·주거 환경의 격차(수도권/지방, 도심/외곽). 주거·인프라·일자리 접근성이 계층과 얽힌다.</div>
+        <div class="concept"><h3>😔 상대적 박탈감</h3>남과 비교해 자신이 부족하다고 느끼는 감정. 절대적으로 못 살지 않아도 <b>격차가 크면</b> 커지고 사회 갈등의 씨앗이 된다.</div>
+      </div>
+
+      <h3>불평등을 재는 두 지표</h3>
+      <table class="cmp">
+        <tr><th>지표</th><th>범위</th><th>뜻</th><th>불평등이 심하면</th></tr>
+        <tr><td class="a"><span class="chip" style="background:var(--primary)"></span>지니계수</td><td>0 ~ 1</td><td>0=완전 평등, 1=완전 불평등</td><td><b>1에 가까워짐</b></td></tr>
+        <tr><td class="a"><span class="chip" style="background:var(--accent)"></span>5분위 배율</td><td>1배 ~</td><td>상위 20% 소득 ÷ 하위 20% 소득</td><td><b>배율이 커짐</b></td></tr>
+      </table>
+      <div class="note">📐 <b>로렌츠 곡선</b>: 인구를 소득 낮은 순으로 줄 세워 <b>누적 인구</b>(가로)와 <b>누적 소득</b>(세로)을 그린 곡선. 대각선(완전 평등선)에서 <b>많이 처질수록</b> 불평등하며, 그 사이 넓이가 클수록 지니계수가 크다.</div>
+
+      <h3>계층 구조와 계층 이동</h3>
+      <div class="grid2">
+        <div class="concept"><h3>🔺 피라미드형 vs 🔷 다이아몬드형</h3>하층이 두터우면 <b>피라미드형</b>(불안정), 중층(중산층)이 두터우면 <b>다이아몬드형</b>(안정). 두터운 중산층은 사회 통합의 바탕이다.</div>
+        <div class="concept"><h3>🪜 세대 간·세대 내 이동</h3><b>세대 간 이동</b>: 부모와 자녀의 계층이 달라짐. <b>세대 내 이동</b>: 한 사람 생애에서 계층이 바뀜. 이동이 활발하면 <b>열린 사회</b>다.</div>
+      </div>
+      <div style="margin-top:10px">
+        <span class="pill">🐉 개천에서 용 난다 = 상향 이동</span>
+        <span class="pill">🔒 불평등의 대물림 = 이동 막힘</span>
+        <span class="pill">🪜 교육 = 이동 사다리</span>
+      </div>
+      <div class="note">⚠️ 이 교구의 수치는 <b>개념 이해용 단순 모형</b>으로, 실제 통계(가처분소득 지니·분위 배율)와 다를 수 있습니다.</div>
+      <div class="note">👩‍🏫 이렇게 쓰세요: 먼저 학생이 지니계수를 직접 읽게 하고, 이어 세 정책 슬라이더를 함께 움직이며 "무엇을 올려야 사다리가 열릴까"를 놓고 토론해 보세요.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('explore')">직접 분배를 나눠보러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 탐구 ===== -->
+  <section id="tab-explore">
+    <div class="card">
+      <h2><span class="dot"></span>① 소득 분배 → 로렌츠 곡선·지니계수·계층 구조</h2>
+      <p class="lead">인구를 5등분(각 20%)한 <b>5분위</b>. 각 분위가 가져가는 <b>소득 몫</b>을 조절하면 곡선·지표·계층 구조가 실시간으로 바뀐다.</p>
+      <div class="graphwrap"><canvas id="lorenz" width="460" height="380"></canvas></div>
+      <div class="readout">
+        <div class="stat"><div class="lab">지니계수</div><div class="val" id="rGini">–</div></div>
+        <div class="stat"><div class="lab">5분위 배율</div><div class="val" id="rRatio">–</div></div>
+        <div class="stat"><div class="lab">중산층 비율</div><div class="val" id="rMid">–</div></div>
+      </div>
+
+      <div class="gauge">
+        <div class="big" id="giniBig">0.00</div>
+        <div class="bar">
+          <div class="track"><i id="giniBar"></i></div>
+          <div class="glab" id="giniLab">지니계수 · 0=평등 … 1=불평등</div>
+        </div>
+      </div>
+
+      <h3>5분위별 소득 몫 <span class="shapetag" id="shapeTag">–</span></h3>
+      <div id="qbox"></div>
+      <div class="warnbadge" id="warnBadge"></div>
+      <div class="presets">
+        <button onclick="applyPreset('equal')">🔷 평등한 사회</button>
+        <button onclick="applyPreset('normal')">📊 보통 사회</button>
+        <button onclick="applyPreset('polar')">🔺 양극화 사회</button>
+        <button onclick="applyPreset('reset')">↺ 초기화</button>
+      </div>
+
+      <div class="graphwrap" style="max-width:420px;margin-top:6px"><canvas id="pyramid" width="420" height="230"></canvas></div>
+      <div class="note">각 슬라이더는 자동으로 <b>합 100%</b>로 환산됩니다. 상위 분위가 소득을 많이 가져갈수록 곡선이 아래로 처지고 지니계수·배율이 커지며, 계층 구조가 <b>피라미드형</b>으로 바뀝니다.</div>
+
+      <h2 style="margin-top:22px"><span class="dot"></span>② 정책 → 계층 이동 미니 시뮬</h2>
+      <p class="lead"><b>하층 가정에서 태어난 자녀</b>가 자라 어느 계층에 이를지, 세 정책을 조절해 <b>상향 이동 확률</b>을 바꿔보자.</p>
+      <div class="subcard">
+        <div class="polrow">
+          <label><span>🎓 교육 기회 (공교육·장학·격차 해소)</span><span><b id="vEdu">50</b></span></label>
+          <input type="range" id="pEdu" min="0" max="100" value="50">
+        </div>
+        <div class="polrow">
+          <label><span>⚖️ 누진세 (많이 벌수록 높은 세율)</span><span><b id="vTax">50</b></span></label>
+          <input type="range" id="pTax" min="0" max="100" value="50">
+        </div>
+        <div class="polrow">
+          <label><span>🤝 복지 (사회 안전망·재분배)</span><span><b id="vWel">50</b></span></label>
+          <input type="range" id="pWel" min="0" max="100" value="50">
+        </div>
+
+        <div class="ladderwrap">
+          <div class="lad"><canvas id="ladder" width="150" height="210"></canvas></div>
+          <div class="movebox">
+            <div style="font-size:13px;font-weight:800;color:var(--sub);margin-bottom:2px">🪜 하층 자녀의 도착 계층 (세대 간 이동)</div>
+            <div class="mv"><div class="top"><span style="color:var(--high)">🔼 상층 (개천의 용)</span><span id="vHigh">–</span></div><div class="track"><i id="barHigh" style="background:var(--high)"></i></div></div>
+            <div class="mv"><div class="top"><span style="color:var(--mid)">➡️ 중층 (중산층 진입)</span><span id="vMidm">–</span></div><div class="track"><i id="barMid" style="background:var(--mid)"></i></div></div>
+            <div class="mv"><div class="top"><span style="color:var(--low)">🔽 하층 유지 (대물림)</span><span id="vLow">–</span></div><div class="track"><i id="barLow" style="background:var(--low)"></i></div></div>
+          </div>
+        </div>
+        <div class="gauge" style="margin-top:12px">
+          <div class="big" id="mobBig">0%</div>
+          <div class="bar">
+            <div class="track"><i id="mobBar" style="background:linear-gradient(90deg,var(--high),var(--mid))"></i></div>
+            <div class="glab" id="mobLab">상향 이동 확률 · 형평 지표</div>
+          </div>
+        </div>
+      </div>
+      <div class="presets">
+        <button onclick="applyPolicy(20,15,20)">🔒 닫힌 사회</button>
+        <button onclick="applyPolicy(85,70,80)">🪜 열린 사회</button>
+        <button onclick="applyPolicy(50,50,50)">↺ 중간</button>
+      </div>
+      <div class="note">교육 기회는 이동에 가장 큰 힘이 됩니다. 이동이 활발하면 <b>불평등의 대물림</b>이 줄고 사회가 <b>열린 구조</b>가 됩니다. (교육용 단순 가중 모형)</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">불평등 탐구 미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission">
+    <div class="card">
+      <h2><span class="dot"></span>불평등·계층이동 탐구 미션 (6)</h2>
+      <p class="lead">개념을 근거로 최선을 골라보자. (선택마다 0~2점)</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn ghost hide" id="mPrev" onclick="prevMission()">← 이전</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result">
+    <div class="card">
+      <h2><span class="dot"></span>불평등·계층이동 탐구 리포트</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1040"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('explore')">탐구 다시</button>
+      </div>
+      <div class="note" style="text-align:center">📱 저장이 안 되면 <a href="#" onclick="openPNG();return false;" style="color:var(--primary-d);font-weight:800">여기(새 탭)</a>를 눌러 이미지를 길게 눌러 저장하세요.</div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅱ 사회정의와 불평등 · 사회 불평등의 양상과 계층 이동 · 단일 HTML 웹교구 · 오프라인 동작<br>
+    수치는 개념 이해용 단순 모형이며 실제 통계와 다를 수 있습니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+
+/* ============ 5분위 소득 분배 상태 ============ */
+const QLAB = ['1분위\n(하위20%)','2분위','3분위','4분위','5분위\n(상위20%)'];
+const QCOLOR = ['#cfe2f7','#8fbdec','#4f97e0','#2872c6','#12508f'];
+const PRESETS = {
+  equal:  [11,15,19,24,31],
+  normal: [7,12,17,23,41],
+  polar:  [3,7,12,23,55]
+};
+let quint = PRESETS.normal.slice();
+
+/* ============ 지표 계산 ============ */
+function shares(){
+  const sum = quint.reduce((a,b)=>a+b,0)||1;
+  return quint.map(v=>v/sum*100);   // 정규화된 % (합 100)
+}
+function lorenzPts(sh){
+  // 누적 인구(0,.2,..,1) 대 누적 소득(0..1)
+  const pts=[{x:0,y:0}]; let cum=0;
+  for(let i=0;i<5;i++){ cum+=sh[i]/100; pts.push({x:(i+1)/5, y:cum}); }
+  return pts;
+}
+function giniOf(pts){
+  // 1 - Σ (x_i - x_{i-1})(y_i + y_{i-1})
+  let s=0;
+  for(let i=1;i<pts.length;i++){ s += (pts[i].x-pts[i-1].x)*(pts[i].y+pts[i-1].y); }
+  return Math.max(0, Math.min(1, 1-s));
+}
+function ratioOf(sh){ return sh[4]/(sh[0]||0.001); }
+// 각 20% 분위를 상대소득(평균=1)으로 계층 분류 → 하/중/상 인구비율
+function classStruct(sh){
+  let low=0, mid=0, high=0;
+  for(let i=0;i<5;i++){
+    const r = sh[i]/20;                 // 분위 상대 1인당 소득 (평균 1)
+    if(r<0.5) low+=20; else if(r<1.5) mid+=20; else high+=20;
+  }
+  return {low, mid, high, shape: mid>=50?'diamond':'pyramid'};
+}
+function exploreMetrics(){
+  const sh=shares(), pts=lorenzPts(sh);
+  const gini=giniOf(pts), ratio=ratioOf(sh), cs=classStruct(sh);
+  return {sh, pts, gini, ratio, cs};
+}
+
+/* ============ 캔버스 유틸 ============ */
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+/* 로렌츠 곡선 (임의 ctx, 박스 B) */
+function plotLorenz(ctx, pts, B, o){
+  o=o||{}; const reveal=o.reveal==null?1:o.reveal; const fs=o.fs||12;
+  const X=t=>B.x+t*B.w, Y=t=>B.y+B.h-t*B.h;
+  // 격자
+  ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1;
+  for(let g=0;g<=5;g++){ const x=X(g/5); ctx.beginPath();ctx.moveTo(x,B.y);ctx.lineTo(x,B.y+B.h);ctx.stroke();
+    const y=Y(g/5); ctx.beginPath();ctx.moveTo(B.x,y);ctx.lineTo(B.x+B.w,y);ctx.stroke(); }
+  // 축
+  ctx.strokeStyle='#c9d4df'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(B.x,B.y); ctx.lineTo(B.x,B.y+B.h); ctx.lineTo(B.x+B.w,B.y+B.h); ctx.stroke();
+  // 완전 평등선(대각선)
+  ctx.strokeStyle='#9fb2c6'; ctx.setLineDash([5,4]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(1),Y(1)); ctx.stroke(); ctx.setLineDash([]);
+  // 불평등 면적(대각선과 곡선 사이) 음영 — reveal 반영
+  const n=Math.max(1, Math.round((pts.length-1)*reveal));
+  ctx.beginPath(); ctx.moveTo(X(0),Y(0));
+  for(let i=1;i<=n;i++) ctx.lineTo(X(pts[i].x),Y(pts[i].y));
+  for(let i=n;i>=0;i--) ctx.lineTo(X(pts[i].x),Y(pts[i].x)); // 대각선 되돌아오기
+  ctx.closePath(); ctx.fillStyle='rgba(242,160,61,.18)'; ctx.fill();
+  // 로렌츠 곡선
+  ctx.beginPath(); ctx.moveTo(X(0),Y(0));
+  for(let i=1;i<=n;i++) ctx.lineTo(X(pts[i].x),Y(pts[i].y));
+  ctx.strokeStyle='#1f6fd6'; ctx.lineWidth=o.compact?2.4:3.4; ctx.lineJoin='round'; ctx.stroke();
+  // 점
+  for(let i=1;i<=n;i++){ ctx.fillStyle='#12508f'; ctx.beginPath(); ctx.arc(X(pts[i].x),Y(pts[i].y),o.compact?2.6:3.6,0,7); ctx.fill(); }
+  // 라벨
+  if(!o.compact){
+    ctx.fillStyle='#5b6b7c'; ctx.font=fs+'px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('누적 인구 →', B.x+B.w/2, B.y+B.h+6);
+    ctx.save(); ctx.translate(B.x-30, B.y+B.h/2); ctx.rotate(-Math.PI/2);
+    ctx.textBaseline='bottom'; ctx.fillText('누적 소득 →',0,0); ctx.restore();
+    ctx.fillStyle='#9fb2c6'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.font='italic '+fs+'px sans-serif';
+  }
+}
+function drawLorenz(pts, reveal){
+  const cv=el('lorenz'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  plotLorenz(ctx, pts, {x:44, y:16, w:cv._lw-44-18, h:cv._lh-16-34}, {reveal});
+}
+let lorAnim=null;
+function animateLorenz(pts){
+  if(lorAnim) clearInterval(lorAnim);
+  let r=0; lorAnim=setInterval(()=>{ r+=0.08; if(r>=1){r=1;clearInterval(lorAnim);lorAnim=null;} drawLorenz(pts,r); },26);
+}
+/* 계층 구조 (임의 ctx) — 하/중/상 인구비율에 따른 사다리꼴 3단 */
+function plotPyramid(ctx, cs, B, o){
+  o=o||{}; const fs=o.fs||12;
+  const tiers=[
+    {p:cs.high, c:'#2a9d8f', nm:'상층'},
+    {p:cs.mid,  c:'#1f6fd6', nm:'중층'},
+    {p:cs.low,  c:'#e0765a', nm:'하층'}
+  ];
+  const gap=4, bh=(B.h-gap*2)/3, cx=B.x+B.w/2;
+  const maxW=B.w;
+  tiers.forEach((t,i)=>{
+    const w=Math.max(B.w*0.14, maxW*(t.p/100));
+    const y=B.y+i*(bh+gap);
+    ctx.fillStyle=t.c;
+    ctx.beginPath();
+    ctx.moveTo(cx-w/2,y); ctx.lineTo(cx+w/2,y); ctx.lineTo(cx+w/2,y+bh); ctx.lineTo(cx-w/2,y+bh);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold '+fs+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(t.nm+' '+t.p+'%', cx, y+bh/2);
+  });
+}
+function drawPyramid(cs){
+  const cv=el('pyramid'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  ctx.fillStyle='#57697d'; ctx.font='bold 13px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(cs.shape==='diamond'?'🔷 다이아몬드형 (중산층 두터움·안정)':'🔺 피라미드형 (하층 두터움·불안정)', 10, 6);
+  plotPyramid(ctx, cs, {x:30, y:34, w:cv._lw-60, h:cv._lh-46}, {fs:13});
+}
+
+/* ============ 탐구 ① UI ============ */
+function buildQ(){
+  el('qbox').innerHTML = quint.map((v,i)=>`
+    <div class="qrow">
+      <span class="ic">${QLAB[i].replace('\\n',' ')}</span>
+      <input type="range" min="1" max="70" value="${v}" data-i="${i}" oninput="onQ(this)">
+      <span class="pc" id="pc${i}"></span>
+    </div>`).join('');
+}
+function onQ(inp){ quint[+inp.dataset.i]=+inp.value; syncExplore(false); }
+let lastExplore=null;
+function syncExplore(animated){
+  const m=exploreMetrics(); lastExplore=m;
+  m.sh.forEach((p,i)=>{ const e=el('pc'+i); if(e) e.textContent=Math.round(p)+'%'; });
+  el('rGini').textContent=m.gini.toFixed(2);
+  el('rRatio').textContent=m.ratio.toFixed(1)+'배';
+  el('rMid').textContent=m.cs.mid+'%';
+  el('giniBig').textContent=m.gini.toFixed(2);
+  el('giniBar').style.width=(m.gini*100)+'%';
+  const gc = m.gini<0.3?'#2a9d8f':m.gini<0.4?'#f2a03d':'#d9663d';
+  el('giniBar').style.background=gc;
+  const gt = m.gini<0.3?'양호 🟢':m.gini<0.4?'주의 🟡':'심각 🔴';
+  el('giniLab').textContent='지니계수 '+m.gini.toFixed(2)+' · '+gt+' (0=평등 … 1=불평등)';
+  el('giniLab').style.color=gc;
+  const st=el('shapeTag');
+  st.textContent = m.cs.shape==='diamond'?'🔷 다이아몬드형':'🔺 피라미드형';
+  st.className='shapetag '+(m.cs.shape==='diamond'?'dia':'pyr');
+  const wb=el('warnBadge');
+  if(m.ratio>=8 || m.gini>=0.45){
+    wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>심각한 양극화!</b> 5분위 배율 '+m.ratio.toFixed(1)+'배 · 지니 '+m.gini.toFixed(2)+' — 하층이 두터운 피라미드형이 되고 <b>상대적 박탈감</b>과 갈등이 커집니다.';
+  } else wb.classList.remove('on');
+  drawPyramid(m.cs);
+  if(animated) animateLorenz(m.pts); else drawLorenz(m.pts,1);
+}
+function applyPreset(kind){
+  if(kind==='reset') quint=PRESETS.normal.slice();
+  else quint=PRESETS[kind].slice();
+  quint.forEach((v,i)=>{ const inp=document.querySelector('input[data-i="'+i+'"]'); if(inp) inp.value=v; });
+  syncExplore(true);
+}
+
+/* ============ 탐구 ② 계층 이동 ============ */
+function policyVals(){ return {E:+el('pEdu').value, T:+el('pTax').value, W:+el('pWel').value}; }
+function mobility(){
+  const p=policyVals();
+  const M = 0.5*p.E + 0.3*p.W + 0.2*p.T;      // 이동성 점수 0~100 (교육 비중 최대)
+  const up = 0.15 + 0.006*M;                   // 상향 이동 확률 15%~75%
+  const top = (0.03 + 0.004*M) * (0.45 + 0.55*p.E/100); // 개천의 용(교육 주도)
+  const high = Math.min(up-0.01, top);
+  const mid  = up - high;
+  const low  = 1 - up;
+  return {M, up, high:Math.max(0,high), mid:Math.max(0,mid), low:Math.max(0,low), p};
+}
+let ladderTarget=0, ladderCur=0, ladderTimer=null;
+function drawLadder(){
+  const cv=el('ladder'), ctx=fitDPR(cv), W=cv._lw, H=cv._lh;
+  ctx.clearRect(0,0,W,H);
+  const railL=42, railR=W-42, top=20, bot=H-20, rungs=5, step=(bot-top)/rungs;
+  // 레일
+  ctx.strokeStyle='#9fb2c6'; ctx.lineWidth=4; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(railL,top); ctx.lineTo(railL,bot); ctx.moveTo(railR,top); ctx.lineTo(railR,bot); ctx.stroke();
+  // 가로대
+  ctx.lineWidth=3;
+  for(let i=0;i<=rungs;i++){ const y=bot-i*step; ctx.strokeStyle=i<=Math.round(ladderCur*rungs)?'#1f6fd6':'#d4dee9';
+    ctx.beginPath(); ctx.moveTo(railL,y); ctx.lineTo(railR,y); ctx.stroke(); }
+  // 라벨
+  ctx.fillStyle='#57697d'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('상층',W/2,top-8); ctx.fillText('하층 출발',W/2,bot+13);
+  // 오르는 사람
+  const y=bot-ladderCur*(bot-top)-8;
+  ctx.font='22px serif'; ctx.textBaseline='middle';
+  ctx.fillText('🧗', W/2, y);
+}
+function animateLadder(){
+  if(ladderTimer) clearInterval(ladderTimer);
+  ladderTimer=setInterval(()=>{
+    ladderCur += (ladderTarget-ladderCur)*0.18;
+    if(Math.abs(ladderTarget-ladderCur)<0.005){ ladderCur=ladderTarget; clearInterval(ladderTimer); ladderTimer=null; }
+    drawLadder();
+  },30);
+}
+let lastMob=null;
+function syncMobility(animate){
+  const m=mobility(); lastMob=m;
+  el('vEdu').textContent=m.p.E; el('vTax').textContent=m.p.T; el('vWel').textContent=m.p.W;
+  el('barHigh').style.width=(m.high*100)+'%'; el('vHigh').textContent=Math.round(m.high*100)+'%';
+  el('barMid').style.width=(m.mid*100)+'%';  el('vMidm').textContent=Math.round(m.mid*100)+'%';
+  el('barLow').style.width=(m.low*100)+'%';   el('vLow').textContent=Math.round(m.low*100)+'%';
+  el('mobBig').textContent=Math.round(m.up*100)+'%';
+  el('mobBar').style.width=(m.up*100)+'%';
+  const gr = m.up>=0.6?'열린 사회 🟢':m.up>=0.4?'보통 🟡':'닫힌 사회 🔴';
+  el('mobLab').textContent='상향 이동 확률 '+Math.round(m.up*100)+'% · '+gr+' (형평 지표)';
+  ladderTarget=m.up;
+  if(animate!==false) animateLadder(); else { ladderCur=m.up; drawLadder(); }
+}
+function applyPolicy(e,t,w){ el('pEdu').value=e; el('pTax').value=t; el('pWel').value=w; syncMobility(true); }
+['pEdu','pTax','pWel'].forEach(id=>{ const e=el(id); if(e) e.addEventListener('input',()=>syncMobility(false)); });
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {emoji:'📉', title:'지니계수 읽기', desc:'A국 지니계수 0.28, B국 0.47. 어느 쪽이 더 불평등할까?',
+   opts:[{t:'B국 — 지니계수가 1에 가까울수록 불평등',pts:2},
+         {t:'A국 — 숫자가 작을수록 불평등',pts:0},
+         {t:'지니계수만으론 알 수 없다',pts:1}],
+   why:'✅ 정답은 <b>B국</b>. 지니계수는 <b>0(완전 평등)~1(완전 불평등)</b>이라 값이 클수록 불평등하다. 0.47 &gt; 0.28.'},
+  {emoji:'📐', title:'로렌츠 곡선', desc:'로렌츠 곡선이 대각선(완전 평등선)에서 <b>많이 처질수록</b> 무엇을 뜻할까?',
+   opts:[{t:'불평등이 심하다 (지니계수가 크다)',pts:2},
+         {t:'평등하다 (지니계수가 작다)',pts:0},
+         {t:'인구가 늘었다',pts:0}],
+   why:'✅ 정답은 <b>불평등이 심하다</b>. 곡선이 대각선에서 멀어질수록 그 사이 면적이 커지고, 이는 <b>지니계수 증가</b>를 뜻한다.'},
+  {emoji:'🏗️', title:'계층 구조', desc:'중산층이 두텁고 하층이 얇은 <b>다이아몬드형</b> 사회의 특징으로 옳은 것은?',
+   opts:[{t:'사회가 상대적으로 안정되고 통합에 유리',pts:2},
+         {t:'하층이 가장 두터워 불안정',pts:0},
+         {t:'계층 이동이 아예 불가능',pts:0}],
+   why:'✅ 정답은 <b>안정·통합에 유리</b>. 두터운 중산층은 완충 역할을 해 사회가 안정된다. 하층이 두터운 <b>피라미드형</b>이 불안정하다.'},
+  {emoji:'🐉', title:'세대 간 이동', desc:'가난한 집 자녀가 노력과 교육으로 전문직에 올랐다. 이는 무엇의 사례일까?',
+   opts:[{t:'세대 간 상향 이동 (개천에서 용)',pts:2},
+         {t:'세대 내 하향 이동',pts:0},
+         {t:'수평 이동(계층 그대로)',pts:0}],
+   why:'✅ 정답은 <b>세대 간 상향 이동</b>. 부모(하층)와 자녀(상층)의 계층이 달라졌고 위로 올라갔다. 이동이 활발할수록 <b>열린 사회</b>다.'},
+  {emoji:'😔', title:'상대적 박탈감', desc:'예전보다 형편이 나아졌는데도 SNS 속 부유한 삶과 비교하며 불행을 느낀다. 이 감정은?',
+   opts:[{t:'상대적 박탈감 — 남과의 비교에서 오는 결핍감',pts:2},
+         {t:'절대적 빈곤 — 최소 생계도 어려움',pts:0},
+         {t:'계층 이동 — 지위가 바뀜',pts:0}],
+   why:'✅ 정답은 <b>상대적 박탈감</b>. 절대적으로 못 살지 않아도 <b>격차·비교</b>에서 오는 결핍감이며, 불평등이 클수록 커져 갈등의 씨앗이 된다.'},
+  {emoji:'🪜', title:'대물림 끊기', desc:'불평등의 대물림을 줄이고 계층 이동을 <b>가장 근본적으로</b> 넓히는 정책은?',
+   opts:[{t:'교육 기회 균등(공교육·장학) 확대',pts:2},
+         {t:'모든 복지를 없애 각자도생',pts:0},
+         {t:'상속 재산을 무제한 보장',pts:0}],
+   why:'✅ 정답은 <b>교육 기회 균등</b>. 교육은 <b>계층 이동의 사다리</b>다. 기회를 넓히면 출발선 격차가 줄어 대물림이 약해진다. (누진세·복지도 함께 작동)'}
+];
+let mIdx=0; const mResult=new Array(MISSIONS.length).fill(null);
+function renderMission(){
+  const m=MISSIONS[mIdx];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+'/'+MISSIONS.length+' · '+m.title+'</b><br>'+m.desc;
+  el('mScenario').style.animation='none'; void el('mScenario').offsetWidth; el('mScenario').style.animation='';
+  const chosen=mResult[mIdx];
+  el('mOpts').innerHTML=m.opts.map((o,i)=>{
+    let cls='';
+    if(chosen){ if(o.pts===2) cls='best'; else if(o.pts===0) cls='bad'; if(chosen.pick===i) cls=(cls+' sel').trim(); }
+    return '<button class="'+cls+'" onclick="pickOpt('+i+')">'+o.t+(chosen?' <b style="float:right">+'+o.pts+'</b>':'')+'</button>';
+  }).join('');
+  el('mFeedback').innerHTML = chosen ? feedbackHTML(m, chosen.pts) : '';
+  el('mPrev').classList.toggle('hide', mIdx===0);
+  el('mNext').classList.toggle('hide', !chosen);
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function feedbackHTML(m, pts){
+  const cls = pts===2?'ok' : pts===1?'mid':'no';
+  const head = pts===2?'✅ 최선의 선택! (+2)' : pts===1?'🟡 나쁘진 않지만 더 정확한 답이 있어. (+1)':'❌ 다시 생각해보자. (+0)';
+  return '<div class="feedback '+cls+'">'+head+'<br>'+m.why+'</div>';
+}
+function pickOpt(i){
+  const m=MISSIONS[mIdx];
+  mResult[mIdx]={pick:i, pts:m.opts[i].pts, emoji:m.emoji};
+  renderMission();
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+}
+function prevMission(){ if(mIdx>0){ mIdx--; renderMission(); } }
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mResult.reduce((s,r)=>s+(r?r.pts:0),0); }
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function overallGrade(){
+  const ex=lastExplore||exploreMetrics(), mob=lastMob||mobility(), mt=missionTotal();
+  // 종합 점수: 미션(12) + 낮은지니 보너스 + 이동성 보너스
+  const eqScore = (1-ex.gini)*20;          // 0~20 (평등할수록↑)
+  const mobScore = mob.up*18;              // 0~18
+  const total = Math.round(mt/12*62 + eqScore + mobScore); // 최대 100 근처
+  let grade,gicon;
+  if(total>=88){grade='정의로운 사회 설계자'; gicon='🏆';}
+  else if(total>=70){grade='불평등 분석가'; gicon='📊';}
+  else if(total>=50){grade='성장하는 탐구자'; gicon='🌱';}
+  else {grade='다시 도전'; gicon='💪';}
+  return {ex, mob, mt, total:Math.min(100,total), grade, gicon};
+}
+function drawResult(){
+  const R=overallGrade(), ex=R.ex, mob=R.mob;
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#1f6fd6'); g.addColorStop(1,'#12508f');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W-68,H-68,26); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#12508f'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('📊 불평등·계층이동 탐구 리포트', W/2, 100);
+  ctx.fillStyle='#57697d'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅱ · 사회정의와 불평등', W/2, 136);
+  ctx.strokeStyle='#f2a03d'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-120,158); ctx.lineTo(W/2+120,158); ctx.stroke();
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#152233'; ctx.font='bold 27px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+' 님의 탐구 결과', W/2, 198);
+  // 로렌츠 곡선 미니
+  ctx.fillStyle='#12508f'; ctx.font='bold 17px "Malgun Gothic",sans-serif'; ctx.textAlign='left';
+  ctx.fillText('로렌츠 곡선 (누적 인구 대 누적 소득)', 70, 244);
+  plotLorenz(ctx, ex.pts, {x:96, y:262, w:W-96-70, h:150}, {compact:true, reveal:1, fs:12});
+  // 지표 4행
+  const rows=[
+    ['지니계수', ex.gini.toFixed(2)+(ex.gini<0.3?' (양호)':ex.gini<0.4?' (주의)':' (심각)')],
+    ['5분위 배율', ex.ratio.toFixed(1)+'배'],
+    ['계층 구조', ex.cs.shape==='diamond'?'🔷 다이아몬드형':'🔺 피라미드형'],
+    ['상향 이동 확률', Math.round(mob.up*100)+'% · 개천의 용 '+Math.round(mob.high*100)+'%']
+  ];
+  ctx.font='19px "Malgun Gothic",sans-serif';
+  let y=452;
+  rows.forEach(rw=>{
+    ctx.textAlign='left'; ctx.fillStyle='#57697d'; ctx.fillText(rw[0], 80, y);
+    ctx.textAlign='right'; ctx.fillStyle='#152233'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[1], W-80, y);
+    ctx.font='19px "Malgun Gothic",sans-serif'; y+=34;
+  });
+  // 점수 게이지
+  const pct=R.total/100, cx=W/2, cy=y+118, r=86;
+  ctx.lineWidth=20; ctx.strokeStyle='#e9eff6'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.88?'#2a9d8f' : pct>=0.7?'#1f6fd6' : pct>=0.5?'#f2a03d':'#d9663d';
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke(); ctx.lineCap='butt';
+  ctx.fillStyle='#152233'; ctx.textAlign='center'; ctx.font='bold 48px "Malgun Gothic",sans-serif';
+  ctx.fillText(R.total+'', cx, cy+4);
+  ctx.fillStyle='#57697d'; ctx.font='17px "Malgun Gothic",sans-serif'; ctx.fillText('/ 100점', cx, cy+30);
+  ctx.fillStyle='#12508f'; ctx.font='bold 25px "Malgun Gothic",sans-serif';
+  ctx.fillText(R.gicon+' '+R.grade, cx, cy+r+48);
+  // 미션 점수표
+  let my=cy+r+92; ctx.textAlign='left'; ctx.fillStyle='#12508f'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  ctx.fillText('탐구 미션  ('+R.mt+'/12)', 80, my); my+=30;
+  const colW=(W-160)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3), x=80+col*colW, yy=my+row*34, rr=mResult[i];
+    ctx.textAlign='left'; ctx.fillStyle='#152233'; ctx.font='18px "Malgun Gothic",sans-serif';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.fillStyle= rr? (rr.pts===2?'#2a9d8f':rr.pts===1?'#c77c17':'#d9663d') : '#a9b4c0';
+    ctx.font='bold 18px "Malgun Gothic",sans-serif';
+    ctx.fillText(rr? (rr.pts+'/2') : '–', x+32, yy);
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#a9b4c0'; ctx.font='14px "Malgun Gothic",sans-serif';
+  ctx.fillText('수치는 개념 이해용 단순 모형 · 실제 통계와 다를 수 있음', W/2, H-70);
+  ctx.fillStyle='#8896a6'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 사회 불평등·계층이동 탐구 시뮬레이터', W/2, H-46);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='불평등계층이동리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let exploreInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','explore','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='explore'){
+    if(!exploreInit){ buildQ(); exploreInit=true; }
+    syncExplore(true); syncMobility(true);
+  }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+['explore','mission','result'].forEach(t=>el('tab-'+t).classList.add('hide'));
+buildQ(); exploreInit=true; syncExplore(false); syncMobility(false);
+</script>
+</body>
+</html>

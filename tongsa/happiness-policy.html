@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>행복의 조건·삶의 질 정책 시뮬레이터 · 통합사회1 Ⅱ 인간·사회·환경과 행복</title>
+<style>
+  :root{
+    --bg:#eef6f8; --surface:#ffffff; --ink:#17323a; --sub:#5a6f77;
+    --primary:#17a2b8; --primary-d:#0e7a8c; --accent:#ff7a59; --accent-d:#d85a3a; --gold:#e8a53c;
+    --jeong:#2f9e7e; --econ:#e0973c; --econ-d:#b57a26; --dem:#4f7bc7; --moral:#b5619e;
+    --line:#dbe8ec; --ok:#2f9e7e; --warn:#c0562f;
+    --shadow:0 6px 20px rgba(20,60,70,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:940px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;bottom:-40px;width:170px;height:170px;
+    background:radial-gradient(circle,rgba(255,122,89,.30),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.9;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.93}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:80px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#e2f2f5;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .concept{background:#eef7f4;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .condbox{border-radius:12px;padding:13px;font-size:13.5px;border:1px solid var(--line)}
+  .condbox.jeong{background:#eaf7f2;border-color:#c6e8db}
+  .condbox.econ{background:#fbf3e3;border-color:#efdcb4}
+  .condbox.dem{background:#eef2fa;border-color:#cdd9ef}
+  .condbox.moral{background:#f7eef4;border-color:#e7cadd}
+  .condbox h3{margin:0 0 4px}
+  canvas{max-width:100%;height:auto;display:block}
+  #easterlin{width:100%;max-width:420px;margin:8px auto 0;background:#fff;border-radius:12px}
+  /* 설계 화면 */
+  .designgrid{display:grid;grid-template-columns:1.05fr 1fr;gap:16px}
+  @media(max-width:720px){.designgrid{grid-template-columns:1fr}}
+  #radar{width:100%;max-width:330px;margin:0 auto;background:#fff}
+  .weights{background:#eef7f4;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .weights .wtitle{font-size:13.5px;font-weight:800;color:var(--primary-d);margin-bottom:6px}
+  .wrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+  .wrow .wnm{font-size:13px;font-weight:800;min-width:96px}
+  .wrow input[type=range]{flex:1;height:26px}
+  .wrow .wval{font-size:12.5px;font-weight:800;min-width:38px;text-align:right;color:var(--sub)}
+  input[type=range].rj{accent-color:var(--jeong)} input[type=range].re{accent-color:var(--econ)}
+  input[type=range].rd{accent-color:var(--dem)} input[type=range].rm{accent-color:var(--moral)}
+  .gauges{margin-top:8px}
+  .gauge{margin:8px 0}
+  .gauge .glab{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:3px}
+  .gauge .track{height:15px;background:#e6eff0;border-radius:99px;overflow:hidden}
+  .gauge .track i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.4,1.3,.5,1)}
+  .gauge.happy .track i{background:linear-gradient(90deg,#5fc9b0,var(--jeong))}
+  .gauge.equity .track i{background:linear-gradient(90deg,#82a5df,var(--dem))}
+  .gauge.sustain .track i{background:linear-gradient(90deg,#e6c07f,var(--gold))}
+  .gauge.happy .glab .v{color:var(--jeong)} .gauge.equity .glab .v{color:var(--dem)} .gauge.sustain .glab .v{color:var(--econ-d)}
+  .gauge .glab .rt{display:flex;align-items:baseline;gap:6px}
+  .dv{font-size:11.5px;font-weight:800;min-width:30px;text-align:right;opacity:0;transition:opacity .2s}
+  .dv.show{opacity:1}
+  .dv.up{color:var(--ok)} .dv.down{color:var(--warn)}
+  .balancebox .big.bump{animation:bump .4s ease}
+  @keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.13)}100%{transform:scale(1)}}
+  .budgetbar{display:flex;align-items:center;gap:10px;background:#eef7f4;border:1px solid var(--line);
+    border-radius:12px;padding:10px 13px;margin-bottom:10px;font-size:13.5px;font-weight:700}
+  .budgetbar .track{flex:1;height:12px;background:#dceae5;border-radius:99px;overflow:hidden}
+  .budgetbar .track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--accent));transition:.3s}
+  .budgetbar.over .track i{background:var(--warn)}
+  .balancebox{display:flex;align-items:center;gap:12px;background:#eef7f4;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-top:10px}
+  .balancebox .big{font-size:30px;font-weight:800;color:var(--primary-d);min-width:56px;text-align:center;line-height:1.05}
+  .balancebox .big small{display:block;font-size:11px;color:var(--sub);font-weight:700}
+  .balancebar{flex:1}
+  .balancebar .track{height:12px;background:#dceae5;border-radius:99px;overflow:hidden}
+  .balancebar .track i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--dem),var(--jeong),var(--gold));transition:.4s}
+  .balancebar .glab{font-size:13.5px;font-weight:800;margin-top:4px;color:var(--primary-d)}
+  .warnbadge{display:none;background:#fbeee6;border:1px solid #edc7ad;color:#9c4a1f;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-top:10px}
+  .warnbadge.on{display:block;animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(216,90,58,.28)}50%{box-shadow:0 0 0 6px rgba(216,90,58,0)}}
+  .cardlist{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  @media(max-width:560px){.cardlist{grid-template-columns:1fr}}
+  .fcard{border:1.5px solid var(--line);border-radius:12px;padding:10px 11px;background:#fff;transition:.15s}
+  .fcard.placed{border-color:var(--primary);background:#eef7f7}
+  .fcard.pop{animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
+  .fcard .top{display:flex;align-items:center;gap:7px}
+  .fcard .emo{font-size:22px}
+  .fcard .nm{font-weight:800;font-size:13.5px;line-height:1.2}
+  .fcard .cost{margin-left:auto;font-size:12px;font-weight:800;color:var(--econ-d)}
+  .fcard .eff{display:flex;gap:4px;margin:7px 0 6px;flex-wrap:wrap}
+  .fcard .ef{font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px}
+  .ef.jeong{background:#e0f2ea;color:var(--jeong)} .ef.econ{background:#faeecf;color:var(--econ-d)}
+  .ef.dem{background:#e3eafa;color:var(--dem)} .ef.moral{background:#f5e4ef;color:var(--moral)}
+  .fcard .ctr{display:flex;align-items:center;gap:8px}
+  .fcard .ctr button{width:30px;height:30px;border:none;border-radius:8px;background:#e6eff0;color:var(--primary-d);
+    font-size:18px;font-weight:800;cursor:pointer;line-height:1}
+  .fcard .ctr button:disabled{opacity:.35;cursor:default}
+  .fcard .ctr .qty{font-weight:800;min-width:20px;text-align:center;font-size:15px}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.accent{background:var(--accent);color:#3a1a10}
+  .btn.ghost{background:#e6eff0;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;color:var(--primary-d)}
+  .presets button:active{transform:scale(.96)}
+  /* 미션 */
+  .mission-scenario{background:#eef7f4;border:1px solid #c6e8db;border-radius:12px;padding:15px;font-size:15px;animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .mission-scenario .emoji{font-size:28px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left;transition:.12s}
+  .opts button:hover{border-color:var(--primary)}
+  .opts button.sel{border-color:var(--primary);background:#eef7f7;color:var(--primary-d)}
+  .opts button.best{border-color:var(--ok);background:#e6f5ee;color:#1a7a58}
+  .opts button.bad{border-color:var(--warn);background:#fbeee6;color:#9c4a1f}
+  .opts button:disabled{cursor:default}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e6f5ee;color:#1a7a58}
+  .feedback.mid{background:#fbf3e0;color:#8a6a1a}
+  .feedback.no{background:#fbeee6;color:#9c4a1f}
+  .progress{height:8px;background:#e6eff0;border-radius:99px;overflow:hidden;margin:10px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--dem),var(--primary),var(--accent));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:56%;max-width:220px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#e6eff0;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);background:#eef7f4;border-radius:8px;padding:9px 11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회1 · Ⅱ 인간·사회·환경과 행복 · 2-2 행복한 삶을 실현하는 조건</div>
+    <h1>🌈 행복의 조건·삶의 질 정책 시뮬레이터</h1>
+    <p>돈이 많으면 더 행복할까? 어느 선을 넘으면 <b>통장이 불어도 행복은 제자리</b>다(이스털린 역설). 무엇이 진짜 행복을 만드는지, 네가 <b>정책으로 직접 실험</b>해 보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="design">2. 정책 설계</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>진정한 행복의 조건이란?</h2>
+      <p class="lead">행복은 개인의 노력만으로 완성되지 않는다. 사회는 구성원이 행복할 수 있는 <b>조건</b>을 갖추어야 한다. 통합사회에서는 진정한 행복의 조건으로 다음 <b>네 가지</b>를 든다.</p>
+      <div class="grid4">
+        <div class="condbox jeong"><h3 style="color:var(--jeong)">🏡 질 높은 정주 환경</h3>깨끗하고 안전한 주거·자연환경, 편리한 생활 기반시설. 사람이 <b>살아가는 터전</b>의 질.</div>
+        <div class="condbox econ"><h3 style="color:var(--econ-d)">💰 경제적 안정</h3>일자리·소득·복지로 <b>기본 생활</b>이 보장되는 상태. 단, 소득이 곧 행복은 아니다.</div>
+        <div class="condbox dem"><h3 style="color:var(--dem)">🗳️ 민주주의의 발전</h3>자유·인권이 보장되고 <b>시민이 정치에 참여</b>해 자기 삶을 스스로 결정하는 사회.</div>
+        <div class="condbox moral"><h3 style="color:var(--moral)">🤝 도덕적 실천·성찰</h3>나눔·배려·봉사로 <b>더불어 사는</b> 공동체. 성찰하는 삶에서 행복이 깊어진다.</div>
+      </div>
+
+      <h3>소득과 행복 — 이스털린 역설</h3>
+      <p class="lead"><b>이스털린 역설(Easterlin paradox)</b>: 소득이 <b>기본 수준</b>을 넘어서면, 소득이 더 늘어도 행복은 그만큼 늘지 않는다. 즉 <b>경제적 안정은 필요조건이지만 충분조건이 아니다.</b></p>
+      <canvas id="easterlin" width="420" height="200"></canvas>
+      <div class="grid2" style="margin-top:10px">
+        <div class="concept">📊 <b>OECD 더 나은 삶의 지수(Better Life Index)</b>는 소득뿐 아니라 주거·건강·환경·교육·공동체·삶의 만족 등 <b>여러 영역</b>으로 삶의 질을 측정한다.</div>
+        <div class="concept">🎯 <b>행복지수·삶의 질</b>이 높은 사회는 소득만 높은 사회가 아니라 <b>네 조건이 고르게</b> 충족된 사회다. 한쪽으로 치우치면 격차와 불만이 커진다.</div>
+      </div>
+      <div class="note">※ 이 교구의 예산·점수·효과 값은 이해를 돕기 위한 <b>교육용 단순 가정값</b>이며, 실제 통계 수치가 아닙니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('design')">우리 사회 정책을 설계하러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 정책 설계 ===== -->
+  <section id="tab-design" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>정책 설계 · 가치 우선순위 + 예산 배분</h2>
+      <p class="lead">너는 이제 이 도시의 정책설계관이다. 먼저 우리 시민이 <b>무엇을 더 중시하는지</b> 가중치로 정하고, 예산 <b>100</b>을 정책에 나눠 배치하자. 손댈 때마다 조건 레이더와 지표가 <b>실시간으로 요동</b>친다.</p>
+
+      <div class="weights">
+        <div class="wtitle">① 시민이 중시하는 행복의 조건 (가중치 1~5)</div>
+        <div class="wrow"><span class="wnm" style="color:var(--jeong)">🏡 정주 환경</span><input type="range" class="rj" id="w-jeong" min="1" max="5" value="3"><span class="wval" id="wv-jeong">3</span></div>
+        <div class="wrow"><span class="wnm" style="color:var(--econ-d)">💰 경제 안정</span><input type="range" class="re" id="w-econ" min="1" max="5" value="3"><span class="wval" id="wv-econ">3</span></div>
+        <div class="wrow"><span class="wnm" style="color:var(--dem)">🗳️ 민주주의</span><input type="range" class="rd" id="w-dem" min="1" max="5" value="3"><span class="wval" id="wv-dem">3</span></div>
+        <div class="wrow"><span class="wnm" style="color:var(--moral)">🤝 도덕 실천</span><input type="range" class="rm" id="w-moral" min="1" max="5" value="3"><span class="wval" id="wv-moral">3</span></div>
+      </div>
+
+      <div class="budgetbar" id="budgetBar">
+        <span>💵 예산</span>
+        <div class="track"><i id="budgetFill"></i></div>
+        <span id="budgetTxt">0 / 100</span>
+      </div>
+
+      <div class="designgrid">
+        <div>
+          <canvas id="radar" width="330" height="300"></canvas>
+          <div class="gauges">
+            <div class="gauge happy"><div class="glab"><span>😊 행복지수</span><span class="rt"><span class="dv" id="dvHappy"></span><span class="v" id="gvHappy">0</span></span></div><div class="track"><i id="gHappy"></i></div></div>
+            <div class="gauge equity"><div class="glab"><span>⚖️ 삶의 질 형평</span><span class="rt"><span class="dv" id="dvEquity"></span><span class="v" id="gvEquity">0</span></span></div><div class="track"><i id="gEquity"></i></div></div>
+            <div class="gauge sustain"><div class="glab"><span>🌱 지속가능성</span><span class="rt"><span class="dv" id="dvSustain"></span><span class="v" id="gvSustain">0</span></span></div><div class="track"><i id="gSustain"></i></div></div>
+          </div>
+          <div class="balancebox">
+            <div class="big" id="balNum">0<small>행복점수</small></div>
+            <div class="balancebar">
+              <div class="track"><i id="balBar"></i></div>
+              <div class="glab" id="balGrade">정책을 배치해 보자</div>
+            </div>
+          </div>
+          <div class="warnbadge" id="warnBadge"></div>
+        </div>
+        <div>
+          <div class="presets">
+            <button onclick="applyPreset('growth')">💰 성장 올인</button>
+            <button onclick="applyPreset('welfare')">🤝 복지국가</button>
+            <button onclick="applyPreset('balance')">⚖️ 균형</button>
+            <button onclick="applyPreset('reset')">↺ 초기화</button>
+          </div>
+          <div class="cardlist" id="cardList"></div>
+        </div>
+      </div>
+
+      <div class="note">➕/➖로 정책 수를 조절합니다. <b>성장 올인</b>으로 소득만 올려 보면, 경제지수는 높아져도 행복지수가 잘 안 오르는 <b>이스털린 역설</b>을 볼 수 있어요.</div>
+      <div class="note">👩‍🏫 이렇게 쓰세요: 같은 예산으로 <b>가중치만 바꿔</b> 두세 번 설계해 결과를 비교하고, "왜 소득을 올려도 행복점수가 안 오를까?"를 놓고 모둠 토론으로 이어 보세요.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">정책 딜레마 미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>행복 정책 딜레마 (6)</h2>
+      <p class="lead">우리 사회를 흔드는 6가지 딜레마가 책상 위에 놓였다. 정답이 뻔해 보여도 함정이 숨어 있다 — 진정한 <b>행복의 조건</b>을 근거로 최선의 정책을 골라보자. (선택마다 0~2점)</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn ghost hide" id="mPrev" onclick="prevMission()">← 이전</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>행복 정책 리포트</h2>
+      <p class="lead">네가 설계한 사회의 성적표가 나왔다. 이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="1060"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn accent" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('design')">설계 다시</button>
+      </div>
+      <div class="note" style="text-align:center"><a href="#" onclick="openPNG(event)" style="color:var(--primary-d);font-weight:800;text-decoration:underline">📱 저장이 안 되면 여기(새 탭)</a> — 새 탭에서 이미지를 꾹 눌러 저장하세요.</div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회1 Ⅱ 인간·사회·환경과 행복 · 행복의 조건(질 높은 정주 환경·경제적 안정·민주주의·도덕적 실천)·삶의 질 [10통사1-04] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    예산·점수는 교육용 가정값입니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+
+/* ============ 데이터 ============ */
+const BUDGET = 100;
+const BASE = {jeong:35, econ:35, dem:35, moral:35};
+const AX = ['jeong','econ','dem','moral'];
+const AXINFO = {
+  jeong:{nm:'정주환경', emoji:'🏡', color:'#2f9e7e'},
+  econ:{nm:'경제안정', emoji:'💰', color:'#d8973c'},
+  dem:{nm:'민주주의', emoji:'🗳️', color:'#4f7bc7'},
+  moral:{nm:'도덕실천', emoji:'🤝', color:'#b5619e'}
+};
+// 정책 카드: cost=예산, j/e/d/m=네 조건 효과(단위당), redis=격차 완화(+가 형평↑), pollute=지속가능성 저해(+가 나쁨)
+const CARDS = [
+  {k:'house',  emo:'🏡', nm:'공공주택·주거복지',     cost:12, j:12, e:0,  d:0,  m:1,  redis:8,  pollute:0},
+  {k:'soc',    emo:'🌳', nm:'생활SOC·공원·안전',     cost:10, j:11, e:0,  d:1,  m:3,  redis:3,  pollute:-3},
+  {k:'job',    emo:'💼', nm:'일자리·고용 지원',       cost:13, j:1,  e:13, d:0,  m:1,  redis:4,  pollute:1},
+  {k:'income', emo:'💵', nm:'기본소득·현금 지원',     cost:14, j:0,  e:15, d:0,  m:0,  redis:9,  pollute:1},
+  {k:'health', emo:'🏥', nm:'의료·보건 접근성',       cost:12, j:6,  e:2,  d:0,  m:3,  redis:7,  pollute:0},
+  {k:'demo',   emo:'🗳️', nm:'주민참여·숙의 민주주의', cost:9,  j:0,  e:0,  d:13, m:3,  redis:3,  pollute:0},
+  {k:'right',  emo:'⚖️', nm:'인권·차별금지·법치',     cost:10, j:0,  e:0,  d:12, m:2,  redis:6,  pollute:0},
+  {k:'edu',    emo:'📚', nm:'시민교육·평생학습',       cost:10, j:1,  e:1,  d:6,  m:7,  redis:3,  pollute:0},
+  {k:'comm',   emo:'🤝', nm:'자원봉사·공동체·나눔',   cost:8,  j:1,  e:0,  d:2,  m:13, redis:4,  pollute:0},
+  {k:'growth', emo:'🏭', nm:'성장 우선·규제 완화',     cost:15, j:-4, e:18, d:-2, m:-3, redis:-6, pollute:8}
+];
+const CARDMAP = {}; CARDS.forEach(c=>CARDMAP[c.k]=c);
+let state = {}; CARDS.forEach(c=>state[c.k]=0);
+let W = {jeong:3, econ:3, dem:3, moral:3};
+
+/* ============ 계산 ============ */
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function metrics(){
+  let c={jeong:BASE.jeong, econ:BASE.econ, dem:BASE.dem, moral:BASE.moral};
+  let used=0, redis=0, pollute=0;
+  CARDS.forEach(card=>{
+    const n=state[card.k];
+    c.jeong+=card.j*n; c.econ+=card.e*n; c.dem+=card.d*n; c.moral+=card.m*n;
+    used+=card.cost*n; redis+=card.redis*n; pollute+=card.pollute*n;
+  });
+  AX.forEach(k=>c[k]=clamp(c[k],0,100));
+  // 이스털린 역설(강화): 경제 50 초과분은 행복에 22%만 기여 — 소득만 올리면 행복이 정체
+  const econHappy = c.econ<=50 ? c.econ : 50 + (c.econ-50)*0.22;
+  const cv={jeong:c.jeong, econ:econHappy, dem:c.dem, moral:c.moral};
+  // 가중치를 '강한 레버'로: 중시하는 조건일수록(제곱) 그 조건의 충족도가 행복지수를 크게 좌우
+  const wsum=W.jeong+W.econ+W.dem+W.moral;
+  const ew={jeong:W.jeong*W.jeong, econ:W.econ*W.econ, dem:W.dem*W.dem, moral:W.moral*W.moral};
+  const ewsum=ew.jeong+ew.econ+ew.dem+ew.moral;
+  const happy = clamp((ew.jeong*cv.jeong + ew.econ*cv.econ + ew.dem*cv.dem + ew.moral*cv.moral)/ewsum, 0,100);
+  const vals=[c.jeong,c.econ,c.dem,c.moral];
+  const spread=Math.max(...vals)-Math.min(...vals);
+  // 가치 편향(정규화, 균형이면 0): 경제 몰빵 가치는 형평·지속가능성을 낮추고 사회적 가치는 높인다
+  const nEcon=W.econ/wsum;
+  const eqBias = (W.dem+W.moral)/wsum - nEcon - 0.25;
+  const suBias = (W.jeong+W.moral)/wsum - nEcon - 0.25;
+  const gap = clamp(46 - redis + spread*0.14 - eqBias*34, 6, 94);   // 낮을수록 좋음
+  const equity = 100-gap;
+  const sustain = clamp(0.32*c.jeong + 0.30*c.moral + 0.22*c.dem + 0.16*Math.min(c.econ,60) - pollute + suBias*30, 0,100);
+  const overall = clamp(0.50*happy + 0.28*equity + 0.22*sustain, 0,100);
+  // 등급
+  let grade,gicon;
+  if(overall>=85){grade='행복국가 설계자'; gicon='🏆';}
+  else if(overall>=70){grade='살기 좋은 사회'; gicon='🌈';}
+  else if(overall>=55){grade='성장하는 공동체'; gicon='🌱';}
+  else {grade='불균형 사회'; gicon='⚠️';}
+  // 이스털린 경고: 경제만 높고 다른 조건이 낮을 때
+  const easterlin = (c.econ>=60 && Math.min(c.jeong,c.dem,c.moral)<=48) || (nEcon>=0.42 && c.econ>=54 && happy<58);
+  // 뱃지
+  let badge;
+  if(spread<=14 && Math.min(...vals)>=60) badge='⚖️ 균형 잡힌 행복사회';
+  else if(easterlin) badge='💰 소득 편중·이스털린 위험';
+  else if(equity<=45) badge='😟 격차 심한 사회';
+  else {
+    const hi=AX[vals.indexOf(Math.max(...vals))];
+    badge=AXINFO[hi].emoji+' '+AXINFO[hi].nm+' 특화 사회';
+  }
+  const over = used>BUDGET;
+  return {jeong:c.jeong, econ:c.econ, dem:c.dem, moral:c.moral, econHappy,
+    happy:Math.round(happy), equity:Math.round(equity), sustain:Math.round(sustain),
+    overall:Math.round(overall), grade, gicon, badge, easterlin, spread, used, over};
+}
+
+/* ============ 레이더 (N축 일반) ============ */
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+function angOf(k){ const n=AX.length; return -Math.PI/2 + AX.indexOf(k)*2*Math.PI/n; }
+function drawRadarOn(ctx, cx, cy, R, v, o){
+  o=o||{};
+  // 격자(동심 다각형)
+  ctx.strokeStyle=o.grid||'#dbe8ec'; ctx.lineWidth=1;
+  for(let g=1; g<=4; g++){
+    const rr=R*g/4;
+    ctx.beginPath();
+    AX.forEach((k,i)=>{ const x=cx+rr*Math.cos(angOf(k)), y=cy+rr*Math.sin(angOf(k)); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.closePath(); ctx.stroke();
+  }
+  // 축선
+  AX.forEach(k=>{ ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(angOf(k)), cy+R*Math.sin(angOf(k))); ctx.stroke(); });
+  // 데이터 폴리곤
+  ctx.beginPath();
+  AX.forEach((k,i)=>{ const rr=R*clamp(v[k],0,100)/100; const x=cx+rr*Math.cos(angOf(k)), y=cy+rr*Math.sin(angOf(k)); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+  ctx.closePath();
+  ctx.fillStyle=o.fill||'rgba(23,162,184,.20)'; ctx.fill();
+  ctx.strokeStyle=o.stroke||'#0e7a8c'; ctx.lineWidth=o.lw||2.4; ctx.lineJoin='round'; ctx.stroke();
+  // 꼭짓점
+  AX.forEach(k=>{ const rr=R*clamp(v[k],0,100)/100; const x=cx+rr*Math.cos(angOf(k)), y=cy+rr*Math.sin(angOf(k));
+    ctx.fillStyle=AXINFO[k].color; ctx.beginPath(); ctx.arc(x,y,o.dot||4,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); });
+  // 라벨
+  ctx.font='bold '+(o.fs||12.5)+'px "Malgun Gothic",sans-serif'; ctx.textBaseline='middle';
+  AX.forEach(k=>{
+    const a=angOf(k);
+    const lx=cx+(R+(o.lo||22))*Math.cos(a), ly=cy+(R+(o.lo||16))*Math.sin(a);
+    ctx.fillStyle=AXINFO[k].color;
+    ctx.textAlign = Math.abs(Math.cos(a))<0.3 ? 'center' : (Math.cos(a)>0?'left':'right');
+    ctx.fillText(AXINFO[k].emoji+AXINFO[k].nm, lx, ly);
+  });
+}
+let radarDisp={jeong:BASE.jeong,econ:BASE.econ,dem:BASE.dem,moral:BASE.moral}, radarTimer=null;
+function drawRadar(){
+  const cv=el('radar'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  drawRadarOn(ctx, cv._lw/2, cv._lh/2+4, 92, radarDisp, {});
+}
+function animateRadar(target){
+  if(radarTimer) clearInterval(radarTimer);
+  radarTimer=setInterval(()=>{
+    let done=true;
+    AX.forEach(k=>{ const d=target[k]-radarDisp[k];
+      if(Math.abs(d)>0.6){ radarDisp[k]+=d*0.28; done=false; } else radarDisp[k]=target[k]; });
+    drawRadar();
+    if(done){ clearInterval(radarTimer); radarTimer=null; }
+  },20);
+}
+
+/* ============ 이스털린 곡선(개념) ============ */
+function drawEasterlin(){
+  const cv=el('easterlin'), ctx=fitDPR(cv), W2=cv._lw, H=cv._lh;
+  ctx.clearRect(0,0,W2,H);
+  const padL=44, padR=14, padT=16, padB=32;
+  const x0=padL, x1=W2-padR, y0=H-padB, y1=padT;
+  // 축
+  ctx.strokeStyle='#c7d8dc'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke();
+  // 점선: 소득=행복 (비례 가정)
+  ctx.strokeStyle='#e0973c'; ctx.setLineDash([5,4]); ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+  ctx.setLineDash([]);
+  // 실제 행복 곡선(체감): sqrt 형태
+  ctx.strokeStyle='#17a2b8'; ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let i=0;i<=60;i++){
+    const t=i/60; const x=x0+(x1-x0)*t;
+    const y=y0-(y0-y1)*Math.pow(t,0.42);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.stroke();
+  // 라벨
+  ctx.fillStyle='#5a6f77'; ctx.font='11px "Malgun Gothic",sans-serif';
+  ctx.textAlign='center'; ctx.fillText('소득 →', (x0+x1)/2, H-8);
+  ctx.save(); ctx.translate(13,(y0+y1)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('행복 →', 0, 0); ctx.restore();
+  ctx.fillStyle='#0e7a8c'; ctx.font='bold 11.5px "Malgun Gothic",sans-serif';
+  ctx.textAlign='left'; ctx.fillText('실제 행복(체감)', x0+8, y1+14);
+  ctx.fillStyle='#b57a26'; ctx.textAlign='right'; ctx.fillText('소득=행복 가정', x1-4, y1+40);
+}
+
+/* ============ 설계 UI ============ */
+function buildCards(){
+  el('cardList').innerHTML = CARDS.map(c=>{
+    const chips = [['jeong',c.j],['econ',c.e],['dem',c.d],['moral',c.m]].filter(x=>x[1]!==0).map(x=>{
+      const sign=x[1]>0?'+':''; return '<span class="ef '+x[0]+'">'+AXINFO[x[0]].emoji+sign+x[1]+'</span>';
+    }).join('');
+    return '<div class="fcard" id="fc-'+c.k+'">'+
+      '<div class="top"><span class="emo">'+c.emo+'</span><span class="nm">'+c.nm+'</span><span class="cost">💵'+c.cost+'</span></div>'+
+      '<div class="eff">'+chips+'</div>'+
+      '<div class="ctr">'+
+        '<button onclick="dec(\''+c.k+'\')" aria-label="빼기">−</button>'+
+        '<span class="qty" id="q-'+c.k+'">0</span>'+
+        '<button id="add-'+c.k+'" onclick="inc(\''+c.k+'\')" aria-label="더하기">＋</button>'+
+      '</div></div>';
+  }).join('');
+}
+function inc(k){
+  const m=metrics();
+  if(m.used + CARDMAP[k].cost > BUDGET) return;
+  state[k]++; popCard(k); sync();
+}
+function dec(k){ if(state[k]>0){ state[k]--; popCard(k); sync(); } }
+function popCard(k){ const fc=el('fc-'+k); if(!fc) return; fc.classList.remove('pop'); void fc.offsetWidth; fc.classList.add('pop'); }
+function setWeights(w){
+  Object.assign(W, w);
+  AX.forEach(k=>{ el('w-'+k).value=W[k]; el('wv-'+k).textContent=W[k]; });
+}
+function applyPreset(kind){
+  CARDS.forEach(c=>state[c.k]=0);
+  if(kind==='growth'){  Object.assign(state,{growth:4,job:2,income:1}); setWeights({jeong:2,econ:5,dem:2,moral:1}); }
+  if(kind==='welfare'){ Object.assign(state,{house:2,health:2,comm:2,income:1}); setWeights({jeong:4,econ:2,dem:3,moral:4}); }
+  if(kind==='balance'){ Object.assign(state,{house:1,job:1,health:1,demo:1,right:1,comm:2,soc:1,edu:1}); setWeights({jeong:3,econ:3,dem:3,moral:3}); }
+  if(kind==='reset'){   setWeights({jeong:3,econ:3,dem:3,moral:3}); }
+  sync(true);
+}
+function syncWeights(){
+  AX.forEach(k=>{ W[k]=+el('w-'+k).value; el('wv-'+k).textContent=W[k]; });
+  sync(true);
+}
+let lastMetrics=null;
+let prevShown={happy:0,equity:0,sustain:0,overall:0}, firstSync=true;
+const dvTimers={};
+function showDelta(id, d){
+  const e=el(id); if(!e) return;
+  if(firstSync || d===0){ e.textContent=''; e.className='dv'; return; }
+  e.textContent=(d>0?'▲':'▼')+Math.abs(d);
+  e.className='dv show '+(d>0?'up':'down');
+  clearTimeout(dvTimers[id]);
+  dvTimers[id]=setTimeout(()=>{ e.className='dv'; }, 1600);
+}
+function sync(animated){
+  const m=metrics(); lastMetrics=m;
+  CARDS.forEach(c=>{
+    el('q-'+c.k).textContent=state[c.k];
+    el('fc-'+c.k).classList.toggle('placed', state[c.k]>0);
+    el('add-'+c.k).disabled = (m.used + c.cost > BUDGET);
+  });
+  el('budgetTxt').textContent=m.used+' / '+BUDGET;
+  el('budgetFill').style.width=Math.min(100,m.used/BUDGET*100)+'%';
+  el('budgetBar').classList.toggle('over', m.over);
+  el('gHappy').style.width=m.happy+'%'; el('gvHappy').textContent=m.happy;
+  el('gEquity').style.width=m.equity+'%'; el('gvEquity').textContent=m.equity;
+  el('gSustain').style.width=m.sustain+'%'; el('gvSustain').textContent=m.sustain;
+  showDelta('dvHappy', m.happy-prevShown.happy);
+  showDelta('dvEquity', m.equity-prevShown.equity);
+  showDelta('dvSustain', m.sustain-prevShown.sustain);
+  const balNumEl=el('balNum');
+  balNumEl.innerHTML=m.overall+'<small>행복점수</small>';
+  if(!firstSync && m.overall!==prevShown.overall){ balNumEl.classList.remove('bump'); void balNumEl.offsetWidth; balNumEl.classList.add('bump'); }
+  prevShown={happy:m.happy, equity:m.equity, sustain:m.sustain, overall:m.overall};
+  firstSync=false;
+  el('balBar').style.width=m.overall+'%';
+  el('balGrade').textContent=m.gicon+' '+m.grade+' · '+m.badge;
+  const wb=el('warnBadge');
+  if(m.easterlin){ wb.classList.add('on');
+    wb.innerHTML='💰 <b>이스털린 역설!</b> 소득(경제)은 높지만 정주환경·민주주의·도덕 실천이 낮아 <b>행복이 더 오르지 않아요.</b> 다른 조건도 함께 채워야 합니다.';
+  } else if(m.over){ wb.classList.add('on'); wb.innerHTML='⚠️ 예산을 초과했습니다.'; }
+  else if(m.equity<=42){ wb.classList.add('on'); wb.innerHTML='😟 <b>격차 경고!</b> 삶의 질 격차가 큽니다. 주거·의료·재분배 정책으로 형평을 높여 보세요.'; }
+  else wb.classList.remove('on');
+  const target={jeong:m.jeong,econ:m.econ,dem:m.dem,moral:m.moral};
+  if(animated) animateRadar(target);
+  else { radarDisp=target; drawRadar(); }
+}
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {emoji:'💸', title:'소득은 최고, 행복은 바닥', desc:'우리 도시는 1인당 소득이 전국 1위지만, 시민 행복도 조사는 최하위다. 무엇을 해야 할까?',
+   opts:[
+     {t:'주거·환경·관계 등 소득 밖의 행복 조건을 함께 채운다', pts:2},
+     {t:'소득이 곧 행복이니 성장·감세로 소득을 더 올린다', pts:0},
+     {t:'행복 조사 자체가 잘못됐다며 무시한다', pts:0}],
+   why:'✅ 정답은 <b>소득 밖 조건 채우기</b>. 소득이 기본 수준을 넘으면 행복이 잘 안 오른다는 것이 <b>이스털린 역설</b>이다. 진정한 행복은 정주 환경·민주주의·도덕적 실천이 함께 충족될 때 온다.'},
+  {emoji:'🏘️', title:'주거 불안·정주 환경', desc:'집값이 치솟고 낡은 동네에 안전·녹지가 부족해 삶의 터전이 불안하다.',
+   opts:[
+     {t:'공공주택과 생활SOC·공원으로 정주 환경의 질을 높인다', pts:2},
+     {t:'민간 개발업체에 맡겨 고급 아파트만 최대한 짓는다', pts:1},
+     {t:'주거는 개인 문제이니 사회가 개입하지 않는다', pts:0}],
+   why:'✅ 정답은 <b>공공주택 + 생활SOC</b>. <b>질 높은 정주 환경</b>은 행복의 핵심 조건이다. 안전하고 쾌적한 삶의 터전은 소득만으로 대체되지 않는다.'},
+  {emoji:'🗳️', title:'시민 목소리가 사라진 도시', desc:'정책이 시민 참여 없이 위에서 결정되고, 표현·집회의 자유도 위축되고 있다.',
+   opts:[
+     {t:'주민참여·숙의 제도와 인권·법치를 강화한다', pts:2},
+     {t:'행정 효율을 위해 결정은 전문가·관료에게만 맡긴다', pts:1},
+     {t:'참여는 혼란만 부르니 통제를 더 강화한다', pts:0}],
+   why:'✅ 정답은 <b>참여·인권 강화</b>. <b>민주주의의 발전</b>은 행복의 조건이다. 시민이 스스로 삶을 결정하고 자유·인권이 보장될 때 삶의 질이 올라간다.'},
+  {emoji:'🫂', title:'외롭고 각자도생하는 사회', desc:'1인 가구 고립, 공동체 해체, 서로를 돌보지 않는 분위기가 퍼지고 있다.',
+   opts:[
+     {t:'자원봉사·나눔·시민교육으로 공동체와 성찰을 북돋운다', pts:2},
+     {t:'현금을 나눠주면 알아서 행복해질 것이라 본다', pts:1},
+     {t:'인간관계는 사적 영역이라며 그대로 둔다', pts:0}],
+   why:'✅ 정답은 <b>공동체·나눔·성찰</b>. <b>도덕적 실천과 성찰</b>은 더불어 사는 행복의 조건이다. 배려·연대·봉사가 있는 공동체에서 행복이 깊어진다.'},
+  {emoji:'📉', title:'성장 성과가 일부에만', desc:'경제는 성장했지만 그 과실이 소수에게 쏠려 격차와 상대적 박탈감이 커졌다.',
+   opts:[
+     {t:'복지·의료·재분배로 삶의 질 격차를 줄인다', pts:2},
+     {t:'성장하면 언젠가 밑으로 흘러내린다며 기다린다', pts:1},
+     {t:'격차는 능력의 결과이니 그대로 둔다', pts:0}],
+   why:'✅ 정답은 <b>재분배로 격차 완화</b>. 사회 전체 소득이 늘어도 <b>불평등이 크면</b> 상대적 박탈감으로 행복이 낮아진다. 삶의 질의 <b>형평</b>이 사회적 행복을 좌우한다.'},
+  {emoji:'🌏', title:'진정한 행복의 조건', desc:'우리 사회의 행복을 높이는 가장 성숙한 관점은 무엇일까?',
+   opts:[
+     {t:'정주환경·경제·민주주의·도덕을 균형 있게, 미래세대까지 고려한다', pts:2},
+     {t:'경제 성장만 확실히 하면 나머지는 따라온다', pts:1},
+     {t:'한 가지 조건만 완벽하면 다른 건 희생돼도 된다', pts:0}],
+   why:'✅ 정답은 <b>네 조건의 균형 + 지속가능성</b>. 진정한 행복은 어느 한 조건만으로 완성되지 않는다. 질 높은 정주 환경·경제적 안정·민주주의·도덕적 실천이 <b>고르게</b> 충족되고, 미래 세대의 행복까지 고려할 때 지속가능한 행복사회가 된다.'}
+];
+let mIdx=0; const mResult=new Array(MISSIONS.length).fill(null);
+function renderMission(){
+  const m=MISSIONS[mIdx];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<span class="emoji">'+m.emoji+'</span> <b>딜레마 '+(mIdx+1)+'/'+MISSIONS.length+' · '+m.title+'</b><br>'+m.desc;
+  el('mScenario').style.animation='none'; void el('mScenario').offsetWidth; el('mScenario').style.animation='';
+  const chosen=mResult[mIdx];
+  el('mOpts').innerHTML=m.opts.map((o,i)=>{
+    let cls='';
+    if(chosen){ if(o.pts===2) cls=' best'; else if(o.pts===0) cls=' bad'; if(chosen.pick===i) cls+=' sel'; }
+    return '<button class="'+cls.trim()+'" '+(chosen?'disabled':'')+' onclick="pickOpt('+i+')">'+o.t+' <b style="float:right">'+(chosen?('+'+o.pts):'')+'</b></button>';
+  }).join('');
+  el('mFeedback').innerHTML = chosen ? feedbackHTML(m, chosen.pts) : '';
+  el('mPrev').classList.toggle('hide', mIdx===0);
+  el('mNext').classList.toggle('hide', !chosen);
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function feedbackHTML(m, pts){
+  const cls = pts===2?'ok' : pts===1?'mid':'no';
+  const head = pts===2?'✅ 최선의 선택! (+2)' : pts===1?'🟡 나쁘진 않지만 더 나은 선택이 있어. (+1)':'❌ 행복의 조건을 놓친 선택! (+0)';
+  return '<div class="feedback '+cls+'">'+head+'<br>'+m.why+'</div>';
+}
+function pickOpt(i){
+  if(mResult[mIdx]) return;
+  const m=MISSIONS[mIdx];
+  mResult[mIdx]={pick:i, pts:m.opts[i].pts, emoji:m.emoji};
+  renderMission();
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+}
+function prevMission(){ if(mIdx>0){ mIdx--; renderMission(); } }
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mResult.reduce((s,r)=>s+(r?r.pts:0),0); }
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const m=lastMetrics||metrics();
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W2=cv.width, H=cv.height;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#17a2b8'); g.addColorStop(1,'#0e7a8c');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W2,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W2-68,H-68,26); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#0e7a8c'; ctx.font='bold 36px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌈 행복 정책 리포트', W2/2, 104);
+  ctx.fillStyle='#5a6f77'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회1 Ⅱ · 행복의 조건과 삶의 질 [10통사1-04]', W2/2, 140);
+  ctx.strokeStyle='#ff7a59'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W2/2-120,162); ctx.lineTo(W2/2+120,162); ctx.stroke();
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#17323a'; ctx.font='bold 27px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+' 정책설계관의 사회', W2/2, 202);
+  // 레이더(4조건)
+  drawRadarOn(ctx, W2/2, 348, 96, {jeong:m.jeong,econ:m.econ,dem:m.dem,moral:m.moral},
+    {grid:'#dbe8ec', fill:'rgba(23,162,184,.18)', stroke:'#0e7a8c', lw:2.6, dot:5, fs:15, lo:26});
+  // 3지표 값
+  ctx.font='bold 20px "Malgun Gothic",sans-serif';
+  const rows=[['😊 행복지수', m.happy, '#2f9e7e'],['⚖️ 형평', m.equity, '#4f7bc7'],['🌱 지속가능', m.sustain, '#b57a26']];
+  let y=498; const colW=(W2-160)/3;
+  rows.forEach((rw,i)=>{
+    const x=80+i*colW+colW/2;
+    ctx.textAlign='center'; ctx.fillStyle='#5a6f77'; ctx.font='16px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[0], x, y);
+    ctx.fillStyle=rw[2]; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[1], x, y+34);
+  });
+  // 행복점수 게이지
+  const pct=m.overall/100, cx=W2/2, cy=642, r=84;
+  ctx.lineWidth=20; ctx.strokeStyle='#e6eff0'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.85?'#2f9e7e' : pct>=0.7?'#17a2b8' : pct>=0.55?'#e0973c':'#c0562f';
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#17323a'; ctx.textAlign='center'; ctx.font='bold 50px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.overall+'', cx, cy+4);
+  ctx.fillStyle='#5a6f77'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.fillText('행복점수', cx, cy+30);
+  ctx.fillStyle='#0e7a8c'; ctx.font='bold 25px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.gicon+' '+m.grade, cx, cy+r+46);
+  ctx.fillStyle='#d85a3a'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.badge, cx, cy+r+76);
+  // 미션 점수표
+  y=cy+r+116; ctx.textAlign='left'; ctx.fillStyle='#0e7a8c'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('정책 딜레마 미션  ('+missionTotal()+'/'+(MISSIONS.length*2)+')', 80, y); y+=30;
+  const mcolW=(W2-160)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3);
+    const x=80+col*mcolW, yy=y+row*34;
+    const rr=mResult[i];
+    ctx.textAlign='left'; ctx.fillStyle='#17323a'; ctx.font='19px "Malgun Gothic",sans-serif';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.fillStyle= rr? (rr.pts===2?'#2f9e7e':rr.pts===1?'#b57a26':'#c0562f') : '#a9bcc0';
+    ctx.font='bold 19px "Malgun Gothic",sans-serif';
+    ctx.fillText(rr? (rr.pts+'/2') : '–', x+34, yy);
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#a9bcc0'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('예산·점수는 교육용 가정값입니다', W2/2, H-70);
+  ctx.fillStyle='#8aa0a6'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 행복의 조건·삶의 질 정책', W2/2, H-46);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='행복정책리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(ev){
+  if(ev) ev.preventDefault();
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let conceptInit=false, designInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','design','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='concept'){ drawEasterlin(); }
+  if(tab==='design'){ if(!designInit){ buildCards(); designInit=true; } sync(true); }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ if(!lastMetrics) metrics(); drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+AX.forEach(k=>el('w-'+k).addEventListener('input', syncWeights));
+
+/* 초기화 */
+buildCards(); designInit=true; sync(false); drawEasterlin();
+</script>
+</body>
+</html>

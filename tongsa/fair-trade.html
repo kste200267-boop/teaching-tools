@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>커피 한 잔의 세계여행 · 공정무역 시뮬레이터 · 통합사회2 Ⅳ 세계화</title>
+<style>
+  :root{
+    --bg:#faf7f0; --surface:#fff; --ink:#26301f; --sub:#6b6153;
+    --primary:#2f7d4f; --primary-d:#1f5c39; --terra:#c9683d; --gold:#e0a526;
+    --line:#e8e2d5; --shadow:0 6px 20px rgba(60,50,30,.09);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--terra)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#f6f2e9;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .chain{display:flex;align-items:stretch;gap:4px;margin:14px 0;overflow-x:auto;padding-bottom:4px}
+  .chain .node{flex:1 1 0;min-width:76px;background:#f6f2e9;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid var(--line)}
+  .chain .node .emo{font-size:24px}
+  .chain .node .nm{font-size:12px;font-weight:700;margin-top:2px}
+  .chain .arrow{align-self:center;color:var(--sub);font-weight:800}
+  .hide{display:none}
+  .pill{display:inline-block;background:#e9f2ec;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+  .distrow{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .distrow .ic{font-size:20px;width:26px;text-align:center}
+  .distrow .nm{width:66px;font-size:13px;font-weight:700}
+  .distrow input[type=range]{flex:1;accent-color:var(--primary);height:24px}
+  .distrow .pc{width:44px;text-align:right;font-weight:800;font-size:14px}
+  .sumbar{font-size:13px;font-weight:700;color:var(--sub);text-align:right;margin-top:4px}
+  .life{background:#f6f2e9;border-radius:12px;padding:14px;margin-top:12px;border:1px solid var(--line)}
+  .life .status{font-size:17px;font-weight:800;margin-bottom:6px}
+  .life .icons{font-size:24px;letter-spacing:4px}
+  .life .desc{font-size:13.5px;color:var(--sub);margin-top:4px}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.terra{background:var(--terra);color:#fff}
+  .btn.ghost{background:#efeae0;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+  .presets button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer}
+  .presets button.a{border-color:#e6c3b0;color:var(--terra)}
+  .presets button.b{border-color:#bfe0cd;color:var(--primary-d)}
+  .mission-scenario{background:#f0f6f2;border:1px solid #cfe6d8;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+  .opts button.sel{border-color:var(--primary);background:#eaf3ec}
+  .opts button:disabled{opacity:.85;cursor:default}
+  .opts button.picked-good{border-color:var(--primary);background:#e7f4ec}
+  .opts button.picked-mid{border-color:var(--gold);background:#fbf3df}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#f6f2e9;color:var(--ink)}
+  .progress{height:8px;background:#efeae0;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#efeae0;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅳ 세계화와 평화 · 4-1 세계화의 양상과 문제</div>
+    <h1>☕ 커피 한 잔의 세계여행 — 공정무역 시뮬레이터</h1>
+    <p>오늘 아침 네가 마신 커피 한 잔 5,000원. 그중 지구 반대편 농부의 몫은 얼마였을까? 500원? 200원? 직접 나눠 보면 생각이 달라진다.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="chain">2. 가치사슬</button>
+    <button data-tab="mission">3. 선택</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- 1. 개념 -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>세계화, 커피 한 잔에 담기다</h2>
+      <p class="lead">네 손안의 커피 한 잔은 사실 지구를 한 바퀴 돌아왔다. 씨앗이 심긴 농장부터 카페 진열대까지, 상품은 <b>국제 분업</b>을 거쳐 국경을 넘는다. 그 여정을 따라가 보자.</p>
+      <div class="chain">
+        <div class="node"><div class="emo">🌱</div><div class="nm">농부<br>(생산국)</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="emo">🚢</div><div class="nm">수출<br>업자</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="emo">🏭</div><div class="nm">가공<br>로스팅</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="emo">🚚</div><div class="nm">유통<br>업체</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="emo">🏪</div><div class="nm">카페<br>(소비국)</div></div>
+      </div>
+      <div class="grid2">
+        <div class="concept">
+          <h3 style="color:var(--terra)">⚠️ 일반 무역의 그늘</h3>
+          커피 값의 상당 부분은 가공·유통·판매 단계(주로 <b>선진국</b>)가 가져가고,
+          정작 <b>생산국 농부</b>의 몫은 매우 작을 때가 많다. → <b>세계 불평등</b> 심화.
+        </div>
+        <div class="concept">
+          <h3 style="color:var(--primary-d)">🤝 공정무역이란</h3>
+          생산자에게 <b>최저가격 보장·공정무역 프리미엄·직거래</b>로 정당한 몫을 돌려주려는 운동.
+          아동노동 금지, 환경·지역사회 재투자를 조건으로 한다.
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <span class="pill" style="background:#f6e6dd;color:var(--terra)">세계화 = 상호의존 ↑</span>
+        <span class="pill" style="background:#f6e6dd;color:var(--terra)">빛: 다양한 상품·효율</span>
+        <span class="pill">그늘: 불평등·노동 문제</span>
+        <span class="pill">대안: 윤리적 소비·공정무역</span>
+      </div>
+      <p class="note">※ 아래 분배 비율은 이해를 돕기 위한 <b>예시값</b>이며 품목·시기에 따라 다릅니다.</p>
+      <div class="concept" style="background:#fbf3df;border-color:var(--gold);margin-top:12px"><b>👩‍🏫 이렇게 쓰세요:</b> 도입 3분 — "5,000원 중 농부 몫 맞혀 보기"로 호기심을 연 뒤, 모둠별로 [가치사슬] 탭에서 분배를 직접 조절하게 하고, [선택] 탭 결과 카드를 캡처해 과제로 제출받으세요.</div>
+      <div class="rowbtns"><button class="btn primary" onclick="go('chain')">직접 몫을 나눠보기 →</button></div>
+    </div>
+  </section>
+
+  <!-- 2. 가치사슬 -->
+  <section id="tab-chain">
+    <div class="card">
+      <h2><span class="dot"></span>커피 한 잔(5,000원)을 나눠보자</h2>
+      <p class="lead">이제 네가 심판이다. 슬라이더를 밀어 각 주체의 몫을 직접 정해 보자. <b>농부에게 돌아가는 몫</b>이 커질수록 저 아래 농부 가정의 삶이 어떻게 달라지는지 눈으로 확인하자.</p>
+      <canvas id="bar" width="560" height="120"></canvas>
+      <div class="presets">
+        <span style="align-self:center;font-weight:700;font-size:13px;color:var(--sub)">프리셋:</span>
+        <button class="a" onclick="preset('normal')">일반 무역</button>
+        <button class="b" onclick="preset('fair')">공정 무역</button>
+      </div>
+      <div id="dist"></div>
+      <div class="sumbar" id="sumbar"></div>
+      <div class="life" id="life"></div>
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="preset('normal')">초기화</button>
+        <button class="btn primary" onclick="go('mission')">소비 선택하기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 선택(미션) -->
+  <section id="tab-mission">
+    <div class="card">
+      <h2><span class="dot"></span>세계시민의 선택</h2>
+      <p class="lead">지갑을 열 때마다 우리는 한 표를 던진다. 정답이 하나뿐인 문제는 없다. 가격·품질·지구촌 영향을 <b>함께</b> 저울질하며, 네가 어떤 세계시민인지 골라 보자.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 결과 -->
+  <section id="tab-result">
+    <div class="card">
+      <h2><span class="dot"></span>나의 세계시민 리포트</h2>
+      <p class="lead">오늘 너의 선택이 한 장에 담겼다. 이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1000"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn terra" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">선택 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="#" onclick="openPNG();return false;" style="color:var(--terra);font-weight:700">📱 저장이 안 되면 여기(새 탭)</a></p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅳ 세계화와 평화 · 국제분업·세계 불평등·윤리적 소비 [10통사2-04] · 단일 HTML · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const TOTAL=5000;
+const ACTORS=[
+  {key:'farmer',ic:'🌱',nm:'농부'},
+  {key:'exporter',ic:'🚢',nm:'수출업자'},
+  {key:'processor',ic:'🏭',nm:'가공·로스팅'},
+  {key:'distributor',ic:'🚚',nm:'유통'},
+  {key:'cafe',ic:'🏪',nm:'카페'}
+];
+const PRESETS={
+  normal:{farmer:8,exporter:12,processor:25,distributor:25,cafe:30},
+  fair:{farmer:26,exporter:12,processor:22,distributor:20,cafe:20}
+};
+const COLORS={farmer:'#2f7d4f',exporter:'#5b9e79',processor:'#e0a526',distributor:'#c9683d',cafe:'#9c5a3c'};
+let share={...PRESETS.normal};
+
+/* 분배 슬라이더 */
+function buildDist(){
+  el('dist').innerHTML=ACTORS.map(a=>`
+    <div class="distrow">
+      <span class="ic">${a.ic}</span><span class="nm">${a.nm}</span>
+      <input type="range" min="0" max="60" value="${share[a.key]}" data-k="${a.key}" oninput="onDist(this)">
+      <span class="pc" id="pc_${a.key}"></span>
+    </div>`).join('');
+  syncDist();
+}
+function onDist(inp){ share[inp.dataset.k]=+inp.value; syncDist(); }
+function preset(name){ share={...PRESETS[name]}; ACTORS.forEach(a=>{const i=document.querySelector(`input[data-k="${a.key}"]`); if(i)i.value=share[a.key];}); syncDist(); }
+function pct(key){ const sum=ACTORS.reduce((s,a)=>s+share[a.key],0)||1; return share[key]/sum*100; }
+function syncDist(){
+  const sum=ACTORS.reduce((s,a)=>s+share[a.key],0)||1;
+  ACTORS.forEach(a=>{ const p=share[a.key]/sum*100; const e=el('pc_'+a.key); if(e) e.textContent=Math.round(p)+'%'; });
+  el('sumbar').textContent='커피 한 잔 '+TOTAL.toLocaleString()+'원 기준 · 비율은 자동 환산';
+  drawBar(); updateLife();
+}
+function drawBar(){
+  const cv=el('bar'); const dpr=window.devicePixelRatio||1;
+  if(!cv._fit){cv.width=560*dpr;cv.height=120*dpr;cv.style.aspectRatio='560/120';const c=cv.getContext('2d');c.scale(dpr,dpr);cv._fit=true;}
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,560,120);
+  const x0=10,w=540,y=30,h=44; let x=x0;
+  ACTORS.forEach(a=>{
+    const p=pct(a.key)/100, seg=w*p;
+    ctx.fillStyle=COLORS[a.key]; ctx.fillRect(x,y,seg,h);
+    if(seg>34){ ctx.fillStyle='#fff'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(a.ic, x+seg/2, y+18); ctx.fillText(Math.round(pct(a.key))+'%', x+seg/2, y+34); }
+    x+=seg;
+  });
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; x=x0;
+  ACTORS.forEach(a=>{ x+=w*pct(a.key)/100; ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+h);ctx.stroke(); });
+  ctx.fillStyle='#6b6153'; ctx.font='12px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('농부 몫 = '+Math.round(TOTAL*pct('farmer')/100).toLocaleString()+'원', x0, 96);
+}
+function farmerTier(){
+  const p=pct('farmer');
+  if(p<10) return {t:0,st:'😟 생계 위기',ic:'🥣🚱🏚️',desc:'수입이 너무 적어 식량·교육·의료가 어렵다. 아동노동으로 내몰릴 위험도 있다.'};
+  if(p<18) return {t:1,st:'😐 겨우 생계',ic:'🍚🏠',desc:'하루하루 버티지만 미래를 준비할 여유가 없다.'};
+  if(p<25) return {t:2,st:'🙂 생활 안정',ic:'🍚🏠🏫',desc:'아이를 학교에 보내고 기본 의료를 받을 수 있다.'};
+  return {t:3,st:'😄 자립·재투자',ic:'🍚🏠🏫🏥🌍',desc:'저축·영농 개선에 투자하고 지역사회에 환원할 수 있다. 공정무역이 지향하는 모습.'};
+}
+function updateLife(){
+  const f=farmerTier();
+  el('life').innerHTML=`<div class="status">농부 가정의 삶: ${f.st}</div>
+    <div class="icons">${f.ic}</div><div class="desc">${f.desc}</div>`;
+}
+
+/* 선택(미션) */
+const MISSIONS=[
+  {emoji:'☕',txt:'편의점에서 커피를 고른다. <b>A</b> 900원 더 싼 일반 커피 / <b>B</b> 공정무역 인증 커피.',
+   opts:[['A. 무조건 싼 일반 커피',0,'가격엔 유리하지만, 생산국 농부의 몫은 그대로 작다. 소비가 곧 투표임을 기억하자.'],
+         ['B. 공정무역 커피',2,'조금 비싸도 농부에게 정당한 몫이 돌아가고 아동노동을 줄인다. 세계 불평등 완화에 기여.'],
+         ['C. 성분·인증을 확인하고 예산 내에서 결정',2,'가격과 윤리를 함께 저울질하는 합리적·책임 있는 소비. 가장 현실적인 세계시민의 태도.']]},
+  {emoji:'🍫',txt:'초콜릿을 산다. <b>A</b> 초저가 브랜드(아동노동 의혹 보도) / <b>B</b> 공정무역 인증 초콜릿.',
+   opts:[['A. 초저가 브랜드',0,'저렴하지만 카카오 농장 아동노동 문제와 연결될 수 있다.'],
+         ['B. 공정무역 초콜릿',2,'노동권·아동노동 기준을 지킨 제품. 지구촌 아이들의 학습권을 지지한다.']]},
+  {emoji:'👕',txt:'옷을 산다. <b>A</b> 패스트패션 초저가 / <b>B</b> 노동권·환경 기준을 지킨 브랜드.',
+   opts:[['A. 패스트패션 초저가',0,'값은 싸지만 개도국 봉제노동자의 저임금·과로, 환경오염과 얽혀 있다.'],
+         ['B. 윤리적 브랜드',2,'가격은 높아도 노동권·지속가능성을 지지. 다만 소비 자체를 줄이는 것도 방법이다.'],
+         ['C. 꼭 필요한 만큼만 사고 오래 입기',2,'과소비를 줄이는 것이 가장 근본적인 지속가능 소비일 수 있다.']]},
+  {emoji:'🏪',txt:'네가 카페 사장이라면? <b>A</b> 원가를 낮춰 이윤 극대화 / <b>B</b> 공정무역 원두 도입.',
+   opts:[['A. 원가 절감 우선',0,'단기 이윤엔 유리하나, 브랜드 신뢰·윤리 소비 흐름을 놓칠 수 있다.'],
+         ['B. 공정무역 원두 도입 + 스토리 홍보',2,'가치소비 고객을 얻고 생산자와 상생. 지속가능한 경영 전략이 될 수 있다.']]},
+  {emoji:'🌍',txt:'공정무역에 대한 가장 균형 잡힌 생각은?',
+   opts:[['A. 공정무역이면 무조건 옳다',1,'취지는 좋지만 만능은 아니다. 인증 비용·품질·시장 규모 등 한계도 함께 봐야 한다.'],
+         ['B. 값만 싸면 된다, 생산자는 상관없다',0,'효율만 보면 세계 불평등과 노동 문제를 외면하게 된다.'],
+         ['C. 장점과 한계를 알고 상황에 맞게 실천한다',2,'비판적으로 이해하고 책임 있게 소비하는 성숙한 세계시민의 자세.']]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<span class="emoji">${m.emoji}</span> <b>선택 ${mIdx+1} / ${MISSIONS.length}</b><br>${m.txt}`;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>`<button onclick="choose(${i},this)">${o[0]}</button>`).join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i,btn){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], pts=m.opts[i][1];
+  mChoice[mIdx]={i,pts,of:2};
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'sel')); });
+  el('mFeedback').innerHTML=`<div class="feedback">${pts>=2?'🌟':pts===1?'💡':'🤔'} +${pts}점 · ${m.opts[i][2]}</div>`;
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+
+/* 결과 카드 */
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const max=MISSIONS.length*2, tot=totalPts(), pctv=max?tot/max:0;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2f7d4f'); g.addColorStop(1,'#1f5c39');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#2f7d4f'; ctx.font='bold 38px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌍 나의 세계시민 리포트', W/2, 128);
+  ctx.fillStyle='#6b6153'; ctx.font='21px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅳ 세계화 · 공정무역과 윤리적 소비', W/2, 168);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#26301f'; ctx.font='bold 30px "Malgun Gothic",sans-serif'; ctx.fillText(name, W/2, 232);
+  // 지수 원
+  const cx=W/2, cy=372, r=104;
+  ctx.lineWidth=24; ctx.strokeStyle='#eee7da'; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle= pctv>=0.8?'#2f7d4f':(pctv>=0.5?'#e0a526':'#c9683d');
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pctv); ctx.stroke();
+  ctx.fillStyle='#26301f'; ctx.font='bold 52px "Malgun Gothic",sans-serif'; ctx.fillText(tot+'', cx, cy+6);
+  ctx.fillStyle='#6b6153'; ctx.font='20px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+38);
+  const grade= pctv>=0.9?'세계시민 리더 🏆':pctv>=0.7?'책임 있는 소비자 🤝':pctv>=0.5?'성장하는 세계시민 🌱':'생각을 넓혀봐요 💭';
+  ctx.fillStyle='#2f7d4f'; ctx.font='bold 27px "Malgun Gothic",sans-serif'; ctx.fillText(grade, W/2, cy+r+64);
+  // 농부 몫 요약
+  ctx.fillStyle='#26301f'; ctx.font='bold 22px "Malgun Gothic",sans-serif';
+  ctx.fillText('내가 나눈 커피값 중 농부 몫: '+Math.round(pct('farmer'))+'%', W/2, cy+r+120);
+  // 선택 요약
+  ctx.textAlign='left'; ctx.font='19px "Malgun Gothic",sans-serif';
+  let y=cy+r+165;
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i];
+    ctx.fillStyle='#26301f'; ctx.fillText(`${MISSIONS[i].emoji} 선택 ${i+1}`, 90, y);
+    ctx.textAlign='right';
+    if(c){ ctx.fillStyle=c.pts>=2?'#2f7d4f':(c.pts===1?'#e0a526':'#c9683d'); ctx.fillText('+'+c.pts+'점', W-90, y); }
+    else { ctx.fillStyle='#a99'; ctx.fillText('미완료', W-90, y); }
+    ctx.textAlign='left'; y+=38;
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#a89f8e'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 커피 한 잔의 세계여행', W/2, H-64);
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download=`세계시민리포트_${(el('studentName').value||'학생')}.png`;
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+function openPNG(){ drawResult(); const url=el('resultCanvas').toDataURL('image/png'); window.open(url,'_blank'); }
+
+/* 탭 */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','chain','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='chain') syncDist();
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['chain','mission','result'].forEach(t=>el('tab-'+t).classList.add('hide'));
+buildDist(); renderMission();
+</script>
+</body>
+</html>

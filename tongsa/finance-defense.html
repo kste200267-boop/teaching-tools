@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>소비자 금융 방어 게임 · 통합사회2 Ⅲ 자산관리와 금융생활</title>
+<style>
+  :root{
+    /* 팔레트 06 Marketing Product (마케팅·선명·역동) */
+    --primary:#E0218A; --primary-d:#b01069;
+    --orange:#FF7A1A; --orange-d:#d95f06;
+    --purple:#7A2FF2; --purple-d:#5a17c4;
+    --bg:#f7f2fb; --surface:#ffffff; --ink:#1B1230; --sub:#6b6280;
+    --ok:#1f9d6b; --mid:#e0a526; --no:#e5342b;
+    --line:#ece4f3; --shadow:0 8px 24px rgba(60,20,80,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--purple));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-34px;top:-34px;width:160px;height:160px;
+    background:radial-gradient(circle,rgba(255,122,26,.5),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:.5px;opacity:.92;font-weight:800}
+  header h1{margin:6px 0 4px;font-size:25px;font-weight:900;letter-spacing:-.5px}
+  header p{margin:0;font-size:14px;opacity:.95;position:relative}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:80px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:800;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:900;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--orange)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--purple-d);font-weight:800}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#fbe7f3;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:800;margin:2px 3px 2px 0}
+  .pill.o{background:#ffeeda;color:var(--orange-d)}
+  .pill.p{background:#efe6ff;color:var(--purple-d)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:#fbf7ff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--purple-d)}
+  .fraud{background:#fff;border:1px solid var(--line);border-left:5px solid var(--primary);
+    border-radius:12px;padding:13px 14px;font-size:13.5px}
+  .fraud .ft{font-weight:900;font-size:14.5px;display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  .fraud .fx{color:var(--ok);font-weight:800}
+  .hide{display:none}
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 6px;text-align:center}
+  table.cmp th{background:#f4ecfb;color:var(--purple-d);font-weight:900}
+  table.cmp td.a{font-weight:800;text-align:left}
+  .note{font-size:12px;color:var(--sub);background:#f2ecf8;border-radius:8px;padding:9px 11px;margin-top:10px}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:900;font-size:14.5px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.orange{background:var(--orange);color:#3a1a00}
+  .btn.purple{background:var(--purple);color:#fff}
+  .btn.ghost{background:#efe9f5;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* ===== 게이지 (자산·신용·안전) ===== */
+  .gauges{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:4px 0 10px}
+  @media(max-width:560px){.gauges{grid-template-columns:1fr}}
+  .gauge{background:#faf6fe;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .gauge .top{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;font-weight:800;margin-bottom:5px}
+  .gauge .top .val{font-size:16px;font-weight:900}
+  .gauge .bar{height:12px;background:#eee3f4;border-radius:99px;overflow:hidden}
+  .gauge .bar i{display:block;height:100%;width:50%;border-radius:99px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+  .gauge.assets i{background:linear-gradient(90deg,#ffb56b,var(--orange))}
+  .gauge.credit i{background:linear-gradient(90deg,#b18bff,var(--purple))}
+  .gauge.safety i{background:linear-gradient(90deg,#f47ab8,var(--primary))}
+  .gauge.assets .val{color:var(--orange-d)} .gauge.credit .val{color:var(--purple-d)} .gauge.safety .val{color:var(--primary-d)}
+  .flash{animation:flash .5s}
+  @keyframes flash{0%{filter:brightness(1.6)}100%{filter:brightness(1)}}
+  /* 점수/콤보 바 */
+  .scorebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .chipstat{background:#1B1230;color:#fff;border-radius:10px;padding:6px 12px;font-weight:900;font-size:13.5px}
+  .chipstat.combo{background:var(--orange);color:#3a1a00}
+  .chipstat.round{background:var(--purple)}
+  .combo.pop{animation:pop .4s}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.25)}100%{transform:scale(1)}}
+  /* 타이머 */
+  .timer{height:7px;background:#eee3f4;border-radius:99px;overflow:hidden;margin:2px 0 12px}
+  .timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--ok),var(--orange));transition:width .1s linear}
+  .timer i.low{background:var(--no)}
+  /* 위협 카드 */
+  .threat{background:linear-gradient(135deg,#fff,#fef2f8);border:1.5px solid #f3c6de;border-radius:14px;
+    padding:16px;font-size:15px;position:relative;overflow:hidden}
+  .threat.in{animation:cardin .4s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  .threat .type{display:inline-block;font-size:11.5px;font-weight:900;color:#fff;background:var(--primary);
+    border-radius:7px;padding:2px 9px;margin-bottom:7px}
+  .threat .type.temp{background:var(--orange)}
+  .threat .emoji{font-size:30px;vertical-align:-4px;margin-right:6px}
+  .threat .msgbox{background:#fff;border:1px dashed #e2b9d2;border-radius:10px;padding:10px 12px;margin-top:9px;
+    font-size:14px;color:#5a2a44;font-style:italic}
+  .shake{animation:shake .45s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  .acts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .acts button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;
+    font-weight:800;font-size:14px;cursor:pointer;text-align:left;font-family:inherit;transition:.12s}
+  .acts button:hover{border-color:var(--primary)}
+  .acts button:disabled{cursor:default}
+  .acts button.best{border-color:var(--ok);background:#e7f7ef;color:#12805a}
+  .acts button.badpick{border-color:var(--no);background:#fdeceb;color:#b1231b}
+  .acts button.midpick{border-color:var(--mid);background:#fbf3df;color:#8a6a1a}
+  .feedback{margin-top:12px;padding:12px 14px;border-radius:11px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e7f7ef;color:#12805a}
+  .feedback.mid{background:#fbf3df;color:#8a6a1a}
+  .feedback.no{background:#fdeceb;color:#b1231b}
+  .feedback b{font-weight:900}
+  .progress{height:8px;background:#eee3f4;border-radius:99px;overflow:hidden;margin:8px 0 12px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--orange));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:flex-end;margin-top:14px}
+  /* 데미지 오버레이 */
+  #dmg{position:fixed;inset:0;background:rgba(229,52,43,.28);pointer-events:none;opacity:0;z-index:50}
+  #dmg.on{animation:dmg .5s}
+  @keyframes dmg{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+  /* 미션(탭3) */
+  .scen{background:#fbf7ff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:15px;margin-bottom:8px}
+  .scen .type{display:inline-block;font-size:11.5px;font-weight:900;background:var(--purple);color:#fff;border-radius:6px;padding:2px 8px;margin-bottom:6px}
+  .scen .emoji{font-size:26px;vertical-align:-3px}
+  /* 결과 */
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px;font-family:inherit}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#efe9f5;border-radius:6px;padding:2px 7px;font-weight:800}
+</style>
+</head>
+<body>
+<div id="dmg"></div>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅲ 시장경제와 지속가능발전 · 3-3 자산관리와 금융생활</div>
+    <h1>🛡️ 소비자 금융 방어 게임</h1>
+    <p>"원금 보장, 월 30% 확정 수익!" 문자가 방금 도착했다. 클릭할까, 무시할까? 하루에도 몇 번씩 네 지갑을 노리는 함정을 게임으로 미리 겪어 두면, 진짜 그 순간엔 흔들리지 않는다. <b>방어·수락·무시</b> 한 번의 선택이 자산·신용점수·안전지수를 지킨다.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="game">2. 방어 게임</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>금융 사기 5대 유형과 대응법</h2>
+      <p class="lead">사기는 <b>불안·욕심·급함</b>을 노린다. 유형과 <b>정확한 대응</b>을 알면 대부분 막을 수 있다.</p>
+      <div class="grid2">
+        <div class="fraud"><div class="ft">📞 보이스피싱</div>검찰·금감원·은행을 <b>사칭</b>해 "계좌가 범죄에 연루됐다"며 안전계좌 이체를 요구.<br><span class="fx">대응 ▶</span> 전화 끊고 <b>공식 번호로 재확인</b>, 정부기관은 계좌이체·앱설치를 절대 요구 안 함. 신고 <b>112·1332</b>.</div>
+        <div class="fraud"><div class="ft">📩 스미싱</div>택배·청첩장·과태료 <b>문자 속 링크</b>로 악성앱을 깔아 소액결제·개인정보를 탈취.<br><span class="fx">대응 ▶</span> <b>링크·앱 설치 금지</b>, 출처 불명 문자 삭제, 백신 점검.</div>
+        <div class="fraud"><div class="ft">📈 투자리딩·코인 사기</div>리딩방·SNS에서 "<b>원금 보장·확정 고수익</b>"을 미끼로 입금 유도.<br><span class="fx">대응 ▶</span> 원금보장+고수익은 <b>사기</b>. <b>제도권 금융사</b>인지 금융소비자포털 '파인'·1332로 확인.</div>
+        <div class="fraud"><div class="ft">🔺 다단계·폰지</div>지인을 통해 "<b>매달 배당·사람 데려오면 수당</b>"으로 투자 권유.<br><span class="fx">대응 ▶</span> 신규 투자금으로 배당을 돌려막는 <b>폰지 구조</b>. 지인 소개라도 거절.</div>
+        <div class="fraud"><div class="ft">🪪 명의도용</div>경품·대출을 미끼로 <b>신분증·계좌 비밀번호</b>를 요구해 대포통장·명의도용에 악용.<br><span class="fx">대응 ▶</span> 개인정보·비밀번호·신분증 <b>절대 제공 금지</b>, 유출 시 명의도용 차단 신청.</div>
+        <div class="fraud"><div class="ft">✅ 공통 방어 수칙</div>① 급하게 재촉하면 의심 ② 링크·앱 클릭 금지 ③ 개인정보 제공 금지 ④ 공식 번호로 재확인 ⑤ 의심되면 <b>1332(금감원)</b>·112 신고.</div>
+      </div>
+
+      <h2 style="margin-top:22px"><span class="dot"></span>신용점수 — 보이지 않는 나의 금융 성적표</h2>
+      <p class="lead">신용점수(1~1000점, NICE·KCB)는 돈을 <b>약속대로 갚을 능력·의지</b>를 숫자로 나타낸 것. 낮으면 대출 거절·고금리로 이어진다.</p>
+      <div class="grid2">
+        <div class="concept"><h3>📉 연체의 무서움</h3>소액이라도 <b>10만원·5영업일 이상</b> 연체하면 단기연체 정보가 신용정보사에 공유돼 <b>점수가 급락</b>한다. 한 번 떨어지면 회복에 오래 걸린다.</div>
+        <div class="concept"><h3>📈 신용 올리는 법</h3><b>연체 없는 성실 상환</b>, 통신비·공과금 자동이체·성실 납부, 카드 한도 대비 적정 사용. 현금서비스·리볼빙 남용은 <b>점수를 깎는다</b>.</div>
+      </div>
+
+      <h2 style="margin-top:22px"><span class="dot"></span>과소비의 함정 — 충동구매·할부·리볼빙</h2>
+      <table class="cmp">
+        <tr><th>함정</th><th>정체</th><th>위험</th></tr>
+        <tr><td class="a">🛒 충동구매</td><td>계획 없는 감정적 소비</td><td>예산 초과·후회, 필요 없는 지출 누적</td></tr>
+        <tr><td class="a">💳 할부</td><td>결제액을 여러 달로 쪼갬</td><td>무이자가 아니면 <b>이자</b>·결제능력 초과·부채 착시</td></tr>
+        <tr><td class="a">🔁 리볼빙</td><td>이번 달 최소만 내고 나머지 이월</td><td><b>연 15~20% 고금리</b>·이자에 이자, 빚 눈덩이</td></tr>
+      </table>
+      <p class="note">💡 <b>리볼빙(일부결제금액이월약정)</b>은 당장 편해 보여도 미룬 금액에 높은 수수료가 붙어 <b>빚이 빠르게 불어난다</b>. 신용점수도 깎인다.</p>
+
+      <h2 style="margin-top:22px"><span class="dot"></span>합리적 소비 4원칙</h2>
+      <div class="grid2">
+        <div class="concept"><h3>🧾 ① 예산 세우기</h3><b>선(先)저축 후(後)지출</b>. 수입에서 저축·비상금(3~6개월)을 먼저 떼고 남는 돈 안에서 소비한다.</div>
+        <div class="concept"><h3>⚖️ ② 필요 vs 욕구</h3><b>필요(needs)</b>는 꼭 있어야 할 것, <b>욕구(wants)</b>는 있으면 좋은 것. 사기 전 "이건 필요인가 욕구인가?" 자문한다.</div>
+        <div class="concept"><h3>🔍 ③ 비교·정보 탐색</h3>가격·성능·조건을 <b>비교</b>하고, 광고·충동이 아니라 정보에 근거해 고른다. 비싼 것=좋은 것이 아니다.</div>
+        <div class="concept"><h3>⏳ ④ 기회비용 고려</h3>이 돈을 쓰면 <b>포기하는 다른 선택</b>이 있다. 24시간 뒤 다시 판단하면 충동을 걸러낼 수 있다.</div>
+      </div>
+      <p class="note">⚠️ 이 교구의 수치·상황은 <b>교육용 예시</b>이며 특정 상품·업체를 지칭하지 않습니다. 등장 인물·문자는 모두 가상입니다.</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 각자 <b>방어 점수</b>로 겨룬 뒤, 가장 크게 당한 라운드를 하나 골라 "나라면 이렇게 막았다" 사례를 나눠 보세요. 친구의 실패담이 가장 오래 남는 예방 수업이 됩니다.</p>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('game')">방어 게임 시작하기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 방어 게임 ===== -->
+  <section id="tab-game" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>방어 게임 <span style="font-size:13px;color:var(--sub);font-weight:800">(총 <span id="gTotal">8</span>라운드)</span></h2>
+      <div class="scorebar">
+        <span class="chipstat round">라운드 <span id="gRoundLab">1</span>/<span id="gTotal2">8</span></span>
+        <span class="chipstat">점수 <span id="gScore">0</span></span>
+        <span class="chipstat combo" id="comboChip">🔥 콤보 <span id="gCombo">0</span></span>
+      </div>
+      <div class="gauges">
+        <div class="gauge assets"><div class="top"><span>💰 자산</span><span class="val"><span id="vAssets">500</span>만원</span></div><div class="bar"><i id="gAssets"></i></div></div>
+        <div class="gauge credit"><div class="top"><span>📊 신용점수</span><span class="val" id="vCredit">700</span></div><div class="bar"><i id="gCredit"></i></div></div>
+        <div class="gauge safety"><div class="top"><span>🛡️ 안전지수</span><span class="val" id="vSafety">60</span></div><div class="bar"><i id="gSafety"></i></div></div>
+      </div>
+      <div class="timer"><i id="timerBar"></i></div>
+      <div class="threat in" id="threatCard"></div>
+      <div class="acts" id="actBtns"></div>
+      <div id="gFeedback"></div>
+      <div class="mnav">
+        <button class="btn primary hide" id="gNext" onclick="nextRound()">다음 라운드 →</button>
+      </div>
+      <p class="note">⏱️ 제한 시간이 지나면 <b>무시(방치)</b>로 처리됩니다. 사기 카드는 <b>방어</b>, 유혹 카드는 <b>필요·예산</b>을 기준으로 판단하세요. 최선 선택은 <b>콤보</b>로 점수가 커집니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>합리적 소비·신용 미션 (6)</h2>
+      <p class="lead">사기꾼의 문자는 막아냈다. 하지만 진짜 돈 관리는 지금부터다. <b>계획·비교·신용 관리</b>, 일상 속 선택으로 판단력을 시험하자. 선택마다 0~2점.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div id="mScenario"></div>
+      <div class="acts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn purple hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>나의 금융 방어 리포트</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1140"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn orange" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="restartGame()">게임 다시</button>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <a href="#" onclick="openPNG();return false;" style="font-size:12.5px;color:var(--sub);font-weight:800">📱 저장이 안 되면 여기(새 탭)</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅲ 시장경제와 지속가능발전 · 자산관리와 금융생활 [10통사2-06] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    상황·인물·문자는 모두 가상이며 특정 상품·업체 권유가 아닙니다 · 신고 금융감독원 1332 · 경찰 112 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ============ 게임 상태 ============ */
+const START={assets:500, credit:700, safety:60};   // 자산(만원)/신용(300~1000)/안전(0~100)
+let S={...START};
+let gIdx=0, gPicked=false, score=0, combo=0, maxCombo=0, correct=0;
+const gResult=[];
+let roundTimer=null, timeLeft=0;
+const TIMER_MAX=20;
+
+/* 액션 키: defend(방어) / accept(수락) / ignore(무시)
+   d:{a:자산Δ, c:신용Δ, s:안전Δ}, pts, tone, fb */
+const GAME=[
+  {type:'보이스피싱', cat:'fraud', emo:'📞', ttl:'검찰 사칭 전화',
+   msg:'"서울중앙지검 수사관입니다. 귀하 계좌가 대포통장 범죄에 연루됐습니다. 즉시 안전계좌로 전액 이체하세요."',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 전화 끊고 1332로 직접 확인', d:{a:0,c:0,s:9}, pts:2, tone:'ok',
+     fb:'정부기관·수사기관은 <b>절대 계좌이체·앱설치를 요구하지 않는다.</b> 끊고 공식 번호로 확인, 1332·112 신고가 정답.'},
+   accept:{lab:'✅ 수락 — 시키는 대로 안전계좌 이체', d:{a:-200,c:0,s:-16}, pts:0, tone:'no',
+     fb:'전형적 <b>보이스피싱 피해</b>. "안전계좌"라는 것은 존재하지 않는다. 자산 200만원이 사라졌다.'},
+   ignore:{lab:'🙈 무시 — 그냥 끊기(신고는 안 함)', d:{a:0,c:0,s:3}, pts:1, tone:'mid',
+     fb:'피해는 막았지만, <b>신고(1332·112)</b>까지 해야 다른 피해자를 줄일 수 있다.'}},
+
+  {type:'스미싱', cat:'fraud', emo:'📩', ttl:'택배 주소 오류 문자',
+   msg:'"[Web발신] 고객님, 택배가 주소 불명으로 보류 중입니다. 오늘 안에 아래 링크에서 주소를 수정하세요 ▶ hxxp://bit.ly/xxx"',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 링크 무시·문자 삭제·신고', d:{a:0,c:0,s:8}, pts:2, tone:'ok',
+     fb:'출처 불명 문자의 <b>링크·앱 설치는 금지</b>. 클릭 순간 악성앱이 깔려 정보가 털린다. 삭제가 정답.'},
+   accept:{lab:'✅ 수락 — 링크 눌러 앱 설치·정보 입력', d:{a:-120,c:-30,s:-16}, pts:0, tone:'no',
+     fb:'악성앱으로 <b>소액결제·개인정보 탈취</b>. 명의도용까지 이어져 자산·신용이 함께 무너졌다.'},
+   ignore:{lab:'🙈 무시 — 안 누르고 그냥 둠', d:{a:0,c:0,s:3}, pts:1, tone:'mid',
+     fb:'클릭만 안 하면 피해는 없다. 다만 <b>삭제·신고</b>가 더 안전하다.'}},
+
+  {type:'투자리딩', cat:'fraud', emo:'📈', ttl:'원금 보장 리딩방',
+   msg:'"주식 고수 무료 리딩방! 원금 100% 보장, 매월 30% 확정 수익. 지금 300만원만 입금하면 종목 알려드립니다."',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 거절·차단, 파인에서 확인', d:{a:0,c:0,s:8}, pts:2, tone:'ok',
+     fb:'<b>원금보장 + 고수익 = 사기</b>. 세상에 확정 고수익은 없다. 제도권 금융사인지 \'파인\'·1332로 확인이 정답.'},
+   accept:{lab:'✅ 수락 — 큰돈 되겠다 싶어 300만원 입금', d:{a:-250,c:0,s:-16}, pts:0, tone:'no',
+     fb:'입금 순간 <b>리딩방은 사라진다.</b> "확정 수익" 미끼에 자산 250만원을 잃었다.'},
+   ignore:{lab:'🙈 무시 — 답 안 하고 방치', d:{a:0,c:0,s:2}, pts:1, tone:'mid',
+     fb:'무시로 피해는 막았다. 신고·차단하면 더 좋다.'}},
+
+  {type:'다단계·폰지', cat:'fraud', emo:'🔺', ttl:'선배의 고배당 투자 권유',
+   msg:'친한 선배: "이 사업/코인에 넣으면 매달 배당 나와. 너도 사람 데려오면 추가 수당까지 준대. 믿고 한번 해봐."',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 지인이어도 정중히 거절', d:{a:0,c:0,s:7}, pts:2, tone:'ok',
+     fb:'매달 배당 + 사람 모집 수당 구조는 <b>폰지·다단계</b>. 신규 투자금으로 배당을 돌려막다 결국 붕괴한다.'},
+   accept:{lab:'✅ 수락 — 아는 사람이니 믿고 투자', d:{a:-180,c:-10,s:-13}, pts:0, tone:'no',
+     fb:'지인 관계를 이용하는 것이 다단계의 특징. 돌려막기가 멈추는 순간 <b>원금이 증발</b>했다.'},
+   ignore:{lab:'🙈 무시 — 대답 회피하며 미룸', d:{a:0,c:0,s:2}, pts:1, tone:'mid',
+     fb:'투자는 피했지만, 구조가 사기임을 알고 <b>분명히 거절</b>하는 편이 낫다.'}},
+
+  {type:'명의도용', cat:'fraud', emo:'🪪', ttl:'경품 당첨 개인정보 요구',
+   msg:'"축하합니다! 최신 스마트폰에 당첨! 경품 배송을 위해 신분증 사본과 계좌 비밀번호를 보내주세요."',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 개인정보·비밀번호 제공 거절', d:{a:0,c:0,s:9}, pts:2, tone:'ok',
+     fb:'배송에 <b>계좌 비밀번호·신분증</b>은 필요 없다. 명의도용·대포통장 악용 목적. 제공 거절이 정답.'},
+   accept:{lab:'✅ 수락 — 경품 받으려 정보 전송', d:{a:-100,c:-40,s:-18}, pts:0, tone:'no',
+     fb:'<b>명의도용 피해.</b> 내 이름으로 대출·대포통장이 개설돼 자산과 신용점수가 크게 무너졌다.'},
+   ignore:{lab:'🙈 무시 — 답장 안 함', d:{a:0,c:0,s:3}, pts:1, tone:'mid',
+     fb:'정보를 안 준 것은 잘했다. 스팸 신고·차단까지 하면 완벽하다.'}},
+
+  {type:'과소비 유혹', cat:'temp', emo:'🛒', ttl:'한정판 스니커즈 세일',
+   msg:'"오늘만 40% 세일! 한정판 스니커즈." 이미 비슷한 신발이 3켤레 있고, 이번 달 잔고는 빠듯하다.',
+   best:'ignore',
+   defend:{lab:'🛡️ 방어 — 필요·욕구 구분, 안 산다', d:{a:0,c:0,s:6}, pts:2, tone:'ok',
+     fb:'이미 신발이 충분하니 이건 <b>필요(needs)가 아닌 욕구(wants)</b>. 안 사는 것이 합리적 소비다.'},
+   ignore:{lab:'🙈 무시 — 장바구니만 담고 24시간 뒤 판단', d:{a:0,c:0,s:4}, pts:1, tone:'mid',
+     fb:'충동을 <b>24시간 미루는</b> 것도 좋은 방법. 대개 다음 날이면 사고 싶은 마음이 가라앉는다.'},
+   accept:{lab:'✅ 수락 — 세일이니까 바로 구매', d:{a:-40,c:0,s:-6}, pts:0, tone:'no',
+     fb:'전형적 <b>충동구매·과소비</b>. "세일"은 소비를 부추기는 미끼다. 잔고가 빠듯할 땐 특히 위험.'}},
+
+  {type:'할부·리볼빙', cat:'temp', emo:'🔁', ttl:'카드 대금 부족, 리볼빙 안내',
+   msg:'이번 달 카드값이 부족하다. 카드사: "리볼빙(일부결제금액이월)으로 최소 금액만 내고 나머지는 다음 달로 미루세요."',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 리볼빙 거절, 지출 줄여 정상 결제', d:{a:-20,c:0,s:7}, pts:2, tone:'ok',
+     fb:'리볼빙은 <b>연 15~20% 고금리</b>로 빚이 눈덩이처럼 불어난다. 소비를 줄여 제때 갚는 것이 정답.'},
+   accept:{lab:'✅ 수락 — 편하니까 리볼빙 신청', d:{a:-30,c:-25,s:-11}, pts:0, tone:'no',
+     fb:'당장은 편하지만 <b>고금리 이자 + 신용점수 하락</b>. 미룬 빚이 계속 쌓여 악순환에 빠진다.'},
+   ignore:{lab:'🙈 무시 — 그냥 안 내고 미룬다(연체)', d:{a:0,c:-45,s:-12}, pts:0, tone:'no',
+     fb:'무시하면 <b>연체</b>가 된다. 소액이라도 연체는 신용점수를 급락시킨다. 리볼빙보다도 나쁠 수 있다.'}},
+
+  {type:'신용·연체', cat:'temp', emo:'📊', ttl:'통신비 연체 안내 문자',
+   msg:'"통신비 10만원이 미납되었습니다." 깜빡하고 안 낸 요금. 다음 달에 몰아서 내도 되지 않을까?',
+   best:'defend',
+   defend:{lab:'🛡️ 방어 — 확인 즉시 바로 납부', d:{a:-10,c:5,s:8}, pts:2, tone:'ok',
+     fb:'<b>즉시 상환</b>이 정답. 연체 없이 성실히 내는 이력이 쌓이면 신용점수가 오히려 올라간다.'},
+   accept:{lab:'✅ 수락 — 다음 달 카드값과 몰아서', d:{a:0,c:-30,s:-8}, pts:0, tone:'no',
+     fb:'미루는 사이 연체가 진행돼 <b>신용점수가 하락</b>. "나중에"가 신용을 갉아먹는다.'},
+   ignore:{lab:'🙈 무시 — 소액이니 그냥 방치', d:{a:0,c:-50,s:-12}, pts:0, tone:'no',
+     fb:'<b>10만원·5영업일 이상 연체는 신용정보사에 공유</b>돼 점수가 급락한다. 소액 연체가 가장 위험하다.'}}
+];
+const N=GAME.length;
+const ACTKEYS=['defend','accept','ignore'];
+
+/* ============ 게이지 렌더 ============ */
+function assetsPct(){ return clamp(S.assets/1000*100,0,100); }
+function creditPct(){ return clamp((S.credit-300)/7,0,100); }
+function renderGauges(flash){
+  el('vAssets').textContent=Math.round(S.assets);
+  el('vCredit').textContent=Math.round(S.credit);
+  el('vSafety').textContent=Math.round(S.safety);
+  const set=(bar,pct)=>{ const i=el(bar); i.style.width=pct+'%';
+    if(flash){ i.classList.remove('flash'); void i.offsetWidth; i.classList.add('flash'); } };
+  set('gAssets',assetsPct()); set('gCredit',creditPct()); set('gSafety',clamp(S.safety,0,100));
+}
+
+/* ============ 타이머 ============ */
+function startTimer(){
+  stopTimer(); timeLeft=TIMER_MAX; updateTimerBar();
+  roundTimer=setInterval(()=>{
+    timeLeft-=0.1;
+    if(timeLeft<=0){ timeLeft=0; updateTimerBar(); stopTimer(); if(!gPicked) resolveRound('ignore',true); }
+    else updateTimerBar();
+  },100);
+}
+function stopTimer(){ if(roundTimer){ clearInterval(roundTimer); roundTimer=null; } }
+function updateTimerBar(){
+  const bar=el('timerBar'), p=clamp(timeLeft/TIMER_MAX*100,0,100);
+  bar.style.width=p+'%';
+  bar.classList.toggle('low', timeLeft<=6);
+}
+
+/* ============ 라운드 렌더 ============ */
+function renderRound(){
+  const c=GAME[gIdx]; gPicked=false;
+  el('gRoundLab').textContent=gIdx+1;
+  const tc=el('threatCard');
+  tc.className='threat in '+(c.cat==='temp'?'temp':'');
+  tc.innerHTML=`<span class="type ${c.cat==='temp'?'temp':''}">${c.cat==='temp'?'⚠️ 소비·신용':'🚨 금융 사기'} · ${c.type}</span><br>
+    <span class="emoji">${c.emo}</span> <b>${c.ttl}</b>
+    <div class="msgbox">${c.msg}</div>`;
+  el('actBtns').innerHTML=ACTKEYS.map(k=>`<button data-k="${k}" onclick="pick('${k}')">${c[k].lab}</button>`).join('');
+  el('gFeedback').innerHTML='';
+  el('gNext').classList.add('hide');
+  startTimer();
+}
+function pick(k){ if(gPicked) return; resolveRound(k,false); }
+function resolveRound(k,timedOut){
+  if(gPicked) return; gPicked=true; stopTimer();
+  const c=GAME[gIdx], act=c[k], d=act.d;
+  S.assets=Math.max(0,S.assets+d.a);
+  S.credit=clamp(S.credit+d.c,300,1000);
+  S.safety=clamp(S.safety+d.s,0,100);
+  renderGauges(true);
+  // 점수·콤보
+  if(act.pts===2){ combo++; if(combo>maxCombo) maxCombo=combo; correct++; score+=100+(combo-1)*40; }
+  else { combo=0; score+=act.pts*30; }
+  el('gScore').textContent=score;
+  el('gCombo').textContent=combo;
+  const cc=el('comboChip'); cc.classList.remove('pop'); void cc.offsetWidth; cc.classList.add('pop');
+  gResult[gIdx]={key:k, pts:act.pts, best:c.best, timedOut:!!timedOut, cat:c.cat};
+  // 버튼 하이라이트
+  [...el('actBtns').children].forEach(b=>{
+    b.disabled=true;
+    const bk=b.dataset.k, bp=c[bk].pts;
+    if(bp===2) b.classList.add('best');
+    if(bk===k && bp!==2) b.classList.add(bp===0?'badpick':'midpick');
+  });
+  // 피드백
+  const tone=act.tone;
+  const head = act.pts===2 ? '✅ 최선의 방어! (+'+(100+(combo-1)*40)+'점'+(combo>1?' · 🔥콤보 '+combo:'')+')'
+             : act.pts===1 ? (timedOut?'⏱️ 시간 초과 — 무시(방치)로 처리':'🟡 나쁘진 않지만 더 나은 선택이 있어')
+             : (timedOut?'⏱️ 시간 초과 — 방치돼 피해가 발생!':'❌ 위험한 선택!');
+  el('gFeedback').innerHTML=`<div class="feedback ${tone}"><b>${head}</b><br>${act.fb}</div>`;
+  // 피해 연출
+  if(act.pts===0){
+    const dm=el('dmg'); dm.classList.remove('on'); void dm.offsetWidth; dm.classList.add('on');
+    const tc=el('threatCard'); tc.classList.remove('shake'); void tc.offsetWidth; tc.classList.add('shake');
+  }
+  el('gNext').classList.remove('hide');
+  el('gNext').textContent = gIdx===N-1 ? '미션으로 →' : '다음 라운드 →';
+}
+function nextRound(){
+  if(gIdx<N-1){ gIdx++; renderRound(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else { go('mission'); }
+}
+function restartGame(){
+  S={...START}; gIdx=0; gPicked=false; score=0; combo=0; maxCombo=0; correct=0;
+  gResult.length=0;
+  mIdx=0; mChoice.length=0;
+  renderGauges(false); el('gScore').textContent=0; el('gCombo').textContent=0;
+  renderRound(); renderMission();
+  go('game');
+}
+
+/* ============ 미션(탭3) ============ */
+// opts: [텍스트, pts, 피드백]
+const MISSIONS=[
+  {type:'예산·계획', emoji:'🧾', txt:'첫 월급 200만원을 받았다. 어떻게 관리하는 것이 합리적일까?',
+   opts:[
+     ['💳 일단 쓰고 싶은 대로 쓴 뒤, 남으면 저축한다',0,'남는 돈은 대개 없다. 저축이 뒤로 밀리면 소비만 늘어난다.'],
+     ['📥 먼저 저축·비상금을 떼고(선저축), 남는 돈 안에서 지출',2,'정답! <b>선저축 후지출</b> + 비상금(3~6개월)이 합리적 소비의 기본이다.'],
+     ['🏦 부족하면 카드로 당겨쓰고 다음 달에 갚는다',1,'당장은 되지만 소득 초과 지출 습관이 든다. 예산 안에서 쓰는 것이 낫다.']]},
+  {type:'필요 vs 욕구', emoji:'📱', txt:'쓰던 스마트폰이 멀쩡한데 최신 모델이 출시됐다. 사고 싶다.',
+   opts:[
+     ['✅ 지금 폰이 멀쩡하니 이번엔 사지 않는다',2,'정답! 지금 필요(needs)가 아니라 욕구(wants)다. 교체 시점을 정해 계획적으로.'],
+     ['💳 12개월 할부로 최신형을 산다',1,'할부는 부채 착시를 준다. 무이자가 아니면 이자까지. 꼭 필요한지 먼저.'],
+     ['🔁 잔고가 없어 리볼빙까지 써서 산다',0,'욕구를 위해 고금리 빚을 내는 최악의 선택. 빚이 눈덩이처럼 불어난다.']]},
+  {type:'신용 관리', emoji:'📊', txt:'신용점수를 올리고 싶다. 가장 효과적인 방법은?',
+   opts:[
+     ['💸 여러 카드로 현금서비스를 자주 이용한다',0,'현금서비스·리볼빙 남용은 오히려 신용점수를 <b>깎는다</b>.'],
+     ['🚫 카드를 아예 한 장도 쓰지 않는다',1,'연체는 없지만 거래 이력이 없어 점수 형성이 더디다.'],
+     ['⏰ 연체 없이 성실 상환 + 통신비 자동이체',2,'정답! 꾸준한 상환 이력이 신용점수를 가장 확실하게 올린다.']]},
+  {type:'사기 판별', emoji:'🔍', txt:'모르는 곳에서 "원금 보장, 월 20% 확정 수익" 투자를 권유받았다.',
+   opts:[
+     ['🤝 그럴듯하니 소액만 넣어 시험해본다',1,'소액이라도 사기의 발판이 된다. 확정 고수익 자체가 사기 신호.'],
+     ['🏛️ 제도권 금융사인지 \'파인\'에서 확인, 의심되면 1332 신고',2,'정답! 원금보장+고수익은 사기. 등록 금융사인지 확인이 먼저다.'],
+     ['👍 사람이 친절하고 후기가 많으니 믿는다',0,'후기·친절함은 얼마든지 꾸밀 수 있다. 근거로 삼으면 안 된다.']]},
+  {type:'비교·정보 탐색', emoji:'🛍️', txt:'큰맘 먹고 노트북을 사려 한다. 어떻게 고르는 것이 합리적일까?',
+   opts:[
+     ['📺 광고에서 본 제품을 바로 산다',0,'광고는 정보가 아니라 설득이다. 충동구매로 이어지기 쉽다.'],
+     ['💎 가장 비싼 것이 제일 좋으니 최고가를 산다',1,'비싼 것=좋은 것이 아니다. 내게 필요한 성능인지가 기준이다.'],
+     ['🔍 용도에 맞는 성능·가격·조건을 비교해 고른다',2,'정답! 정보를 탐색·비교해 필요에 맞게 고르는 것이 합리적 소비다.']]},
+  {type:'위기 대비', emoji:'🌧️', txt:'갑작스런 실직·사고로 몇 달간 수입이 끊길 수 있다. 무엇으로 대비할까?',
+   opts:[
+     ['🏦 예금으로 3~6개월치 생활비(비상금)를 미리 마련',2,'정답! 유동성 높은 <b>비상금</b>이 위기의 방패. 빚 없이 버틸 수 있다.'],
+     ['💳 그때 신용카드 한도로 버티면 된다',0,'빚으로 버티면 이자 부담에 신용까지 흔들린다. 최악의 대비.'],
+     ['🏧 필요하면 그때 대출을 받는다',1,'대출은 최후 수단. 위기 때는 조건도 나빠진다. 비상금이 우선.']]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<div class="scen"><span class="type">${m.type}</span><br>
+    <span class="emoji">${m.emoji}</span> <b>미션 ${mIdx+1} / ${MISSIONS.length}</b><br>${m.txt}</div>`;
+  el('mOpts').innerHTML=m.opts.map((o,i)=>`<button onclick="choose(${i})">${o[0]}</button>`).join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], o=m.opts[i], pts=o[1];
+  mChoice[mIdx]={i,pts};
+  [...el('mOpts').children].forEach((b,j)=>{
+    b.disabled=true;
+    if(m.opts[j][1]===2) b.classList.add('best');
+    if(j===i && pts!==2) b.classList.add(pts===0?'badpick':'midpick');
+  });
+  const tone=pts===2?'ok':pts===1?'mid':'no';
+  const head=pts===2?'🌟 최선! (+2)':pts===1?'💡 아쉬움 (+1)':'🤔 위험 (+0)';
+  el('mFeedback').innerHTML=`<div class="feedback ${tone}"><b>${head}</b> · ${o[2]}</div>`;
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+
+/* ============ 결과 종합 ============ */
+function defenseScore(){
+  const safeC = clamp(S.safety,0,100)*0.35;
+  const credC = creditPct()*0.25;
+  const missC = (missionTotal()/12*100)*0.25;
+  const gameC = (correct/N*100)*0.15;
+  return clamp(Math.round(safeC+credC+missC+gameC),0,100);
+}
+function gradeOf(v){
+  if(v>=90) return {t:'🏆 금융 방어 마스터', c:'#1f9d6b'};
+  if(v>=75) return {t:'🛡️ 든든한 금융 파수꾼', c:'#7A2FF2'};
+  if(v>=55) return {t:'📈 성장하는 소비자', c:'#FF7A1A'};
+  return {t:'💪 다시 도전 — 금융 호구 탈출!', c:'#E0218A'};
+}
+function badges(){
+  const b=[];
+  const fraudRounds=gResult.filter(r=>r&&r.cat==='fraud');
+  if(fraudRounds.length>=5 && fraudRounds.every(r=>r.pts===2)) b.push('🥷 사기 무결점 방어');
+  if(S.credit>=800) b.push('💳 신용 우량 (800↑)');
+  if(maxCombo>=4) b.push('🔥 콤보 '+maxCombo+'연속');
+  if(missionTotal()>=10) b.push('🧠 합리적 소비자');
+  if(S.assets>=START.assets) b.push('💰 자산 완전 방어');
+  if(!b.length) b.push('🌱 도전 완료 — 복습해 보자');
+  return b;
+}
+
+/* ============ 결과 카드(PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const dv=defenseScore(), g=gradeOf(dv), pct=dv/100;
+  // 배경(마젠타→퍼플)
+  const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#E0218A'); bg.addColorStop(1,'#7A2FF2');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W-68,H-68,26); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#1B1230'; ctx.font='bold 38px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('🛡️ 금융 방어 리포트', W/2, 104);
+  ctx.fillStyle='#6b6280'; ctx.font='18px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅲ · 자산관리와 금융생활 [10통사2-06]', W/2, 140);
+  ctx.strokeStyle='#FF7A1A'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-120,160); ctx.lineTo(W/2+120,160); ctx.stroke();
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1B1230'; ctx.font='bold 27px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText(name+' 님의 금융 방어 결과', W/2, 200);
+  // 대형 방어점수 링
+  const cx=W/2, cy=336, r=90;
+  ctx.lineWidth=20; ctx.strokeStyle='#efe6f7'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle=g.c; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1B1230'; ctx.textAlign='center'; ctx.font='bold 54px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText(dv+'', cx, cy+8);
+  ctx.fillStyle='#6b6280'; ctx.font='17px "Pretendard","Malgun Gothic",sans-serif'; ctx.fillText('방어 점수 / 100', cx, cy+34);
+  ctx.fillStyle=g.c; ctx.font='bold 27px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText(g.t, W/2, cy+r+52);
+  // 3게이지 요약 박스
+  let by=cy+r+92;
+  ctx.fillStyle='#faf6fe'; roundRect(ctx,64,by,W-128,88,16); ctx.fill();
+  const seg=(W-128)/3, th=by+40;
+  const mini=(label,val,col,ci)=>{ const mx=64+seg*ci+seg/2;
+    ctx.textAlign='center'; ctx.fillStyle=col; ctx.font='bold 30px "Pretendard","Malgun Gothic",sans-serif';
+    ctx.fillText(val, mx, th);
+    ctx.fillStyle='#6b6280'; ctx.font='15px "Pretendard","Malgun Gothic",sans-serif'; ctx.fillText(label, mx, th+26); };
+  mini('💰 자산(만원)', Math.round(S.assets), '#FF7A1A', 0);
+  mini('📊 신용점수', Math.round(S.credit), '#7A2FF2', 1);
+  mini('🛡️ 안전지수', Math.round(S.safety), '#E0218A', 2);
+  by+=88+26;
+  // 방어 게임 라운드 결과
+  ctx.textAlign='left'; ctx.fillStyle='#1B1230'; ctx.font='bold 19px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('방어 게임  ('+correct+'/'+N+' 완벽방어 · 점수 '+score+')', 72, by); by+=14;
+  const cw=(W-144)/4;
+  for(let i=0;i<N;i++){
+    const col=i%4, row=Math.floor(i/4);
+    const x=72+col*cw, yy=by+24+row*40;
+    const rr=gResult[i];
+    ctx.textAlign='center';
+    ctx.font='22px "Pretendard","Malgun Gothic",sans-serif'; ctx.fillStyle='#1B1230';
+    ctx.fillText(GAME[i].emo, x+cw/2, yy);
+    ctx.font='bold 15px "Pretendard","Malgun Gothic",sans-serif';
+    ctx.fillStyle= rr? (rr.pts===2?'#1f9d6b':rr.pts===1?'#d99a00':'#e5342b') : '#b6adc4';
+    ctx.fillText(rr? (rr.pts===2?'방어 ✓':rr.pts===1?'무난':'피해 ✕') : '–', x+cw/2, yy+22);
+  }
+  by+=24+Math.ceil(N/4)*40+14;
+  // 미션 결과
+  ctx.textAlign='left'; ctx.fillStyle='#1B1230'; ctx.font='bold 19px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('합리적 소비·신용 미션  ('+missionTotal()+'/12)', 72, by); by+=14;
+  const mw=(W-144)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3);
+    const x=72+col*mw, yy=by+24+row*38;
+    const c=mChoice[i];
+    ctx.textAlign='left'; ctx.font='19px "Pretendard","Malgun Gothic",sans-serif'; ctx.fillStyle='#1B1230';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.font='bold 18px "Pretendard","Malgun Gothic",sans-serif';
+    ctx.fillStyle= c? (c.pts===2?'#1f9d6b':c.pts===1?'#d99a00':'#e5342b') : '#b6adc4';
+    ctx.fillText(c? (c.pts+'/2') : '–', x+34, yy);
+  }
+  by+=24+Math.ceil(MISSIONS.length/3)*38+16;
+  // 뱃지
+  ctx.textAlign='left'; ctx.fillStyle='#1B1230'; ctx.font='bold 19px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('🏅 획득 뱃지', 72, by); by+=28;
+  ctx.font='bold 16px "Pretendard","Malgun Gothic",sans-serif';
+  let bx=72;
+  badges().forEach(bd=>{
+    const tw=ctx.measureText(bd).width+26;
+    if(bx+tw>W-64){ bx=72; by+=38; }
+    ctx.fillStyle='#fbe7f3'; roundRect(ctx,bx,by-18,tw,28,14); ctx.fill();
+    ctx.fillStyle='#b01069'; ctx.textAlign='left'; ctx.fillText(bd, bx+13, by+1);
+    bx+=tw+8;
+  });
+  // 푸터
+  ctx.textAlign='center'; ctx.fillStyle='#b6adc4'; ctx.font='14px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('상황·인물은 가상 · 신고 금융감독원 1332 · 경찰 112', W/2, H-70);
+  ctx.fillStyle='#8b83a0'; ctx.font='15px "Pretendard","Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 소비자 금융 방어 게임', W/2, H-48);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='금융방어리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let gameInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','game','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab!=='game') stopTimer();
+  if(tab==='game'){ if(!gameInit){ renderGauges(false); renderRound(); gameInit=true; } else if(!gPicked && gIdx<N) startTimer(); }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+el('gTotal').textContent=N; el('gTotal2').textContent=N;
+renderGauges(false);
+</script>
+</body>
+</html>

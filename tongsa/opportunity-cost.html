@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>합리적 선택 의사결정기 · 기회비용 시뮬레이터 · 통합사회2 Ⅲ</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --surface:#ffffff; --ink:#1c2733; --sub:#5b6b7c;
+    --primary:#2e6fb7; --primary-d:#1f5391; --accent:#ff6b57; --gold:#ffc53d;
+    --benefit:#2e6fb7; --cost:#ff6b57; --best:#f0a500;
+    --ok:#1c9e6b; --no:#e0563e; --line:#e3e9f0;
+    --shadow:0 6px 20px rgba(20,40,70,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:25px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:84px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff;transform:translateY(-1px)}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  section{animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#eaf1fa;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .concept{background:#f7faff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .concept .ic{font-size:22px}
+  .hilite{background:linear-gradient(180deg,#fff8e6,#fff2cc);border:1.5px solid #ffdf8a;
+    border-radius:12px;padding:14px;margin-top:12px;font-size:14.5px}
+  .hilite b{color:#b57d00}
+  .hide{display:none}
+  /* 그래프 */
+  .graphwrap{position:relative;width:100%;max-width:560px;margin:0 auto}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#fff}
+  .legend{display:flex;gap:14px;justify-content:center;font-size:12.5px;font-weight:700;color:var(--sub);margin:8px 0 2px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .readout{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .stat{background:#f2f6fb;border-radius:12px;padding:10px 14px;text-align:center;min-width:120px;transition:.2s}
+  .stat.pop{animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .stat .lab{font-size:12px;color:var(--sub);font-weight:700}
+  .stat .val{font-size:20px;font-weight:800;margin-top:2px}
+  .stat.best .val{color:var(--best)}
+  .stat.oc .val{color:var(--accent)}
+  .stat.en .val{color:var(--ok)}
+  /* 대안 카드 */
+  .alt{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;transition:.2s;background:#fff}
+  .alt.isbest{border-color:var(--best);box-shadow:0 0 0 3px rgba(240,165,0,.16);background:#fffdf5}
+  .alt .ah{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .alt .crown{font-size:18px}
+  .alt input[type=text]{border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:14.5px;font-weight:700;flex:1;min-width:0}
+  .alt .net{margin-left:auto;font-weight:800;font-size:14px;white-space:nowrap}
+  .alt .del{border:none;background:#f0f3f7;color:var(--sub);border-radius:8px;width:28px;height:28px;font-size:15px;cursor:pointer;font-weight:800}
+  .slider-row{margin:8px 0}
+  .slider-row label{display:flex;justify-content:space-between;font-weight:700;font-size:13px;margin-bottom:2px}
+  input[type=range]{width:100%;height:26px}
+  .benefit-c{color:var(--benefit)} .cost-c{color:var(--cost)}
+  input.b-range{accent-color:var(--benefit)} input.c-range{accent-color:var(--cost)}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.accent{background:var(--accent);color:#fff}
+  .btn.ghost{background:#eef2f7;color:var(--ink)}
+  .btn.sm{padding:9px 13px;font-size:13.5px}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--sub);margin-top:12px}
+  .toggle input{width:20px;height:20px;accent-color:var(--primary)}
+  .verdict{margin-top:12px;padding:13px 15px;border-radius:12px;font-size:14.5px;
+    background:#eef5ff;border:1px solid #cfe1f7;line-height:1.7}
+  .verdict b{color:var(--primary-d)}
+  .warn{margin-top:10px;padding:12px 14px;border-radius:12px;font-size:13.5px;
+    background:#fff3ee;border:1px solid #ffd6c7;color:#b23a22;font-weight:600}
+  /* 미션 */
+  .mission-scenario{background:#fff7ed;border:1px solid #ffe1c2;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:26px}
+  .altbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .altbox .ab{background:#f2f6fb;border-radius:10px;padding:8px 11px;font-size:13px;font-weight:700}
+  .altbox .ab .b{color:var(--benefit)} .altbox .ab .c{color:var(--cost)}
+  .q{margin:14px 0}
+  .q .qt{font-weight:700;font-size:14.5px;margin-bottom:6px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 13px;
+    font-weight:700;font-size:13.5px;cursor:pointer;transition:.15s}
+  .opts button.sel{border-color:var(--primary);background:#eaf1fa;color:var(--primary-d)}
+  .opts button.correct{border-color:var(--ok);background:#e7f7ef;color:#12805a}
+  .opts button.wrong{border-color:var(--no);background:#fdece8;color:#b23a22}
+  .feedback{margin-top:14px;padding:13px;border-radius:10px;font-size:14px;font-weight:600;line-height:1.7}
+  .feedback.ok{background:#e7f7ef;color:#12805a}
+  .feedback.no{background:#fdece8;color:#b23a22}
+  .feedback.warnc{background:#fff3ee;color:#b23a22}
+  .progress{height:9px;background:#eef2f7;border-radius:99px;overflow:hidden;margin:8px 0 6px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));width:0;transition:.4s}
+  .pmeta{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:12px}
+  .mnav{display:flex;justify-content:space-between;margin-top:16px;gap:8px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text].name{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#eef2f7;border-radius:6px;padding:2px 7px;font-weight:700}
+  .badge{display:inline-block;background:var(--gold);color:#5a4200;border-radius:999px;padding:4px 12px;font-weight:800;font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅲ 시장경제와 지속가능발전 · 3-2 합리적 선택</div>
+    <h1>⏱️ 합리적 선택 의사결정기</h1>
+    <p>토요일 오후, 텅 빈 3시간. 알바로 돈을 벌까, 시험공부를 할까, 그냥 쉴까? 뭘 고르든 넌 나머지를 '포기'한다 — 그게 바로 <b>기회비용</b>이다. 편익과 비용을 견주어 순편익이 가장 큰 선택을 찾아보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="explore">2. 의사결정기</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>합리적 선택, 5개 열쇠말</h2>
+      <p class="lead">합리적 선택이란 같은 자원으로 <b>순편익이 가장 큰</b> 대안을 고르는 것. 아래 5개 개념을 먼저 익히자.</p>
+      <div class="grid2">
+        <div class="concept"><span class="ic">😊</span> <b>편익(benefit)</b><br>선택으로 얻는 만족·이득(돈+비금전). 비교를 위해 점수·화폐로 환산한다.</div>
+        <div class="concept"><span class="ic">💸</span> <b>(명시적)비용</b><br>선택을 위해 <b>실제로 지출</b>한 돈·자원. 회계적 비용이라고도 한다.</div>
+        <div class="concept"><span class="ic">➕</span> <b>순편익</b><br><b>순편익 = 편익 − 비용</b>. 합리적 선택은 이 값이 가장 큰 대안이다.</div>
+        <div class="concept"><span class="ic">🔁</span> <b>기회비용</b><br>선택 때문에 <b>포기한 대안 중 가치가 가장 큰 하나(차선)</b>의 가치. 포기한 것 전부의 합이 <b>아니다</b>.</div>
+      </div>
+      <div class="concept" style="margin-top:12px"><span class="ic">🪨</span> <b>매몰비용(sunk cost)</b> — 이미 써서 <b>되돌릴 수 없는</b> 비용. 앞으로의 선택에는 영향을 못 주므로, 합리적 판단에서는 <b>고려하지 않는다</b>.</div>
+      <div class="hilite">
+        🔑 <b>기회비용은 "차선 하나"다.</b> 방과후에 알바·학원·휴식 중 알바를 골랐다면, 기회비용은 학원과 휴식을 <b>둘 다 더한 값이 아니라</b>, 그중 <b>가장 아까운 하나(차선)</b>의 순편익이다.
+      </div>
+      <div class="concept" style="margin-top:12px"><span class="ic">🧮</span> <b>경제적 순편익</b> = (최선의 순편익) − (차선의 순편익) = <b>순편익 − 기회비용</b>. 이 값이 클수록 그 선택이 확실히 더 유리하다. 여기엔 <b>암묵적 비용</b>(포기한 소득처럼 실제 지출은 없지만 포기한 가치)도 녹아 있다.</div>
+      <p class="lead" style="margin-top:14px;font-size:13px">👩‍🏫 이렇게 쓰세요: ① 개념 탭으로 열쇠말 5개를 함께 짚고 → ② 의사결정기에서 슬라이더를 직접 움직여 순위가 뒤집히는 순간을 보여준 뒤 → ③ 미션 6개는 개인·모둠 대결로 풀고, 결과 카드는 형성평가 제출물로 받으세요.</p>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('explore')">직접 대안을 넣어 판단해보기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 의사결정기 ===== -->
+  <section id="tab-explore" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>의사결정기 — 대안을 넣고 최적을 찾자</h2>
+      <p class="lead">같은 방과후 2시간을 두고 경쟁하는 대안들이다. 편익·비용 슬라이더를 움직이면 순편익·최적·기회비용이 실시간으로 바뀐다.</p>
+      <div class="legend">
+        <span><i style="background:var(--benefit)"></i>편익</span>
+        <span><i style="background:var(--cost)"></i>비용</span>
+        <span><i style="background:#bcd4ee;border:1.5px solid var(--benefit)"></i>순편익(편익−비용)</span>
+        <span>👑 최적</span>
+      </div>
+      <div class="graphwrap"><canvas id="graph" width="560" height="360"></canvas></div>
+      <div class="readout">
+        <div class="stat best"><div class="lab">최적 대안</div><div class="val" id="valBest">–</div></div>
+        <div class="stat oc"><div class="lab">기회비용(차선 순편익)</div><div class="val" id="valOC">–</div></div>
+        <div class="stat en"><div class="lab">경제적 순편익</div><div class="val" id="valEN">–</div></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+
+      <div id="altList"></div>
+      <div class="rowbtns">
+        <button class="btn ghost sm" id="addAlt" onclick="addAlt()">＋ 대안 추가</button>
+        <button class="btn ghost sm" onclick="resetExplore()">기준으로 초기화</button>
+      </div>
+
+      <div class="toggle">
+        <input type="checkbox" id="lensChk"><label for="lensChk" style="cursor:pointer">🔎 기회비용 렌즈: 최적 막대 위에 '포기한 차선의 가치' 점선 표시</label>
+      </div>
+      <div class="toggle">
+        <input type="checkbox" id="sunkChk"><label for="sunkChk" style="cursor:pointer">🪨 심화: 이미 쓴 돈(매몰비용) 넣어보기</label>
+      </div>
+      <div id="sunkBox" class="hide">
+        <div class="slider-row">
+          <label><span>모든 대안에 얽힌 매몰비용</span><span id="sunkVal">30</span></label>
+          <input type="range" id="sunkRange" min="0" max="50" step="5" value="30" accent-color="#8a6d3b">
+        </div>
+        <div class="warn" id="sunkMsg"></div>
+      </div>
+
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>미션 — 합리적으로 선택하라</h2>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="pmeta"><span id="mCount">미션 1 / 6</span><span id="mScore">누적 0점</span></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div id="mQuestions"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn accent" id="mCheck" onclick="checkMission()">채점하기</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>학습 결과 카드</h2>
+      <p class="lead">이름을 넣고 결과 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" class="name" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost sm" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="960"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn accent" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost sm" onclick="openPNG()">📱 저장이 안 되면 여기(새 탭)</button>
+        <button class="btn ghost" onclick="restartMission()">미션 다시</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅲ 시장경제와 지속가능발전 · 3-2 합리적 선택 [10통사2-03-02] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+
+/* ======================= 핵심 계산 로직 (4-2) ======================= */
+// 순편익 N = 편익 − 비용 / 최적 = argmax N (동점이면 비용 낮은 쪽)
+function bestIndex(alts){
+  let bi=0;
+  for(let i=1;i<alts.length;i++){
+    const ni=alts[i].B-alts[i].C, nb=alts[bi].B-alts[bi].C;
+    if(ni>nb || (ni===nb && alts[i].C<alts[bi].C)) bi=i;
+  }
+  return bi;
+}
+function analyze(alts){
+  const Ns=alts.map(a=>a.B-a.C);
+  const best=bestIndex(alts);
+  const others=Ns.filter((_,i)=>i!==best);
+  const OC=others.length?Math.max(...others):0;      // 기회비용 = 차선 순편익
+  const secondIdx=Ns.indexOf(OC)===best ? Ns.findIndex((v,i)=>v===OC&&i!==best) : Ns.indexOf(OC);
+  const EN=Ns[best]-OC;                                // 경제적 순편익
+  return {Ns,best,OC,EN,secondIdx};
+}
+
+/* ======================= 캔버스 공통 (DPR) ======================= */
+function fitDPR(cv){
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  if(cv._fit) return cv.getContext('2d');
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+function roundRect(ctx,x,y,w,h,r){r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ======================= 막대그래프 ======================= */
+let crownPhase=0;
+function drawBars(cv, alts, opts){
+  opts=opts||{};
+  const ctx=fitDPR(cv), W=cv._lw, H=cv._lh;
+  const Mg={l:30,r:16,t:40,b:56}, plotH=H-Mg.t-Mg.b, plotW=W-Mg.l-Mg.r, base=H-Mg.b;
+  ctx.clearRect(0,0,W,H);
+  const {Ns,best,OC}=analyze(alts);
+  const n=alts.length, step=plotW/n, bw=Math.min(78,step*0.6);
+  const sc=v=>plotH*(Math.max(0,Math.min(100,v))/100);
+  // 눈금
+  ctx.strokeStyle='#eef2f7'; ctx.lineWidth=1; ctx.fillStyle='#9aa7b5'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+  for(let g=0;g<=100;g+=25){ const y=base-sc(g); ctx.beginPath(); ctx.moveTo(Mg.l,y); ctx.lineTo(W-Mg.r,y); ctx.stroke(); ctx.fillText(g, Mg.l-4, y+3); }
+  ctx.strokeStyle='#c9d4df'; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(Mg.l,base); ctx.lineTo(W-Mg.r,base); ctx.stroke();
+  // 막대
+  alts.forEach((a,i)=>{
+    const cx=Mg.l+step*i+step/2, x=cx-bw/2;
+    const bH=sc(a.B), cH=sc(a.C), netTop=base-bH;
+    if(i===best){
+      ctx.fillStyle='rgba(240,165,0,.10)'; roundRect(ctx,x-8,netTop-26,bw+16,base-netTop+8,10); ctx.fill();
+    }
+    // 편익(연파랑 전체)
+    ctx.fillStyle='#bcd4ee'; roundRect(ctx,x,netTop,bw,bH,6); ctx.fill();
+    // 비용(산호, 아래 C만큼) — 편익을 갉아먹는 부분
+    ctx.fillStyle='#ff6b57'; roundRect(ctx,x,base-cH,bw,cH,6); ctx.fill();
+    // 순편익 = 파랑 위쪽(비용 위) 진하게 강조
+    const nH=Math.max(0,bH-cH);
+    ctx.fillStyle=i===best?'#2e6fb7':'#4f8fce'; roundRect(ctx,x,netTop,bw,nH,6); ctx.fill();
+    if(i===best){ ctx.strokeStyle='#f0a500'; ctx.lineWidth=2.5; roundRect(ctx,x,netTop,bw,nH,6); ctx.stroke(); }
+    // 순편익 값 라벨
+    ctx.fillStyle='#1c2733'; ctx.font='bold 15px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('N='+Ns[i], cx, netTop-8);
+    // 왕관
+    if(i===best){ ctx.font='18px sans-serif'; ctx.fillText('👑', cx, netTop-26+(Math.sin(crownPhase)*2)); }
+    // 이름
+    ctx.fillStyle='#5b6b7c'; ctx.font='bold 12.5px sans-serif';
+    const nm=a.name.length>7?a.name.slice(0,6)+'…':a.name;
+    ctx.fillText(nm, cx, base+18);
+    ctx.fillStyle='#9aa7b5'; ctx.font='11px sans-serif';
+    ctx.fillText('편익'+a.B+' 비용'+a.C, cx, base+34);
+  });
+  // 기회비용 렌즈
+  if(opts.lens && n>=2){
+    const cx=Mg.l+step*best+step/2, x=cx-bw/2;
+    const y=base-sc(OC);
+    ctx.strokeStyle='#ff6b57'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(x-10,y); ctx.lineTo(x+bw+10,y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#e0563e'; ctx.font='bold 11.5px sans-serif'; ctx.textAlign='left';
+    ctx.fillText('기회비용 '+OC, x+bw+12, y+4);
+  }
+}
+
+/* ======================= 의사결정기 UI ======================= */
+const DEFAULT_ALTS=[
+  {name:'카페 알바', B:70, C:20},
+  {name:'학원 보충', B:60, C:40},
+  {name:'동아리 활동', B:55, C:10}
+];
+let alts=DEFAULT_ALTS.map(a=>({...a}));
+function renderAltList(){
+  const {best}=analyze(alts);
+  el('altList').innerHTML=alts.map((a,i)=>`
+    <div class="alt ${i===best?'isbest':''}">
+      <div class="ah">
+        ${i===best?'<span class="crown">👑</span>':''}
+        <input type="text" value="${a.name.replace(/"/g,'&quot;')}" maxlength="10" oninput="setName(${i},this.value)">
+        <span class="net">순편익 <b style="color:${i===best?'#f0a500':'#2e6fb7'}">${a.B-a.C}</b></span>
+        <button class="del" onclick="delAlt(${i})" ${alts.length<=2?'disabled':''} title="삭제">×</button>
+      </div>
+      <div class="slider-row">
+        <label><span class="benefit-c">편익</span><span id="bv${i}">${a.B}</span></label>
+        <input type="range" class="b-range" min="0" max="100" step="5" value="${a.B}" oninput="setVal(${i},'B',this.value)">
+      </div>
+      <div class="slider-row">
+        <label><span class="cost-c">비용</span><span id="cv${i}">${a.C}</span></label>
+        <input type="range" class="c-range" min="0" max="100" step="5" value="${a.C}" oninput="setVal(${i},'C',this.value)">
+      </div>
+    </div>`).join('');
+  el('addAlt').disabled = alts.length>=4;
+}
+function setName(i,v){ alts[i].name=v||('대안'+(i+1)); syncExplore(false); }
+function setVal(i,k,v){ alts[i][k]=+v; el((k==='B'?'bv':'cv')+i).textContent=v; syncExplore(true); }
+function addAlt(){ if(alts.length>=4) return; alts.push({name:'새 대안 '+(alts.length+1), B:50, C:20}); renderAltList(); syncExplore(true); }
+function delAlt(i){ if(alts.length<=2) return; alts.splice(i,1); renderAltList(); syncExplore(true); }
+function resetExplore(){ alts=DEFAULT_ALTS.map(a=>({...a})); el('lensChk').checked=false; el('sunkChk').checked=false; el('sunkBox').classList.add('hide'); renderAltList(); syncExplore(true); }
+
+function syncExplore(redrawList){
+  if(redrawList){
+    // 최적 강조가 바뀔 수 있으니 카드 테두리/왕관만 갱신
+    const {best}=analyze(alts);
+    [...el('altList').children].forEach((c,i)=>c.classList.toggle('isbest',i===best));
+  }
+  const {Ns,best,OC,EN,secondIdx}=analyze(alts);
+  drawBars(el('graph'), alts, {lens:el('lensChk').checked});
+  el('valBest').textContent=alts[best].name+' (N'+Ns[best]+')';
+  el('valOC').textContent=OC;
+  el('valEN').textContent=EN;
+  // 판정 문구
+  let v;
+  if(EN===0){
+    v=`두 대안의 순편익이 <b>${Ns[best]}</b>로 같아 어느 쪽도 확실히 유리하지 않다. 이럴 땐 <b>비금전 요소</b>(흥미·건강 등)로 결정하자.`;
+  }else{
+    v=`<b>${alts[best].name}</b>를 선택 → 순편익 <b>${Ns[best]}</b>. 포기한 최선(차선)은 <b>${alts[secondIdx]?alts[secondIdx].name:'차선'}</b>(순편익 ${OC})이므로 <b>기회비용 = ${OC}</b>. 결국 다른 대안 대신 이 선택으로 더 얻는 몫(경제적 순편익)은 <b>${EN}</b>.`;
+  }
+  el('verdict').innerHTML=v;
+  // 매몰비용
+  if(el('sunkChk').checked){
+    const s=+el('sunkRange').value;
+    const {best:b2}=analyze(alts.map(a=>({name:a.name,B:a.B,C:a.C+s})));
+    el('sunkMsg').innerHTML=`매몰비용 <b>${s}</b>를 모든 대안 비용에 똑같이 더해도 최적은 여전히 <b>${alts[b2].name}</b> — 순위가 안 바뀐다. 매몰비용은 이미 되돌릴 수 없는 과거 지출이라 <b>합리적 판단에서 무시</b>해야 한다.`;
+  }
+  // 리드아웃 팝
+  ['valBest','valOC','valEN'].forEach(id=>{ const p=el(id).parentNode; p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); });
+}
+// 왕관 살랑 애니메이션
+setInterval(()=>{ crownPhase+=0.25; if(el('tab-explore') && !el('tab-explore').classList.contains('hide')) drawBars(el('graph'), alts, {lens:el('lensChk').checked}); }, 90);
+
+/* ======================= 미션 ======================= */
+// 각 미션: 대안 배열(편익/비용) + 개념(O/X) 문항. 최적·기회비용은 로직으로 자동검증.
+const MISSIONS=[
+  {emoji:'⏰', title:'방과후 2시간을 어디에?',
+   txt:'수업 끝난 방과후 2시간. <b>알바·학원·휴식</b>이 저마다 "날 골라!" 하고 손을 든다. 편익에서 비용을 뺀 순편익으로 냉정하게 골라 보자.',
+   alts:[{name:'알바',B:70,C:20},{name:'학원',B:60,C:25},{name:'휴식',B:45,C:0}],
+   concept:{q:'포기한 학원·휴식의 순편익을 <b>모두 더한 값(35+45=80)</b>이 기회비용이다.', ans:false,
+     why:'기회비용은 포기한 것 전부의 합이 아니라 <b>차선 하나</b>(여기선 휴식의 순편익 45)다.'}},
+  {emoji:'🎟️', title:'콘서트 vs 시험 전날 공부',
+   txt:'내일이 시험인데 하필 오늘 밤 최애 가수 <b>콘서트</b>다. 짜릿한 즐거움이냐, 성적이 걸린 <b>시험 공부</b>냐 — 몸은 하나뿐이다.',
+   alts:[{name:'콘서트',B:80,C:50},{name:'시험공부',B:65,C:10}],
+   concept:{q:'편익(즐거움)이 더 큰 콘서트를 고르는 것이 언제나 합리적이다.', ans:false,
+     why:'편익만 보면 안 된다. 비용까지 뺀 <b>순편익</b>으로 비교하면 시험공부(55)가 콘서트(30)보다 낫다.'}},
+  {emoji:'🎬', title:'환불 안 되는 영화표',
+   txt:'<b>1만 원</b> 주고 산 <b>환불 불가</b> 영화표. 그런데 20분 봤더니 완전 노잼이다. 아까우니 끝까지 버틸까, 나가서 공부할까?<br><span style="font-size:13px;color:#b57d00">※ 표값 1만 원은 이미 낸 돈(매몰비용) — 순편익 계산에서 빠져 있다.</span>',
+   alts:[{name:'계속 보기',B:20,C:0},{name:'나가서 공부',B:45,C:0}],
+   concept:{q:'이미 낸 표값 1만 원이 아까우니, 재미없어도 끝까지 봐야 한다.', ans:false,
+     why:'표값은 <b>매몰비용</b> — 어느 쪽을 골라도 돌아오지 않는다. 지금부터의 순편익만 비교하면 나가서 공부(45)가 합리적이다.'}},
+  {emoji:'👟', title:'용돈 5만 원의 쓰임',
+   txt:'이번 달 용돈 5만 원이 통장에 딱 꽂혔다. <b>신발·게임·저축</b> 중 하나에만 쓸 수 있다. 저축의 편익은 이자·안정감을 점수로 환산했다.',
+   alts:[{name:'신발',B:60,C:45},{name:'게임',B:50,C:25},{name:'저축',B:48,C:18}],
+   concept:{q:'저축을 고르면 기회비용은 차선인 <b>게임의 순편익 25</b>이다.', ans:true,
+     why:'맞다. 최적은 저축(30), 차선은 게임(25)이므로 기회비용 = 25. 경제적 순편익은 30−25 = 5.'}},
+  {emoji:'🎓', title:'고졸 취업 vs 대학 진학',
+   txt:'고3 겨울, 인생 갈림길이다. <b>바로 취업</b>이냐 <b>대학 진학</b>이냐. 진학 비용에는 등록금만이 아니라, 취업했다면 벌었을 <b>포기한 소득(암묵적 비용)</b>도 넣었다.',
+   alts:[{name:'취업',B:55,C:10},{name:'진학',B:90,C:60}],
+   concept:{q:'대학 진학의 비용에는 등록금 외에 <b>포기한 소득</b>(암묵적 비용)도 포함해야 한다.', ans:true,
+     why:'맞다. 명시적 비용(등록금)만 보면 오판한다. 포기한 소득까지 넣어야 진학의 진짜 순편익(30)이 나오고, 취업(45)과 제대로 비교된다.'}},
+  {emoji:'☕', title:'카페 창업 vs 직장 유지',
+   txt:'10년 다닌 직장을 접고 <b>카페 창업</b>에 뛰어들까? 창업 비용에는 임대·재료 같은 명시적 비용에 더해, 꼬박꼬박 받던 <b>월급을 포기한 값(암묵적 비용)</b>까지 들어 있다.',
+   alts:[{name:'창업',B:100,C:90},{name:'직장유지',B:80,C:60}],
+   concept:{q:'회계상 이윤(매출−명시적 비용)이 흑자여도, 포기한 월급까지 빼면 손해일 수 있다.', ans:true,
+     why:'맞다. 명시적 비용만 뺀 회계적 이윤이 흑자여도, 포기한 월급(암묵적 비용)까지 뺀 <b>경제적 순편익</b>이 음수면 그 선택은 합리적이지 않다.'}}
+];
+let mIdx=0; const mResult=[]; let mChecked=false;
+const mPick={best:null, oc:null, concept:null};
+
+function ocChoices(alts){
+  const {Ns,best,OC}=analyze(alts);
+  const sumOthers=Ns.reduce((s,n,i)=>i===best?s:s+n,0);
+  let cand=[OC, sumOthers, Ns[best], Ns[best]+OC];
+  cand=cand.filter((v,i)=>cand.indexOf(v)===i);
+  let k=1;
+  while(cand.length<4){ const v=OC+k*5; if(!cand.includes(v)) cand.push(v); k++; }
+  cand=cand.slice(0,4);
+  // 결정적 셔플
+  for(let i=cand.length-1;i>0;i--){ const j=(i*7+mIdx*3)%(i+1); [cand[i],cand[j]]=[cand[j],cand[i]]; }
+  return {options:cand, correct:OC};
+}
+function renderMission(){
+  const m=MISSIONS[mIdx]; mChecked=false; mPick.best=mPick.oc=mPick.concept=null;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mCount').textContent='미션 '+(mIdx+1)+' / '+MISSIONS.length;
+  el('mScore').textContent='누적 '+totalScore()+'점';
+  const altHtml=m.alts.map(a=>`<span class="ab">${a.name} <span class="b">편익${a.B}</span>·<span class="c">비용${a.C}</span> → N<b>${a.B-a.C}</b></span>`).join('');
+  el('mScenario').innerHTML=`<span class="emoji">${m.emoji}</span> <b>${m.title}</b><br>${m.txt}<div class="altbox">${altHtml}</div>`;
+  const oc=ocChoices(m.alts);
+  el('mScenario')._oc=oc;
+  el('mQuestions').innerHTML=`
+    <div class="q"><div class="qt">① 순편익이 가장 큰 <b>최적 대안</b>은?</div>
+      <div class="opts" data-k="best">
+        ${m.alts.map((a,i)=>`<button onclick="pick('best',${i},this)">${a.name}</button>`).join('')}</div></div>
+    <div class="q"><div class="qt">② 이 선택의 <b>기회비용</b>(포기한 차선의 순편익)은?</div>
+      <div class="opts" data-k="oc">
+        ${oc.options.map(v=>`<button onclick="pick('oc',${v},this)">${v}</button>`).join('')}</div></div>
+    <div class="q"><div class="qt">③ 개념 판단 — 다음 설명은?</div>
+      <div style="font-size:14px;background:#f7faff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px">${m.concept.q}</div>
+      <div class="opts" data-k="concept">
+        <button onclick="pick('concept',true,this)">⭕ 맞다</button>
+        <button onclick="pick('concept',false,this)">❌ 아니다</button></div></div>`;
+  el('mFeedback').innerHTML='';
+  el('mCheck').classList.remove('hide'); el('mNext').classList.add('hide');
+}
+function pick(k,v,btn){
+  if(mChecked) return;
+  mPick[k]=v;
+  if(btn&&btn.parentNode)[...btn.parentNode.children].forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function checkMission(){
+  const m=MISSIONS[mIdx];
+  if(mPick.best===null || mPick.oc===null || mPick.concept===null){
+    el('mFeedback').innerHTML='<div class="feedback no">세 문항을 모두 골라줘! 🙌</div>'; return;
+  }
+  mChecked=true;
+  const {best,OC}=analyze(m.alts);
+  const okBest=mPick.best===best, okOC=mPick.oc===OC, okC=mPick.concept===m.concept.ans;
+  const score=(okBest?1:0)+(okOC?1:0)+(okC?1:0);
+  mResult[mIdx]={score, of:3, emoji:m.emoji, q:[okBest,okOC,okC]};
+  // 정답/오답 강조
+  document.querySelectorAll('.opts').forEach(g=>{
+    const k=g.dataset.k;
+    [...g.children].forEach((b,i)=>{
+      let good;
+      if(k==='best') good=(i===best);
+      else if(k==='oc') good=(+b.textContent===OC);
+      else good=((i===0)===m.concept.ans); // 0번=맞다
+      if(good) b.classList.add('correct');
+      if(b.classList.contains('sel') && !good) b.classList.add('wrong');
+    });
+  });
+  const allOk=score===3;
+  const head = allOk?'🎯 세 개 다 맞았어! (3/3)' : (score>0?'💡 아깝다, 부분 정답 ('+score+'/3)':'🔥 개념부터 다시 보자 (0/3)');
+  el('mFeedback').innerHTML=`<div class="feedback ${allOk?'ok':(score>0?'warnc':'no')}">${head}<br>
+    · 최적 대안: <b>${m.alts[best].name}</b>(순편익 ${m.alts[best].B-m.alts[best].C}) ${okBest?'✔':'✘ 내 답 오답'}<br>
+    · 기회비용(차선 순편익): <b>${OC}</b> ${okOC?'✔':'✘'}<br>
+    · 개념: ${m.concept.why}</div>`;
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mScore').textContent='누적 '+totalScore()+'점';
+  el('mCheck').classList.add('hide'); el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); window.scrollTo({top:el('tab-mission').offsetTop-10,behavior:'smooth'}); }
+  else { go('result'); drawResult(); }
+}
+function restartMission(){ mIdx=0; mResult.length=0; renderMission(); go('mission'); }
+
+/* ======================= 결과 카드 ======================= */
+function totalScore(){ return mResult.reduce((s,r)=>s+(r?r.score:0),0); }
+function drawResult(){
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const total=totalScore(), max=MISSIONS.length*3, pct=max?total/max:0;
+  // 배경
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2e6fb7'); g.addColorStop(1,'#1f5391');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  // 헤더
+  ctx.textAlign='center';
+  ctx.fillStyle='#2e6fb7'; ctx.font='bold 40px "Malgun Gothic",sans-serif';
+  ctx.fillText('⏱️ 합리적 선택 의사결정기', W/2, 122);
+  ctx.font='bold 30px "Malgun Gothic",sans-serif'; ctx.fillText('학습 결과 카드', W/2, 166);
+  ctx.fillStyle='#5b6b7c'; ctx.font='21px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅲ 3-2 합리적 선택 · 기회비용', W/2, 204);
+  // 이름
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1c2733'; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+  ctx.fillText(name, W/2, 262);
+  // 점수 원형 게이지
+  const cx=W/2, cy=396, r=104;
+  ctx.lineWidth=24; ctx.strokeStyle='#eef2f7'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.9?'#1c9e6b':(pct>=0.7?'#2e6fb7':(pct>=0.5?'#ffc53d':'#e0563e'));
+  ctx.lineCap='round'; ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke(); ctx.lineCap='butt';
+  ctx.fillStyle='#1c2733'; ctx.font='bold 56px "Malgun Gothic",sans-serif'; ctx.fillText(total+'', cx, cy+6);
+  ctx.fillStyle='#5b6b7c'; ctx.font='21px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+40);
+  // 등급
+  const grade = pct>=0.9?'기회비용 마스터 🏆':pct>=0.7?'합리적 의사결정가 📊':pct>=0.5?'선택 견습생 🌱':'개념부터 다시 💪';
+  ctx.fillStyle='#f0a500'; roundRect(ctx,cx-150,cy+r+18,300,44,22); ctx.fill();
+  ctx.fillStyle='#5a4200'; ctx.font='bold 24px "Malgun Gothic",sans-serif'; ctx.fillText(grade, cx, cy+r+48);
+  // 미션 표
+  ctx.font='21px "Malgun Gothic",sans-serif';
+  let y=cy+r+108;
+  const colX=[92, W/2+10];
+  for(let i=0;i<MISSIONS.length;i++){
+    const rr=mResult[i]; const col=i%2, row=Math.floor(i/2);
+    const x=colX[col], yy=y+row*46;
+    ctx.textAlign='left'; ctx.fillStyle='#1c2733';
+    ctx.fillText(`${MISSIONS[i].emoji} 미션 ${i+1}`, x, yy);
+    ctx.textAlign='right';
+    if(rr){ ctx.fillStyle= rr.score===3?'#1c9e6b':(rr.score>0?'#f0a500':'#e0563e');
+      ctx.fillText(rr.score===3?'✅ 3/3':rr.score+'/3', (col===0?W/2-20:W-92), yy); }
+    else { ctx.fillStyle='#94a3b4'; ctx.fillText('미완료', (col===0?W/2-20:W-92), yy); }
+  }
+  y+=3*46+18;
+  // 개념 체크 3칸
+  ctx.textAlign='left'; ctx.fillStyle='#1f5391'; ctx.font='bold 22px "Malgun Gothic",sans-serif';
+  ctx.fillText('개념 체크', 92, y); y+=36;
+  const c1=!!(mResult[0]&&mResult[0].q[2]) || !!(mResult[3]&&mResult[3].q[2]);
+  const c2=!!(mResult[2]&&mResult[2].q[2]);
+  const c3=!!(mResult[4]&&mResult[4].q[2]) || !!(mResult[5]&&mResult[5].q[2]);
+  const checks=[['기회비용 = 차선의 가치',c1],['매몰비용은 무시',c2],['암묵적 비용 포함',c3]];
+  ctx.font='21px "Malgun Gothic",sans-serif';
+  checks.forEach((c)=>{ ctx.fillStyle='#1c2733'; ctx.fillText((c[1]?'✅ ':'⬜ ')+c[0], 92, y); y+=38; });
+  // 푸터
+  ctx.textAlign='center'; ctx.fillStyle='#94a3b4'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 합리적 선택 의사결정기', W/2, H-64);
+}
+function savePNG(){
+  drawResult();
+  const cv=el('resultCanvas'), a=document.createElement('a');
+  a.download='합리적선택_결과_'+(el('studentName').value||'학생')+'.png';
+  a.href=cv.toDataURL('image/png'); a.click();
+}
+// 모바일 등 다운로드가 막힐 때: 같은 클릭 제스처 안에서 이미지를 새 탭으로 연다(길게 눌러 저장)
+function openPNG(){
+  drawResult();
+  const cv=el('resultCanvas'), url=cv.toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ======================= 탭 전환 ======================= */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','explore','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='explore') syncExplore(true);
+  if(tab==='mission' && !mChecked && !mResult[mIdx]) renderMission();
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+el('lensChk').addEventListener('change',()=>syncExplore(false));
+el('sunkChk').addEventListener('change',e=>{ el('sunkBox').classList.toggle('hide',!e.target.checked); syncExplore(false); });
+el('sunkRange').addEventListener('input',e=>{ el('sunkVal').textContent=e.target.value; syncExplore(false); });
+
+/* 초기화 */
+renderAltList(); syncExplore(false); renderMission();
+</script>
+</body>
+</html>

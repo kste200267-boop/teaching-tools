@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국제기구·국제협력 탐험 매칭 · 통합사회2 Ⅳ 세계화와 평화</title>
+<style>
+  :root{
+    /* 팔레트 id 19 · 인디고 */
+    --primary:#4f46e5; --primary-d:#3730a3; --primary-l:#818cf8;
+    --bg:#f2f3fb; --surface:#fff; --ink:#1e1b3a; --sub:#5c5878;
+    --igo:#4f46e5; --igo-d:#3730a3; --ngo:#0d9488; --ngo-d:#0f766e;
+    --gold:#e0a526; --terra:#d9534f;
+    --line:#e6e6f2; --shadow:0 6px 20px rgba(40,36,90,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#eef0fb;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .pill{display:inline-block;background:#e9eafc;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.ngo{background:#d9f2ef;color:var(--ngo-d)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+  .feat{background:#f7f7fd;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:13px;text-align:center}
+  .feat.ngo{background:#f1fbf9;border-color:#cdeee9}
+  .feat .emo{font-size:24px}
+  .feat .nm{font-weight:800;margin-top:2px;color:var(--primary-d)}
+  .feat.ngo .nm{color:var(--ngo-d)}
+  .feat .ds{color:var(--sub);font-size:12px;margin-top:2px;line-height:1.45}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--gold);color:#4a3608}
+  .btn.ghost{background:#e9eafc;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* 매칭 */
+  .matchstat{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:var(--sub);margin:6px 2px 4px;flex-wrap:wrap}
+  .matchstat b{color:var(--primary-d)}
+  .progress{height:9px;background:#e7e7f4;border-radius:99px;overflow:hidden;margin:4px 0 6px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:width .4s}
+  .traylabel{font-weight:800;font-size:14px;color:var(--primary-d);margin:12px 0 6px}
+  .tray{display:flex;flex-wrap:wrap;gap:8px;min-height:56px;background:#f5f5fc;border:1.5px dashed #cfd0ee;border-radius:12px;padding:10px}
+  .chip{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-left:5px solid var(--primary);
+    border-radius:11px;padding:9px 12px;font-size:13.5px;font-weight:700;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(40,36,90,.06);user-select:none}
+  .chip .emo{font-size:20px}
+  .chip .tt{line-height:1.2}
+  .chip .tt small{display:block;font-weight:600;color:var(--sub);font-size:11.5px}
+  .chip.sel{border-color:var(--gold);border-left-color:var(--gold);background:#fef7e6;box-shadow:0 0 0 3px rgba(224,165,38,.25)}
+  .chip.ghostdrag{position:fixed;z-index:999;pointer-events:none;opacity:.95;transform:scale(1.04);box-shadow:0 12px 28px rgba(40,36,90,.28)}
+  .trayempty{color:var(--sub);font-size:13px;align-self:center;margin:auto}
+  .board{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+  @media(max-width:680px){.board{grid-template-columns:1fr}}
+  .grouphd{grid-column:1/-1;font-weight:800;font-size:13px;margin:10px 0 0;display:flex;align-items:center;gap:6px}
+  .grouphd .tag{font-size:11px;border-radius:6px;padding:2px 7px}
+  .grouphd .tag.igo{background:#e9eafc;color:var(--igo-d)}
+  .grouphd .tag.ngo{background:#d9f2ef;color:var(--ngo-d)}
+  .org{position:relative;border:1.5px solid var(--line);border-radius:13px;padding:12px;background:#fff;transition:.18s;overflow:hidden}
+  .org.igo{border-top:4px solid var(--igo)} .org.ngo{border-top:4px solid var(--ngo)}
+  .org .oh{display:flex;align-items:center;gap:9px}
+  .org .oe{font-size:26px}
+  .org .on{font-weight:800;font-size:14.5px}
+  .org.igo .on{color:var(--igo-d)} .org.ngo .on{color:var(--ngo-d)}
+  .org .lock{margin-left:auto;font-size:12px;font-weight:800;color:#a9a7c4}
+  .org .role{font-size:12.5px;color:var(--sub);margin-top:7px;line-height:1.45;max-height:0;opacity:0;overflow:hidden;transition:.3s}
+  .org.over{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,165,38,.28);transform:translateY(-2px)}
+  .org.done{background:#f2f6ff}
+  .org.igo.done{border-color:var(--igo)} .org.ngo.done{background:#f0fbf9;border-color:var(--ngo)}
+  .org.done .role{max-height:120px;opacity:1;margin-top:8px}
+  .org.done .lock{color:var(--primary);content:''}
+  .org.wrong{animation:shake .4s}
+  .org.hit{animation:pop .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.06)}100%{transform:scale(1)}}
+  .fb{margin-top:12px;padding:12px 14px;border-radius:11px;font-size:13.5px;font-weight:600;min-height:20px}
+  .fb.ok{background:#eaf0ff;color:var(--primary-d);border:1px solid #d6ddff}
+  .fb.no{background:#fbe9e8;color:#b23c38;border:1px solid #f2cfcd}
+  .fb.idle{background:#f5f5fc;color:var(--sub)}
+  .combo{display:inline-block;background:var(--gold);color:#4a3608;font-weight:800;font-size:12px;border-radius:8px;padding:2px 9px;margin-left:6px}
+  /* 협력 시나리오 */
+  .coop{margin-top:14px;background:#eef0fb;border:1px solid var(--line);border-radius:13px;padding:14px}
+  .coop .roles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+  @media(max-width:680px){.coop .roles{grid-template-columns:1fr}}
+  .coop .roles button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 8px;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;text-align:center}
+  .coop .roles button.picked{border-color:var(--primary);background:#e7ebff;color:var(--primary-d)}
+  .coop .rolefb{margin-top:10px;font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px;min-height:14px}
+  /* 미션 */
+  .scen{background:#eef0fb;border:1px solid #d7d9f4;border-radius:12px;padding:14px;font-size:15px;margin-bottom:8px}
+  .scen .type{display:inline-block;font-size:11.5px;font-weight:800;background:var(--primary);color:#fff;border-radius:6px;padding:2px 8px;margin-bottom:6px}
+  .scen .emoji{font-size:26px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left;font-family:inherit}
+  .opts button:disabled{opacity:.9;cursor:default}
+  .opts button.picked-good{border-color:var(--primary);background:#e7ebff}
+  .opts button.picked-mid{border-color:var(--gold);background:#fbf3df}
+  .opts button.picked-bad{border-color:var(--terra);background:#fbe9e8}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#eef0fb;color:var(--ink)}
+  .mnav{display:flex;justify-content:flex-end;margin-top:14px}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px;font-family:inherit}
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e9eafc;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅳ 세계화와 평화 · 국제 협력과 세계시민</div>
+    <h1>🌐 국제기구·국제협력 탐험 매칭</h1>
+    <p>지진, 난민, 전염병… 한 나라 힘만으로는 막을 수 없는 문제들. 이럴 때 누가 나설까? 지구촌 문제를 알맞은 기구·주체와 이어 보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="match">2. 매칭 탐험</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- 1. 개념 -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>혼자서는 못 푸는 지구촌 문제, 함께 푸는 국제 협력</h2>
+      <p class="lead">감염병은 국경 심사를 받지 않고, 기후변화는 여권이 없다. 난민·무역 갈등도 마찬가지다. 이런 <b>국경을 넘는 문제</b>는 한 나라가 아무리 애써도 혼자서는 벅차다. 그래서 여러 나라와 단체가 규범을 만들고 힘을 모으는 <b>국제 협력(글로벌 거버넌스)</b>이 필요하다.</p>
+      <div class="grid2">
+        <div class="concept">
+          <h3>🏛️ 정부간 국제기구 (IGO)</h3>
+          <b>국가</b>를 회원으로 하는 공식 기구. 국제 규범·기준을 만들고 분쟁을 조정한다.
+          <div style="margin-top:6px">
+            <span class="pill">UN 국제연합</span><span class="pill">WHO 보건</span><span class="pill">WTO 무역</span>
+            <span class="pill">IMF 통화·금융</span><span class="pill">UNESCO 교육·문화</span><span class="pill">UNHCR 난민</span><span class="pill">ILO 노동</span>
+          </div>
+        </div>
+        <div class="concept">
+          <h3>💚 비정부기구 (NGO)</h3>
+          <b>시민·민간</b>이 자발적으로 만든 단체. 감시·구호·캠페인으로 정부가 놓친 곳을 메운다.
+          <div style="margin-top:6px">
+            <span class="pill ngo">국경없는의사회</span><span class="pill ngo">그린피스</span><span class="pill ngo">국제앰네스티</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>🧩 누가 어떤 문제를 맡을까 — 국제기구의 역할</h3>
+      <div class="grid3">
+        <div class="feat"><div class="emo">🇺🇳</div><div class="nm">UN 국제연합</div><div class="ds">평화 유지·안보리·PKO, 분쟁 조정</div></div>
+        <div class="feat"><div class="emo">🏥</div><div class="nm">WHO</div><div class="ds">감염병 대응·보건 기준·방역 협력</div></div>
+        <div class="feat"><div class="emo">⚖️</div><div class="nm">WTO</div><div class="ds">자유무역 규범·무역 분쟁 조정</div></div>
+        <div class="feat"><div class="emo">💰</div><div class="nm">IMF</div><div class="ds">통화 협력·외환위기국 자금 지원</div></div>
+        <div class="feat"><div class="emo">📖</div><div class="nm">UNESCO</div><div class="ds">교육·과학·문화, 세계유산 보호</div></div>
+        <div class="feat"><div class="emo">⛺</div><div class="nm">UNHCR</div><div class="ds">난민 보호·정착·귀환 지원</div></div>
+        <div class="feat"><div class="emo">👷</div><div class="nm">ILO</div><div class="ds">노동 기준·노동권·아동노동 금지</div></div>
+        <div class="feat ngo"><div class="emo">🚑</div><div class="nm">국경없는의사회</div><div class="ds">분쟁·재난지 긴급 의료 구호</div></div>
+        <div class="feat ngo"><div class="emo">🌱</div><div class="nm">그린피스</div><div class="ds">환경 감시·보호 캠페인</div></div>
+      </div>
+
+      <h3>🌱 국가·NGO·개인, 그리고 세계시민</h3>
+      <div class="concept">
+        국제 협력은 <b>국가</b>(조약·기구 참여)만의 일이 아니다. <b>NGO</b>는 감시·구호로, <b>개인</b>은 관심·연대·후원·윤리적 소비로 참여한다.
+        지구촌 문제를 <b>내 문제</b>로 여기고 함께 행동하는 태도가 <b>세계시민의식</b>이다.
+      </div>
+      <p class="note">※ 국제기구는 협력을 이끌지만 강제력에는 한계가 있어, 여러 주체의 <b>협력</b>이 함께 필요하다.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('match')">매칭 탐험 시작 →</button></div>
+    </div>
+  </section>
+
+  <!-- 2. 매칭 탐험 -->
+  <section id="tab-match">
+    <div class="card">
+      <h2><span class="dot"></span>지구촌 문제 → 알맞은 주체에 이어 주기</h2>
+      <p class="lead">지구촌에서 SOS가 열 건 날아왔다. 각 <b>문제 카드</b>를 이 일을 맡을 <b>국제기구/NGO</b> 위로 <b>끌어다 놓거나</b>, 카드를 탭해 고른 뒤 기구를 탭해 이어 주자. 제대로 이으면 <b>도감</b>이 한 칸씩 채워지고 <b>콤보·점수</b>가 쭉쭉 오른다!</p>
+      <div class="matchstat">
+        <span>점수 <b id="stScore">0</b><span class="combo hide" id="stCombo"></span></span>
+        <span>도감 <b id="stDex">0</b>/10</span>
+        <span>정답 <b id="stRight">0</b> · 시도 <b id="stTry">0</b></span>
+      </div>
+      <div class="progress"><i id="matchProg"></i></div>
+
+      <div class="traylabel">🗂️ 지구촌 문제 카드 <span class="pill" id="trayCount"></span></div>
+      <div class="tray" id="tray"></div>
+
+      <div class="fb idle" id="matchFb">👆 문제 카드를 알맞은 기구로 끌어다 놓아 보세요.</div>
+
+      <div class="traylabel">📇 국제기구·NGO 도감</div>
+      <div class="board" id="board"></div>
+
+      <div class="coop hide" id="coopPanel">
+        <div style="font-weight:800;color:var(--primary-d)">🤝 협력 시나리오 — 대형 지진 참사, 누가 나설까?</div>
+        <div style="font-size:13.5px;color:var(--sub);margin-top:4px">한 지역에 큰 지진이 나 수만 명이 집을 잃었다. 아래 <b>세 주체</b>는 저마다 어떻게 협력할까? 눌러서 확인하자.</div>
+        <div class="roles" id="coopRoles"></div>
+        <div class="rolefb" id="coopFb">주체를 눌러 각자의 역할을 확인해 보세요.</div>
+      </div>
+
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="resetMatch()">↺ 매칭 초기화</button>
+        <button class="btn primary" onclick="go('mission')">미션 도전 →</button>
+      </div>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 모둠별로 기구 도감을 끝까지 완성한 뒤, 맡은 기구 하나를 골라 "우리는 무슨 문제를 이렇게 해결한다"를 30초 역할 발표로 이어 보세요.</p>
+      <p class="note">※ 문제와 주체는 학습을 위해 대표 사례로 단순화했습니다. 실제로는 여러 기구가 함께 협력합니다.</p>
+    </div>
+  </section>
+
+  <!-- 3. 미션 -->
+  <section id="tab-mission">
+    <div class="card">
+      <h2><span class="dot"></span>국제 협력 미션 (6)</h2>
+      <p class="lead">이번엔 실전이다. 여섯 개의 지구촌 현장에서 <b>가장 알맞은 주체·대응</b>을 골라 상황을 풀어 보자. 마지막 문항은 정답보다 중요한 <b>세계시민의 태도</b>를 묻는다.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 결과 -->
+  <section id="tab-result">
+    <div class="card">
+      <h2><span class="dot"></span>나의 세계시민 협력 리포트</h2>
+      <p class="lead">오늘의 탐험, 한 장으로 정리했다. 이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1040"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="openPNG()">📱 저장이 안 되면 여기(새 탭)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅳ 세계화와 평화 · 국제기구(IGO·NGO)와 국제 협력·세계시민의식 · 단일 HTML · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ===== 데이터 ===== */
+const ORGS={
+  UN:    {emo:'🇺🇳',nm:'국제연합(UN)',type:'igo',role:'국제 평화·안전 유지. 안전보장이사회와 평화유지활동(PKO)으로 분쟁을 조정한다.'},
+  WHO:   {emo:'🏥',nm:'세계보건기구(WHO)',type:'igo',role:'감염병 대응과 보건 기준을 마련하고, 국제 방역·백신 협력을 이끈다.'},
+  WTO:   {emo:'⚖️',nm:'세계무역기구(WTO)',type:'igo',role:'자유무역 규범을 만들고 국가 간 무역 분쟁을 조정한다.'},
+  IMF:   {emo:'💰',nm:'국제통화기금(IMF)',type:'igo',role:'국제 통화 협력을 돕고, 외환위기국에 자금을 지원해 금융 안정을 꾀한다.'},
+  UNESCO:{emo:'📖',nm:'유네스코(UNESCO)',type:'igo',role:'교육·과학·문화 분야에서 협력하고 세계유산을 보호한다.'},
+  UNHCR: {emo:'⛺',nm:'유엔난민기구(UNHCR)',type:'igo',role:'난민의 보호·정착·귀환을 지원한다.'},
+  ILO:   {emo:'👷',nm:'국제노동기구(ILO)',type:'igo',role:'노동 기준과 노동권을 정하고 아동노동을 금지한다.'},
+  MSF:   {emo:'🚑',nm:'국경없는의사회(MSF)',type:'ngo',role:'분쟁·재난 지역에 긴급 의료 구호를 펼치는 국제 NGO.'},
+  GREEN: {emo:'🌱',nm:'그린피스',type:'ngo',role:'환경 파괴를 감시하고 캠페인으로 지구 환경을 지키는 국제 NGO.'},
+  AI:    {emo:'🕯️',nm:'국제앰네스티',type:'ngo',role:'인권 침해를 감시하고 양심수 석방 캠페인을 벌이는 국제 NGO.'}
+};
+const ORG_ORDER=['UN','WHO','WTO','IMF','UNESCO','UNHCR','ILO','MSF','GREEN','AI'];
+
+const PROBLEMS=[
+  {id:'p1', emo:'🕊️', ty:'국제 분쟁·전쟁',   sub:'국가 간 무력 충돌',        org:'UN',
+   why:'평화 유지·분쟁 조정은 안전보장이사회와 PKO를 갖춘 UN의 몫이다.'},
+  {id:'p2', emo:'🦠', ty:'감염병 대유행',     sub:'국경을 넘는 전염병',        org:'WHO',
+   why:'세계적 방역과 보건 기준은 WHO가 조율한다.'},
+  {id:'p3', emo:'📦', ty:'무역 분쟁·관세',     sub:'수출 규제·관세 갈등',       org:'WTO',
+   why:'자유무역 규범과 무역 분쟁 조정은 WTO의 역할이다.'},
+  {id:'p4', emo:'💸', ty:'외환·금융 위기',     sub:'외환 부족·환율 불안',       org:'IMF',
+   why:'외환위기국 자금 지원과 통화 협력은 IMF가 담당한다.'},
+  {id:'p5', emo:'📚', ty:'교육·문화유산 위기', sub:'문맹·유산 훼손',            org:'UNESCO',
+   why:'교육·문화 협력과 세계유산 보호는 유네스코의 일이다.'},
+  {id:'p6', emo:'⛺', ty:'난민 발생',         sub:'분쟁·박해로 피란',          org:'UNHCR',
+   why:'난민의 보호·정착 지원 전담 기구는 UNHCR이다.'},
+  {id:'p7', emo:'👷', ty:'노동권·아동노동',   sub:'열악한 노동·아동노동',      org:'ILO',
+   why:'노동 기준과 아동노동 금지는 ILO가 정한다.'},
+  {id:'p8', emo:'🏥', ty:'분쟁지 의료 공백',   sub:'전쟁·재난지 긴급 의료',     org:'MSF',
+   why:'분쟁·재난지 긴급 의료 구호에 앞장서는 대표 NGO는 국경없는의사회다.'},
+  {id:'p9', emo:'🌳', ty:'환경 파괴·기후변화', sub:'삼림·해양·기후위기',        org:'GREEN',
+   why:'환경 감시·보호 캠페인을 이끄는 대표 NGO는 그린피스다.'},
+  {id:'p10',emo:'⛓️', ty:'인권 침해·양심수',   sub:'부당 구금·인권 탄압',       org:'AI',
+   why:'양심수 석방·인권 감시 캠페인을 벌이는 대표 NGO는 국제앰네스티다.'}
+];
+const TOTAL=PROBLEMS.length;
+
+/* ===== 상태 ===== */
+let matched=new Set();   // 맞힌 problem id
+let score=0, combo=0, maxCombo=0, tries=0, rights=0;
+let selId=null;          // 탭 선택된 카드 id
+
+/* ===== 보드/트레이 렌더 ===== */
+function buildBoard(){
+  let html='<div class="grouphd">🏛️ 정부간 국제기구 <span class="tag igo">IGO</span></div>';
+  let ngoOpened=false;
+  ORG_ORDER.forEach(k=>{
+    const o=ORGS[k];
+    if(o.type==='ngo' && !ngoOpened){ html+='<div class="grouphd">💚 비정부기구 <span class="tag ngo">NGO</span></div>'; ngoOpened=true; }
+    html+=`<div class="org ${o.type}" data-org="${k}" onclick="onOrgTap('${k}')">
+      <div class="oh"><span class="oe">${o.emo}</span><span class="on">${o.nm}</span><span class="lock">🔒</span></div>
+      <div class="role">${o.role}</div></div>`;
+  });
+  el('board').innerHTML=html;
+}
+function buildTray(){
+  const rest=PROBLEMS.filter(p=>!matched.has(p.id));
+  el('trayCount').textContent=rest.length+'장 남음';
+  if(!rest.length){ el('tray').innerHTML='<div class="trayempty">🎉 모든 문제를 알맞은 주체에 연결했어요!</div>'; return; }
+  el('tray').innerHTML=rest.map(p=>`
+    <div class="chip${selId===p.id?' sel':''}" data-pid="${p.id}">
+      <span class="emo">${p.emo}</span>
+      <span class="tt">${p.ty}<small>${p.sub}</small></span>
+    </div>`).join('');
+  el('tray').querySelectorAll('.chip').forEach(c=>bindChip(c));
+}
+function orgEl(k){ return el('board').querySelector('.org[data-org="'+k+'"]'); }
+
+/* ===== 포인터 드래그 + 탭 매칭 ===== */
+let drag=null;
+function bindChip(chip){
+  chip.addEventListener('pointerdown',e=>{
+    const pid=chip.dataset.pid;
+    drag={pid,chip,startX:e.clientX,startY:e.clientY,moved:false,ghost:null,over:null,pid2:e.pointerId};
+    try{chip.setPointerCapture(e.pointerId);}catch(_){}
+  });
+  chip.addEventListener('pointermove',e=>{
+    if(!drag||drag.chip!==chip) return;
+    const dx=e.clientX-drag.startX, dy=e.clientY-drag.startY;
+    if(!drag.moved && (dx*dx+dy*dy)>60){
+      drag.moved=true;
+      const g=chip.cloneNode(true); g.classList.add('ghostdrag');
+      g.style.width=chip.offsetWidth+'px';
+      document.body.appendChild(g); drag.ghost=g;
+      chip.style.opacity='.35';
+    }
+    if(drag.moved && drag.ghost){
+      drag.ghost.style.left=(e.clientX-drag.ghost.offsetWidth/2)+'px';
+      drag.ghost.style.top=(e.clientY-24)+'px';
+      const t=document.elementFromPoint(e.clientX,e.clientY);
+      const o=t&&t.closest?t.closest('.org'):null;
+      if(o!==drag.over){
+        if(drag.over) drag.over.classList.remove('over');
+        drag.over=o; if(o) o.classList.add('over');
+      }
+    }
+  });
+  const up=e=>{
+    if(!drag||drag.chip!==chip) return;
+    if(drag.moved){
+      const o=drag.over;
+      if(drag.ghost) drag.ghost.remove();
+      if(drag.over) drag.over.classList.remove('over');
+      chip.style.opacity='';
+      if(o) attemptMatch(drag.pid,o.dataset.org);
+      drag=null;
+    }else{
+      // 탭 선택 토글
+      drag=null;
+      selId=(selId===chip.dataset.pid)?null:chip.dataset.pid;
+      buildTray();
+      if(selId) setFb('idle','👉 이제 이 문제를 맡을 기구를 탭하세요: <b>'+PROBLEMS.find(p=>p.id===selId).ty+'</b>');
+    }
+  };
+  chip.addEventListener('pointerup',up);
+  chip.addEventListener('pointercancel',()=>{ if(drag&&drag.ghost)drag.ghost.remove(); if(drag&&drag.over)drag.over.classList.remove('over'); if(drag)drag.chip.style.opacity=''; drag=null; });
+}
+function onOrgTap(k){
+  if(drag) return;            // 드래그 중 클릭 무시
+  if(!selId) return;          // 선택된 카드 없으면 무시
+  const pid=selId; selId=null;
+  attemptMatch(pid,k);
+}
+
+function setFb(kind,html){ const f=el('matchFb'); f.className='fb '+kind; f.innerHTML=html; }
+
+function attemptMatch(pid,orgKey){
+  const p=PROBLEMS.find(x=>x.id===pid);
+  if(!p||matched.has(pid)) return;
+  tries++;
+  const o=orgEl(orgKey);
+  if(p.org===orgKey){
+    matched.add(pid); rights++; combo++; maxCombo=Math.max(maxCombo,combo);
+    const gain=10+(combo-1)*2;
+    score+=gain;
+    o.classList.add('done','hit'); o.querySelector('.lock').textContent='✓';
+    setTimeout(()=>o.classList.remove('hit'),400);
+    setFb('ok','✅ <b>정답!</b> '+p.emo+' '+p.ty+' → '+ORGS[orgKey].nm+' <span class="combo">+'+gain+'점'+(combo>1?' · '+combo+'콤보🔥':'')+'</span><br><span style="font-weight:600">'+p.why+'</span>');
+  }else{
+    combo=0;
+    o.classList.add('wrong'); setTimeout(()=>o.classList.remove('wrong'),400);
+    setFb('no','❌ <b>'+ORGS[orgKey].nm+'</b>의 역할이 아니에요. <span style="font-weight:600">'+ORGS[orgKey].role+'</span><br>💡 <b>'+p.ty+'</b>은(는) '+p.why);
+  }
+  selId=null;
+  buildTray(); updateStat();
+  if(matched.size===TOTAL) el('coopPanel').classList.remove('hide');
+}
+function updateStat(){
+  el('stScore').textContent=score;
+  el('stDex').textContent=matched.size;
+  el('stRight').textContent=rights;
+  el('stTry').textContent=tries;
+  el('matchProg').style.width=(matched.size/TOTAL*100)+'%';
+  const cb=el('stCombo');
+  if(combo>1){ cb.classList.remove('hide'); cb.textContent=combo+'콤보🔥'; } else cb.classList.add('hide');
+}
+function resetMatch(){
+  matched=new Set(); score=0; combo=0; maxCombo=0; tries=0; rights=0; selId=null;
+  buildBoard(); buildTray(); updateStat();
+  el('coopPanel').classList.add('hide');
+  el('coopFb').textContent='주체를 눌러 각자의 역할을 확인해 보세요.';
+  el('coopRoles').querySelectorAll('button').forEach(b=>b.classList.remove('picked'));
+  setFb('idle','👆 문제 카드를 알맞은 기구로 끌어다 놓아 보세요.');
+}
+
+/* ===== 협력 시나리오 (국가·국제기구·개인) ===== */
+const COOP=[
+  {k:'state', nm:'🏛️ 국가·정부', fb:'국가는 구조팀·긴급 구호 물자를 보내고, 국제기구를 통해 지원을 조율한다. 다른 나라에 협력을 요청·제공하는 공식 통로다.'},
+  {k:'ngo',   nm:'💚 국제 NGO',  fb:'국경없는의사회는 부상자 긴급 의료를, 여러 구호 NGO는 식량·식수·임시 거처를 지원하며 정부의 손이 닿지 않는 곳을 메운다.'},
+  {k:'me',    nm:'🌍 개인·세계시민', fb:'개인은 신뢰할 수 있는 단체에 후원·모금하고, 관심과 연대의 목소리를 낸다. 작은 참여가 모여 큰 힘이 된다.'}
+];
+function buildCoop(){
+  el('coopRoles').innerHTML=COOP.map((c,i)=>`<button onclick="pickRole(${i},this)">${c.nm}</button>`).join('');
+}
+let coopPicked=new Set();
+function pickRole(i,btn){
+  btn.classList.add('picked'); coopPicked.add(COOP[i].k);
+  el('coopFb').innerHTML='<b>'+COOP[i].nm+'</b> — '+COOP[i].fb+(coopPicked.size===COOP.length?'<br>🌟 세 주체가 <b>협력</b>할 때 재난 대응이 가장 효과적이에요!':'');
+}
+
+/* ===== 미션 6 ===== */
+const MISSIONS=[
+  {type:'감염병', emoji:'🦠', txt:'새로운 감염병이 여러 나라로 빠르게 퍼진다. 세계적 방역 기준을 세우고 대응을 조율할 <b>국제기구</b>는?',
+   opts:[['🏥 세계보건기구(WHO)',2,'정답! WHO는 감염병 대응·보건 기준을 마련하고 국제 방역·백신 협력을 이끈다.'],
+         ['⚖️ 세계무역기구(WTO)',0,'WTO는 무역 분쟁을 다룬다. 감염병 대응은 WHO의 역할이다.'],
+         ['💚 각국이 알아서 대응',0,'국경을 넘는 감염병은 한 나라만으로 못 막는다. WHO 중심의 국제 협력이 필요하다.']]},
+  {type:'난민', emoji:'⛺', txt:'인접국 분쟁으로 대량 난민이 발생했다. 난민의 보호·정착을 <b>직접</b> 지원하는 UN 전문기구는?',
+   opts:[['⛺ 유엔난민기구(UNHCR)',2,'정답! UNHCR은 난민의 보호·정착·귀환을 지원한다.'],
+         ['💰 국제통화기금(IMF)',0,'IMF는 금융·외환 문제를 다룬다. 난민 보호는 UNHCR의 몫이다.'],
+         ['👷 국제노동기구(ILO)',1,'ILO는 노동 기준을 다룬다. 난민 보호 전담 기구는 UNHCR이다.']]},
+  {type:'무역', emoji:'📦', txt:'A국과 B국이 관세와 수출 규제로 무역 갈등을 겪는다. 규범에 따라 <b>무역 분쟁을 조정</b>하는 기구는?',
+   opts:[['⚖️ 세계무역기구(WTO)',2,'정답! WTO는 자유무역 규범을 만들고 무역 분쟁을 조정한다.'],
+         ['📖 유네스코(UNESCO)',0,'유네스코는 교육·문화를 담당한다. 무역 분쟁은 WTO 소관이다.'],
+         ['⚔️ 무력으로 압박',0,'무역 갈등은 힘이 아니라 국제 규범과 협상으로 푼다.']]},
+  {type:'금융', emoji:'💸', txt:'한 나라가 외환이 바닥나 금융위기에 빠졌다. 자금을 지원하고 통화 안정을 돕는 국제기구는?',
+   opts:[['💰 국제통화기금(IMF)',2,'정답! IMF는 외환위기국에 자금을 지원하고 국제 통화 협력을 돕는다.'],
+         ['🏥 세계보건기구(WHO)',0,'WHO는 보건 기구다. 외환·금융 위기는 IMF가 담당한다.'],
+         ['🌱 그린피스',0,'그린피스는 환경 NGO다. 금융 지원과는 관계가 없다.']]},
+  {type:'IGO vs NGO', emoji:'🧩', txt:'다음 중 <b>비정부기구(NGO)</b>에 해당하며, 분쟁지 <b>긴급 의료 구호</b>를 펴는 단체는?',
+   opts:[['🚑 국경없는의사회',2,'정답! 국경없는의사회는 시민이 만든 국제 NGO로, 분쟁·재난지 의료 구호에 앞장선다.'],
+         ['🇺🇳 국제연합(UN)',0,'UN은 국가를 회원으로 하는 정부간 국제기구(IGO)다.'],
+         ['⚖️ 세계무역기구(WTO)',0,'WTO도 국가를 회원으로 하는 IGO다. NGO가 아니다.']]},
+  {type:'세계시민', emoji:'🌍', txt:'"먼 나라의 문제, 나와 상관있을까?" — 세계시민으로서 가장 <b>성숙한 태도</b>는?',
+   opts:[['🌱 지구촌 문제에 관심을 갖고 후원·연대·윤리적 소비로 참여한다',2,'멋져요! 지구촌 문제를 내 문제로 여기고 행동하는 것이 세계시민의식이다.'],
+         ['🙈 국제기구가 알아서 할 일, 나는 상관없다',0,'국제 협력은 개인의 참여로 완성된다. 무관심은 문제 해결을 늦춘다.'],
+         ['😟 안타깝지만 개인이 할 수 있는 건 없다',1,'공감은 첫걸음! 서명·후원·소비처럼 개인도 할 수 있는 일이 많다.']]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<div class="scen"><span class="type">'+m.type+'</span><br>'+
+    '<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+' / '+MISSIONS.length+'</b><br>'+m.txt+'</div>';
+  el('mOpts').innerHTML=m.opts.map((o,i)=>'<button onclick="choose('+i+')">'+o[0]+'</button>').join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], pts=m.opts[i][1];
+  mChoice[mIdx]={i,pts};
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'picked-bad')); });
+  const icon=pts>=2?'🌟':pts===1?'💡':'🤔';
+  el('mFeedback').innerHTML='<div class="feedback">'+icon+' +'+pts+'점 · '+m.opts[i][2]+'</div>';
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  el('mNext').textContent=(mIdx===MISSIONS.length-1)?'결과 보기 →':'다음 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+
+/* ===== 결과 카드 ===== */
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+function gradeOf(pctv){
+  if(pctv>=0.9) return {t:'🏅 글로벌 협력 리더',d:'문제와 주체를 척척 잇고 세계시민으로 실천한다. UN도 스카우트 오겠다!'};
+  if(pctv>=0.7) return {t:'🤝 함께하는 세계시민',d:'국제 협력의 원리를 알고 연대할 줄 안다. 지구촌이 든든하다.'};
+  if(pctv>=0.5) return {t:'🌱 성장하는 세계시민',d:'세계시민의식이 무럭무럭 자라는 중. 조금만 더 가면 리더!'};
+  return {t:'💭 관심의 시작',d:'지구촌 문제에 이제 막 눈뜬 단계. 관심이 곧 첫 협력이다.'};
+}
+function getBadges(pctv){
+  const b=[];
+  if(matched.size>=TOTAL) b.push('📖 국제기구 도감 마스터');
+  if(maxCombo>=5) b.push('🔥 콤보 '+maxCombo+'연속');
+  if(rights>0 && tries===rights) b.push('🎯 무실수 매칭');
+  if(totalPts()===MISSIONS.length*2) b.push('🏅 미션 만점');
+  if(pctv>=0.8) b.push('🌏 세계시민 리더');
+  if(!b.length) b.push('🌱 첫걸음');
+  return b;
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(' '); let line=''; const lines=[];
+  words.forEach(w=>{ const test=line?line+' '+w:w;
+    if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=w; } else line=test; });
+  if(line) lines.push(line);
+  lines.forEach((ln,i)=>ctx.fillText(ln,x,y+i*lh));
+}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const max=MISSIONS.length*2, tot=totalPts(), pctv=max?tot/max:0;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#4f46e5'); g.addColorStop(1,'#3730a3');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#3730a3'; ctx.font='bold 34px "Malgun Gothic",sans-serif';
+  ctx.fillText('🌐 세계시민 협력 리포트', W/2, 118);
+  ctx.fillStyle='#5c5878'; ctx.font='19px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅳ 세계화와 평화 · 국제기구와 국제 협력', W/2, 156);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1e1b3a'; ctx.font='bold 30px "Malgun Gothic",sans-serif'; ctx.fillText(name, W/2, 216);
+  // 점수 원
+  const cx=W/2, cy=350, r=96;
+  ctx.lineWidth=24; ctx.strokeStyle='#e7e7f4'; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle= pctv>=0.8?'#4f46e5':(pctv>=0.5?'#e0a526':'#d9534f'); ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*(pctv||0.001)); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1e1b3a'; ctx.font='bold 50px "Malgun Gothic",sans-serif'; ctx.fillText(tot+'', cx, cy+2);
+  ctx.fillStyle='#5c5878'; ctx.font='19px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+34);
+  // 등급
+  const s=gradeOf(pctv);
+  ctx.fillStyle='#3730a3'; ctx.font='bold 26px "Malgun Gothic",sans-serif'; ctx.fillText(s.t, W/2, cy+r+56);
+  ctx.fillStyle='#5c5878'; ctx.font='17px "Malgun Gothic",sans-serif';
+  wrapText(ctx,s.d,W/2,cy+r+86,W-160,23);
+  // 탐험 요약
+  let y=cy+r+138;
+  ctx.fillStyle='#1e1b3a'; ctx.font='bold 21px "Malgun Gothic",sans-serif';
+  ctx.fillText('📖 도감 '+matched.size+'/'+TOTAL+' · 🧩 매칭 점수 '+score+' · 🔥 최대 '+maxCombo+'콤보', W/2, y);
+  y+=42;
+  // 뱃지
+  ctx.fillStyle='#3730a3'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('획득 뱃지', W/2, y); y+=30;
+  const badges=getBadges(pctv);
+  ctx.font='18px "Malgun Gothic",sans-serif';
+  badges.forEach(bd=>{ ctx.fillStyle='#4f46e5'; ctx.fillText(bd, W/2, y); y+=29; });
+  // 미션 요약
+  y+=6; ctx.textAlign='left'; ctx.font='17px "Malgun Gothic",sans-serif';
+  const labels=['감염병·WHO','난민·UNHCR','무역·WTO','금융·IMF','IGO/NGO 구분','세계시민 태도'];
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i];
+    ctx.fillStyle='#1e1b3a'; ctx.fillText(MISSIONS[i].emoji+' '+labels[i], 92, y);
+    ctx.textAlign='right';
+    if(c){ ctx.fillStyle=c.pts>=2?'#4f46e5':(c.pts===1?'#e0a526':'#d9534f'); ctx.fillText('+'+c.pts+'점', W-92, y); }
+    else { ctx.fillStyle='#a9a7c4'; ctx.fillText('미완료', W-92, y); }
+    ctx.textAlign='left'; y+=32;
+  }
+  ctx.textAlign='center'; ctx.fillStyle='#a9a7c4'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 국제기구·국제협력 탐험 매칭', W/2, H-58);
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download='세계시민협력리포트_'+(el('studentName').value||'학생')+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+function openPNG(){ drawResult(); const url=el('resultCanvas').toDataURL('image/png'); window.open(url,'_blank'); }
+
+/* ===== 탭 ===== */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','match','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['match','mission','result'].forEach(t=>el('tab-'+t).classList.add('hide'));
+buildBoard(); buildTray(); buildCoop(); updateStat(); renderMission();
+</script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인구구조 시뮬레이터 · 통합사회2 Ⅴ 미래와 지속가능한 삶</title>
+<style>
+  :root{
+    /* 팔레트 24 소프트 파스텔 */
+    --primary:#8E7CC3; --primary-d:#6a599e;
+    --bg:#f6f5fb; --surface:#ffffff; --ink:#2b2740; --sub:#6f6a86;
+    --male:#7EB2D9;  --male-d:#4f8fc0;
+    --female:#EBA6B8; --female-d:#dd7f97;
+    --youth:#86C7A6;  /* 유소년 */
+    --work:#7EB2D9;   /* 생산가능 */
+    --elder:#B79BD9;  /* 고령 */
+    --gold:#E7B75F; --ok:#5F9E7A; --warn:#DE8B7D;
+    --line:#e7e4f2; --shadow:0 8px 24px rgba(70,60,110,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+    border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-40px;top:-40px;width:170px;height:170px;
+    background:radial-gradient(circle,rgba(255,255,255,.20),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.92;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.94}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--primary)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#f6f4fc;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .pill{display:inline-block;background:#efe9fa;color:var(--primary-d);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 6px;text-align:center}
+  table.cmp th{background:#efe9fa;color:var(--primary-d);font-weight:800}
+  table.cmp td.a{font-weight:800;text-align:left}
+  .callout{background:linear-gradient(135deg,#f1ecfb,#fbeef2);border:1px solid #e5ddf5;border-radius:12px;padding:14px;margin-top:12px;font-size:14.5px}
+  .callout b{color:var(--primary-d)}
+  canvas{max-width:100%;height:auto}
+  /* 피라미드 */
+  .pyrwrap{position:relative;width:100%;max-width:560px;margin:0 auto}
+  #pyramid{width:100%;height:auto;display:block;border-radius:12px;background:#fbfaff}
+  .legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--sub)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  /* 사회유형 배지 */
+  .socbadge{border-radius:14px;padding:15px;color:#fff;text-align:center;box-shadow:var(--shadow);transition:.3s;margin-bottom:12px}
+  .socbadge .st{font-size:12px;font-weight:800;letter-spacing:1px;opacity:.92}
+  .socbadge .big{font-size:23px;font-weight:800;margin:2px 0}
+  .socbadge .dv{font-size:13px;opacity:.96}
+  .socbadge .sc{display:inline-block;margin-top:7px;background:rgba(255,255,255,.22);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800}
+  .pop-anim{animation:pop .4s}
+  @keyframes pop{0%{transform:scale(.97)}45%{transform:scale(1.02)}100%{transform:scale(1)}}
+  /* 게이지 */
+  .gauge{margin:11px 0}
+  .gauge .top{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:700;margin-bottom:4px}
+  .gauge .top .val{font-size:15px;font-weight:800}
+  .gauge .bar{position:relative;height:16px;background:#eeebf6;border-radius:99px;overflow:hidden}
+  .gauge .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+  .gauge.aging i{background:linear-gradient(90deg,#cbb6ea,#8E7CC3)}
+  .gauge.dep i{background:linear-gradient(90deg,#f0c98a,#E7B75F)}
+  .gauge.work i{background:linear-gradient(90deg,#a9d6c1,#5F9E7A)}
+  .gauge .mk{position:absolute;top:-3px;width:2px;height:22px;background:rgba(90,70,130,.45)}
+  .gauge .mklab{font-size:10px;color:var(--sub);font-weight:700}
+  .marks{position:relative;height:14px;margin-top:1px}
+  .marks span{position:absolute;transform:translateX(-50%);font-size:10px;color:var(--sub);font-weight:700}
+  /* 슬라이더 */
+  .yearsel{display:flex;gap:6px;margin:4px 0 14px}
+  .yearsel button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 6px;font-weight:800;font-size:13.5px;cursor:pointer;color:var(--sub)}
+  .yearsel button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .slider-row{margin:14px 0}
+  .slider-row label{display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-bottom:4px}
+  .slider-row .lo{font-size:11.5px;color:var(--sub);font-weight:600;display:flex;justify-content:space-between;margin-top:2px}
+  input[type=range]{width:100%;accent-color:var(--primary);height:26px}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .presets button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .presets button:active{transform:scale(.96)}
+  .statrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 2px}
+  .stat{background:#f4f1fb;border-radius:12px;padding:9px 13px;text-align:center;min-width:96px}
+  .stat .lab{font-size:12px;color:var(--sub);font-weight:700}
+  .stat .val{font-size:19px;font-weight:800;color:var(--primary-d)}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.accent{background:var(--gold);color:#5a4212}
+  .btn.ghost{background:#efecf6;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .note{font-size:12px;color:var(--sub);background:#f4f1fb;border-radius:8px;padding:9px 11px;margin-top:10px}
+  /* 미션 */
+  .scen{background:#f1ecfb;border:1px solid #e2d9f5;border-radius:12px;padding:14px;font-size:15px;margin-bottom:8px;animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .scen .emoji{font-size:26px}
+  .scen .type{display:inline-block;font-size:11.5px;font-weight:800;background:var(--primary);color:#fff;border-radius:6px;padding:2px 8px;margin-bottom:6px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;text-align:left;font-family:inherit}
+  .opts button:disabled{cursor:default}
+  .opts button.picked-good{border-color:var(--ok);background:#e9f5ef}
+  .opts button.picked-mid{border-color:var(--gold);background:#fbf2df}
+  .opts button.picked-bad{border-color:var(--warn);background:#fbeae5}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600;background:#f1ecfb;color:var(--ink)}
+  .progress{height:8px;background:#efecf6;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:var(--primary);width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px;font-family:inherit}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#efecf6;border-radius:6px;padding:2px 7px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅴ 미래와 지속가능한 삶</div>
+    <h1>👥 인구구조 시뮬레이터 — 저출산·고령화</h1>
+    <p>한 반에 30명이던 교실이 어느새 20명. 거리엔 아이 울음 대신 지팡이 소리가 늘어간다. 출산율·기대수명·이민 다이얼을 돌려 <b>대한민국의 2070년</b>을 미리 만나 보자.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="lab">2. 피라미드 랩</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>인구 구조를 읽는 눈</h2>
+      <p class="lead">한 사회의 <b>연령·성별 인구 분포</b>를 쌓아 올린 그림이 <b>인구 피라미드</b>다. 층층이 쌓인 그 실루엣 하나에 그 사회의 어제와 오늘, 그리고 다가올 내일이 고스란히 담겨 있다.</p>
+      <h3>🔺 인구 피라미드의 3가지 모양</h3>
+      <div class="grid3">
+        <div class="concept"><h3>🔺 피라미드형</h3>아래(유소년)가 넓은 <b>확대형</b>. 출생률·사망률이 모두 높은 발전 초기 사회.</div>
+        <div class="concept"><h3>🔔 종형</h3>출생·사망이 낮아 균형을 이룬 <b>정체형</b>. 유소년과 청장년층이 비슷하다.</div>
+        <div class="concept"><h3>🏺 방추형(항아리형)</h3>아래가 좁아진 <b>축소형</b>. 저출산·고령화가 심해 미래 인구가 줄어든다.</div>
+      </div>
+
+      <h3>👶 저출산 — 합계출산율(TFR)</h3>
+      <div class="concept" style="margin-top:6px">
+        <b>합계출산율</b>은 여성 한 명이 평생 낳을 것으로 기대되는 평균 자녀 수다.
+        인구가 현재 수준을 유지하려면 약 <b>2.1명(인구 대체 수준)</b>이 필요하다. 우리나라는 이를 크게 밑도는
+        <b>초저출산(1.3명 미만)</b> 상태다 → 피라미드의 <b>아랫부분이 좁아진다</b>.
+      </div>
+
+      <h3>👵 고령화 — 세 단계 기준</h3>
+      <table class="cmp">
+        <tr><th>구분</th><th>65세 이상 비율</th><th>의미</th></tr>
+        <tr><td class="a">고령화사회</td><td>7% 이상</td><td>고령화가 시작됨</td></tr>
+        <tr><td class="a">고령사회</td><td>14% 이상</td><td>고령화가 상당히 진행</td></tr>
+        <tr><td class="a">초고령사회</td><td>20% 이상</td><td>노인이 다섯 중 한 명 이상</td></tr>
+      </table>
+      <p class="note">기대수명이 늘고 출산이 줄면 고령화율은 빠르게 오른다. 우리나라는 2025년 무렵 <b>초고령사회</b>에 진입한다.</p>
+
+      <h3>⚖️ 생산가능인구와 부양비</h3>
+      <div class="grid2">
+        <div class="concept"><h3>💪 생산가능인구</h3><b>15~64세</b> 인구. 경제활동의 중심이자 세금·연금을 떠받치는 허리다. 저출산·고령화로 <b>줄어든다</b>.</div>
+        <div class="concept"><h3>🧮 부양비</h3>생산가능인구 100명이 부양하는 인구 수.<br>
+          · <b>유소년부양비</b> = 0~14세 ÷ 생산가능인구<br>
+          · <b>노년부양비</b> = 65세 이상 ÷ 생산가능인구<br>
+          · <b>총부양비</b> = 둘의 합. 고령화로 <b>노년부양비가 급등</b>한다.</div>
+      </div>
+
+      <h3>🧭 인구 문제의 영향과 대응</h3>
+      <div class="callout">
+        <b>영향</b> — 노동력 감소·경제 성장 둔화, 연금·의료·복지 재정 부담 급증, 세대 갈등, 지방 소멸.<br>
+        <b>대응</b> — 👶 <b>출산장려</b>(돌봄·주거·일가정양립), 🌏 <b>이민·외국인력</b> 확대, ⏳ <b>정년 연장</b>과 고령자 경제활동,
+        🏙️ <b>지역 균형발전</b>. 하나만으로는 부족하고 <b>함께</b> 써야 한다.
+      </div>
+      <div class="rowbtns"><button class="btn primary" onclick="go('lab')">인구 피라미드 직접 움직이기 →</button></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 피라미드 랩 ===== -->
+  <section id="tab-lab" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>피라미드 랩 — 미래 인구를 설계하라</h2>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 프리셋 두 개(예: ⚠️ 저출산 심화 vs 🌏 출산+이민 적극)로 2070년 피라미드를 나란히 띄워 놓고, "무엇이 항아리를 다시 세우나?"를 두고 대응책 토론으로 이어 보세요.</p>
+
+      <div id="socBadge" class="socbadge" style="background:linear-gradient(135deg,#8E7CC3,#6a599e)">
+        <div class="st">예상 사회 유형</div>
+        <div class="big" id="socTitle">고령사회</div>
+        <div class="dv" id="socDesc">슬라이더를 움직여 미래 인구 구조를 바꿔 보자.</div>
+        <div class="sc"><span id="socShape">종형</span> · 고령화율 <span id="socAging">15</span>%</div>
+      </div>
+
+      <div class="yearsel">
+        <button data-year="2020" onclick="setYear(2020)">📅 2020 (현재 기준)</button>
+        <button data-year="2050" class="on" onclick="setYear(2050)">🔮 2050</button>
+        <button data-year="2070" onclick="setYear(2070)">🔮 2070</button>
+      </div>
+
+      <div class="pyrwrap"><canvas id="pyramid" width="560" height="380"></canvas></div>
+      <div class="legend">
+        <span><i style="background:var(--youth)"></i>유소년(0–14)</span>
+        <span><i style="background:var(--work)"></i>생산가능(15–64)</span>
+        <span><i style="background:var(--elder)"></i>고령(65+)</span>
+        <span>◧ 왼쪽 남성 · 오른쪽 여성</span>
+      </div>
+
+      <div class="statrow">
+        <div class="stat"><div class="lab">총인구</div><div class="val" id="sPop">–</div></div>
+        <div class="stat"><div class="lab">생산가능인구</div><div class="val" id="sWork">–</div></div>
+        <div class="stat"><div class="lab">노년부양비</div><div class="val" id="sOldDep">–</div></div>
+      </div>
+
+      <div class="gauge aging">
+        <div class="top"><span>👵 고령화율 (65세+)</span><span class="val" id="v_aging">–</span></div>
+        <div class="bar"><i id="g_aging"></i></div>
+        <div class="marks"><span style="left:17.5%">7%</span><span style="left:35%">14%</span><span style="left:50%">20%</span></div>
+      </div>
+      <div class="gauge dep">
+        <div class="top"><span>🧮 총부양비 (100명당)</span><span class="val" id="v_dep">–</span></div>
+        <div class="bar"><i id="g_dep"></i></div>
+      </div>
+      <div class="gauge work">
+        <div class="top"><span>💪 생산가능인구 비중</span><span class="val" id="v_work">–</span></div>
+        <div class="bar"><i id="g_work"></i></div>
+      </div>
+
+      <div class="presets">
+        <button onclick="preset(0.78,84.5,3)">📉 현상 유지</button>
+        <button onclick="preset(0.6,86,0)">⚠️ 저출산 심화</button>
+        <button onclick="preset(1.7,85,6)">👶 출산 회복</button>
+        <button onclick="preset(1.5,86,32)">🌏 출산+이민 적극</button>
+      </div>
+
+      <div class="slider-row">
+        <label><span>👶 합계출산율 (TFR)</span><span id="tfrVal">0.90</span> 명</label>
+        <input type="range" id="tfr" min="0.5" max="3.0" step="0.05" value="0.90">
+        <div class="lo"><span>초저출산 0.5</span><span>대체수준 2.1 ▏최대 3.0</span></div>
+      </div>
+      <div class="slider-row">
+        <label><span>❤️ 기대수명</span><span id="leVal">83.5</span> 세</label>
+        <input type="range" id="le" min="75" max="95" step="0.5" value="83.5">
+        <div class="lo"><span>75세</span><span>95세</span></div>
+      </div>
+      <div class="slider-row">
+        <label><span>🌏 순이민 (연간)</span><span id="migVal">+5</span> 만명</label>
+        <input type="range" id="mig" min="-10" max="50" step="1" value="5">
+        <div class="lo"><span>순유출 -10</span><span>순유입 +50</span></div>
+      </div>
+
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="preset(0.90,83.5,5)">↺ 초기화</button>
+        <button class="btn primary" onclick="go('mission')">인구 정책 미션 도전 →</button>
+      </div>
+      <p class="note">※ 실제 통계청 장래인구추계를 단순화한 <b>학습용 코호트 모델</b>입니다. 2020년 인구 구조를 기준으로 5년 단위로 투영하며, 정확한 예측이 아니라 관계를 이해하기 위한 예시입니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>인구 정책 미션 (6) — 어떻게 대응할까?</h2>
+      <p class="lead">이제 당신은 인구정책관이다. 저출산·고령화가 던지는 6개의 난제가 책상 위에 놓였다. <b>구조를 바꾸고 여러 대책을 함께</b> 쓰는 손이 가장 멀리 간다. 당신의 결정은 랩의 2070년 피라미드에 그대로 새겨진다.</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <span></span>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>나의 2070 인구 리포트</h2>
+      <p class="lead">당신이 설계한 대한민국의 2070년, 한 장으로 정리했다. 이름을 넣고 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1080"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn accent" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="javascript:void(0)" onclick="openResultTab()" style="color:var(--primary-d);font-weight:700;text-decoration:underline">📱 저장이 안 되면 여기(새 탭)</a> — 새 탭에서 이미지를 길게 눌러 저장하세요.</p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅴ 미래와 지속가능한 삶 · 저출산·고령화와 인구 구조 [10통사2-05] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    인구 수치는 통계청 추계를 단순화한 학습용 모델이며 정확한 예측이 아닙니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const sum=a=>a.reduce((x,y)=>x+y,0);
+
+/* ===== 18개 5세 연령대 (0-4 … 85+) 2020년 기준 인구(만명) ===== */
+const AGES=['0-4','5-9','10-14','15-19','20-24','25-29','30-34','35-39','40-44','45-49','50-54','55-59','60-64','65-69','70-74','75-79','80-84','85+'];
+const BASE_M=[88,118,117,127,176,196,176,202,204,223,215,208,176,118,80,63,36,22];
+const BASE_F=[84,112,111,118,154,170,160,190,196,217,210,210,184,132,98,89,64,56];
+/* 5년 생존확률(기대수명 83세 기준) : 다음 연령대로 살아남을 확률, 마지막은 85+ 잔존 */
+const BASE_S=[0.998,0.999,0.999,0.998,0.997,0.996,0.995,0.993,0.991,0.988,0.983,0.975,0.960,0.930,0.880,0.800,0.640,0.380];
+/* 가임 연령대(15-49) 출산 가중치 (합=1) */
+const FW=[0.10,0.28,0.30,0.20,0.09,0.02,0.01];
+/* 이민 유입 연령 분포 (합=1) — 주로 청년·장년 */
+const MW=[0,0,0.01,0.06,0.15,0.19,0.17,0.12,0.09,0.07,0.05,0.03,0.02,0.02,0.01,0.005,0.005,0];
+
+/* ===== 상태 ===== */
+const START={tfr:0.90,le:83.5,mig:5};
+let P={...START};
+let curYear=2050;
+
+/* ===== 1스텝(5년) 코호트 투영 ===== */
+function step(M,F){
+  const mf=Math.pow(0.955,(P.le-83));           // 기대수명↑ → 사망률↓
+  const S=BASE_S.map(s=>clamp(1-(1-s)*mf,0.05,0.9992));
+  let fem=0; for(let k=0;k<7;k++) fem+=F[3+k]*FW[k];
+  const births=Math.max(0,P.tfr*fem);           // 5년간 출생아 수
+  const nM=new Array(18).fill(0), nF=new Array(18).fill(0);
+  nM[0]=births*0.512; nF[0]=births*0.488;       // 출생 성비 약 105:100
+  for(let i=1;i<18;i++){ nM[i]=M[i-1]*S[i-1]; nF[i]=F[i-1]*S[i-1]; }
+  nM[17]+=M[17]*S[17]; nF[17]+=F[17]*S[17];      // 85+ 잔존
+  const mig=5*P.mig;                             // 5년치 순이민
+  for(let i=0;i<18;i++){
+    nM[i]=Math.max(0,nM[i]+mig*MW[i]*0.52);
+    nF[i]=Math.max(0,nF[i]+mig*MW[i]*0.48);
+  }
+  return {M:nM,F:nF};
+}
+function projectTo(year){
+  let M=BASE_M.slice(), F=BASE_F.slice();
+  const steps=Math.round((year-2020)/5);
+  for(let s=0;s<steps;s++){ const r=step(M,F); M=r.M; F=r.F; }
+  return {M,F};
+}
+
+/* ===== 지표 ===== */
+function indic(M,F){
+  const T=M.map((m,i)=>m+F[i]);
+  const youth=sum(T.slice(0,3));    // 0-14
+  const work =sum(T.slice(3,13));   // 15-64
+  const eld  =sum(T.slice(13,18));  // 65+
+  const total=youth+work+eld;
+  const aging=eld/total*100;
+  const youthDep=youth/work*100;
+  const oldDep=eld/work*100;
+  const totDep=(youth+eld)/work*100;
+  const workShare=work/total*100;
+  // 모양
+  const ys=youth/total, es=eld/total;
+  let shape;
+  if(ys>=0.27) shape={k:'피라미드형',d:'유소년층이 두꺼운 확대형 — 아래가 넓다.'};
+  else if(ys>=es*0.95 && ys>=0.15) shape={k:'종형',d:'출생·사망이 균형을 이룬 정체형.'};
+  else shape={k:'방추형(항아리형)',d:'아래가 좁은 축소형 — 저출산·고령화가 심하다.'};
+  // 사회 유형
+  let soc;
+  if(aging>=20) soc={k:'초고령사회',c:'linear-gradient(135deg,#8b5db8,#6a3e8f)',col:'#7c4ba0',d:'노인이 5명 중 1명 이상. 부양·재정 부담이 매우 크다.'};
+  else if(aging>=14) soc={k:'고령사회',c:'linear-gradient(135deg,#8E7CC3,#6a599e)',col:'#8E7CC3',d:'고령화가 상당히 진행되었다. 대비가 시급하다.'};
+  else if(aging>=7) soc={k:'고령화사회',c:'linear-gradient(135deg,#7EB2D9,#4f8fc0)',col:'#5c9bcc',d:'고령화가 시작된 단계. 지금이 대응의 골든타임.'};
+  else soc={k:'고령화 이전',c:'linear-gradient(135deg,#86C7A6,#579e78)',col:'#5F9E7A',d:'아직 젊은 인구 구조. 균형을 유지하자.'};
+  return {T,youth,work,eld,total,aging,youthDep,oldDep,totDep,workShare,shape,soc};
+}
+
+/* ===== 피라미드 캔버스 ===== */
+const COLG={y:'#86C7A6',w:'#7EB2D9',e:'#B79BD9'};
+function grpOf(i){ return i<3?'y':(i<13?'w':'e'); }
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+function drawPyramid(ctx,B,M,F,scale,o){
+  o=o||{}; const n=18, bh=B.h/n, gap=o.gap||20;
+  const half=(B.w-gap*2)/2, cx=B.x+B.w/2, fs=o.fs||9;
+  ctx.clearRect?0:0;
+  for(let i=0;i<n;i++){
+    const y=B.y+(n-1-i)*bh, col=COLG[grpOf(i)];
+    const mW=Math.min(M[i]/scale*half,half), fW=Math.min(F[i]/scale*half,half);
+    ctx.globalAlpha=1;   ctx.fillStyle=col; ctx.fillRect(cx-gap-mW, y+1, mW, bh-2);
+    ctx.globalAlpha=.6;  ctx.fillStyle=col; ctx.fillRect(cx+gap, y+1, fW, bh-2);
+    ctx.globalAlpha=1;
+    // 연령 라벨(중앙)
+    if(i%2===0 || i===17){
+      ctx.fillStyle='#8a83a6'; ctx.font=fs+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(i===17?'85+':AGES[i].split('-')[0], cx, y+bh/2);
+    }
+  }
+  // 그룹 경계선(15세 / 65세)
+  ctx.strokeStyle='rgba(90,70,130,.35)'; ctx.setLineDash([4,3]); ctx.lineWidth=1;
+  [3,13].forEach(bi=>{ const yy=B.y+(n-bi)*bh; ctx.beginPath(); ctx.moveTo(B.x,yy); ctx.lineTo(B.x+B.w,yy); ctx.stroke(); });
+  ctx.setLineDash([]);
+  // 남/여 라벨
+  ctx.fillStyle='#6f6a86'; ctx.font='bold '+(fs+2)+'px sans-serif'; ctx.textBaseline='alphabetic';
+  ctx.textAlign='left';  ctx.fillText('남 ♂', B.x+2, B.y+12);
+  ctx.textAlign='right'; ctx.fillText('여 ♀', B.x+B.w-2, B.y+12);
+}
+
+/* ===== 랩 동기화 + 애니메이션 ===== */
+let dispM=BASE_M.slice(), dispF=BASE_F.slice(), tgtM=null, tgtF=null, curScale=250, raf=null, lastSoc=null;
+function computeScale(M,F){ let mx=1; for(let i=0;i<18;i++){ mx=Math.max(mx,M[i],F[i]); } return mx*1.06; }
+function drawScene(){
+  const cv=el('pyramid'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  drawPyramid(ctx,{x:10,y:22,w:cv._lw-20,h:cv._lh-34},dispM,dispF,curScale,{gap:20,fs:9});
+}
+function animateTo(M,F){
+  tgtM=M; tgtF=F; const ts=computeScale(M,F); const tScale=ts;
+  if(raf) cancelAnimationFrame(raf);
+  const stepAnim=()=>{
+    let done=true;
+    for(let i=0;i<18;i++){
+      dispM[i]+=(tgtM[i]-dispM[i])*0.28; dispF[i]+=(tgtF[i]-dispF[i])*0.28;
+      if(Math.abs(tgtM[i]-dispM[i])>0.3||Math.abs(tgtF[i]-dispF[i])>0.3) done=false;
+    }
+    curScale+=(tScale-curScale)*0.28;
+    drawScene();
+    if(!done){ raf=requestAnimationFrame(stepAnim); }
+    else { dispM=tgtM.slice(); dispF=tgtF.slice(); curScale=tScale; drawScene(); raf=null; }
+  };
+  stepAnim();
+}
+let lastInd=null;
+function syncLab(anim){
+  P.tfr=+el('tfr').value; P.le=+el('le').value; P.mig=+el('mig').value;
+  el('tfrVal').textContent=P.tfr.toFixed(2);
+  el('leVal').textContent=P.le.toFixed(1);
+  el('migVal').textContent=(P.mig>=0?'+':'')+P.mig;
+  const {M,F}=projectTo(curYear);
+  const ind=indic(M,F); lastInd=ind;
+  // 게이지
+  el('v_aging').textContent=ind.aging.toFixed(1)+'%';
+  el('g_aging').style.width=clamp(ind.aging/40*100,2,100)+'%';   // 40% 기준 스케일
+  el('v_dep').textContent=Math.round(ind.totDep)+'명';
+  el('g_dep').style.width=clamp(ind.totDep/120*100,2,100)+'%';
+  el('v_work').textContent=ind.workShare.toFixed(1)+'%';
+  el('g_work').style.width=clamp(ind.workShare,2,100)+'%';
+  // 스탯 (BASE 단위=만명)
+  const fmt=n=>Math.round(n).toLocaleString('en-US');
+  el('sPop').textContent=fmt(ind.total)+'만';
+  el('sWork').textContent=fmt(ind.work)+'만';
+  el('sOldDep').textContent=Math.round(ind.oldDep)+'명';
+  // 배지
+  const b=el('socBadge'); b.style.background=ind.soc.c;
+  el('socTitle').textContent=ind.soc.k; el('socDesc').textContent=ind.soc.d;
+  el('socShape').textContent=ind.shape.k; el('socAging').textContent=ind.aging.toFixed(1);
+  if(anim && ind.soc.k!==lastSoc){ b.classList.remove('pop-anim'); void b.offsetWidth; b.classList.add('pop-anim'); }
+  lastSoc=ind.soc.k;
+  if(anim) animateTo(M,F); else { dispM=M.slice(); dispF=F.slice(); curScale=computeScale(M,F); drawScene(); tgtM=M; tgtF=F; }
+}
+function setYear(y){
+  curYear=y;
+  document.querySelectorAll('.yearsel button').forEach(bt=>bt.classList.toggle('on',+bt.dataset.year===y));
+  syncLab(true);
+}
+function preset(tfr,le,mig){
+  el('tfr').value=tfr; el('le').value=le; el('mig').value=mig; syncLab(true);
+}
+
+/* ===== 미션 6개 : 선택지 [텍스트, pts, 피드백, {dTfr,dMig}] ===== */
+const MISSIONS=[
+  {type:'저출산', emoji:'👶', txt:'합계출산율이 세계 최저 수준으로 떨어져 어린이집·학교가 문을 닫고 유소년층이 얇아진다. 무엇이 가장 효과적일까?',
+   opts:[
+     ['🙈 자연스러운 현상이니 그대로 둔다',0,'저출산 방치는 유소년층 붕괴로 이어져 미래 노동력이 사라진다. 인구는 저절로 회복되지 않는다.',{dTfr:-0.1,dMig:0}],
+     ['💰 출산 시 일회성 현금만 지급한다',1,'단기 현금은 도움이 되나, 양육·주거·일가정양립 구조를 못 바꾸면 효과가 제한적이다.',{dTfr:0.15,dMig:0}],
+     ['🏡 돌봄·주거·일가정양립을 함께 지원한다',2,'출산·양육의 구조적 부담을 낮추는 종합 대응. 합계출산율을 끌어올리는 가장 지속가능한 길.',{dTfr:0.45,dMig:0}]
+   ]},
+  {type:'고령화', emoji:'👵', txt:'65세 이상 인구가 급증해 초고령사회에 진입했다. 노인 부양 부담을 어떻게 감당할까?',
+   opts:[
+     ['🏷️ 고령층을 사회의 부담으로만 여긴다',0,'노인을 부담으로만 보면 세대 갈등만 커진다. 고령자도 경험과 노동력을 지닌 자원이다.',{dTfr:0,dMig:0}],
+     ['⏳ 정년만 늦춰 오래 일하게 한다',1,'정년 연장은 생산가능인구를 늘려 부양비를 낮추지만, 건강·재교육이 없으면 한계가 있다.',{dTfr:0,dMig:2}],
+     ['🤝 정년연장·평생교육·돌봄·실버산업을 함께 키운다',2,'고령자의 경제활동을 돕고 돌봄을 사회가 분담하는 능동적 대응.',{dTfr:0.05,dMig:4}]
+   ]},
+  {type:'생산가능인구 감소', emoji:'💪', txt:'생산가능인구(15~64세)가 빠르게 줄어 일손이 부족하고 세수·연금 기반이 흔들린다.',
+   opts:[
+     ['🚪 이민의 문을 완전히 닫는다',0,'문을 닫기만 하면 노동력 공백을 메울 길이 없다. 문제는 개방 여부가 아니라 통합의 준비다.',{dTfr:0,dMig:-6}],
+     ['🏭 단기 외국인 노동력만 그때그때 받는다',1,'단기 인력은 급한 불을 끄지만, 정착·통합 없이는 지속가능하지 않다.',{dTfr:0,dMig:12}],
+     ['🌏 이민·다문화 통합 정책으로 정착을 돕는다',2,'생산가능인구를 보충하고 사회 활력을 높이는 개방적 대응. 교육·정착 지원이 관건.',{dTfr:0.05,dMig:26}]
+   ]},
+  {type:'연금·재정', emoji:'🧾', txt:'노년부양비가 치솟아 연금·건강보험 재정이 빠르게 고갈될 위기다.',
+   opts:[
+     ['🙉 문제를 미래 세대에게 미룬다',0,'지금 미루면 미래 세대의 부담이 눈덩이처럼 커진다. 세대 간 형평이 무너진다.',{dTfr:-0.05,dMig:0}],
+     ['✂️ 노인 복지를 대폭 삭감한다',1,'재정은 아끼지만 노인 빈곤이 심해진다. 지속가능성과 삶의 질을 함께 봐야 한다.',{dTfr:0,dMig:0}],
+     ['⚖️ 정년연장·고령 고용+연금 개혁을 병행한다',2,'내는 사람을 늘리고 제도를 손봐 재정 지속가능성을 높이는 구조적 대응.',{dTfr:0,dMig:6}]
+   ]},
+  {type:'지방 소멸', emoji:'🏙️', txt:'청년이 수도권으로 떠나 지방의 젊은 인구가 사라지고 마을·학교가 소멸 위기에 놓였다.',
+   opts:[
+     ['🏢 수도권 집중을 그대로 둔다',0,'집중을 방치하면 지방은 소멸하고 수도권은 과밀·경쟁 심화로 출산율이 더 떨어진다.',{dTfr:-0.05,dMig:0}],
+     ['🎁 지방에 일회성 정착금만 준다',1,'현금 유인은 잠깐 효과가 있으나, 일자리·정주 여건이 없으면 다시 떠난다.',{dTfr:0.05,dMig:2}],
+     ['🏘️ 지역 일자리·교육·인프라로 균형발전을 꾀한다',2,'살고 싶은 지역을 만들어 청년을 붙잡는 근본 대응. 전국적 활력으로 이어진다.',{dTfr:0.15,dMig:4}]
+   ]},
+  {type:'종합·개념', emoji:'🌱', txt:'지금까지 배운 것을 종합하자. 저출산·고령화에 가장 지속가능한 태도는?',
+   opts:[
+     ['🔮 인구 감소는 정해진 운명이니 순응한다',0,'인구 구조는 오늘의 선택으로 달라진다. 출산·이민·고령 대응을 함께 쓰면 완화할 수 있다.',{dTfr:0,dMig:0}],
+     ['🎯 출산장려 하나에만 모든 자원을 쏟는다',1,'출산 회복은 핵심이지만 효과가 나기까지 오래 걸린다. 이민·정년연장을 함께 써야 한다.',{dTfr:0.15,dMig:0}],
+     ['🧩 출산·이민·정년연장·균형발전을 함께 쓴다',2,'한 가지 만병통치약은 없다. 여러 대책을 조합하는 것이 가장 지속가능한 인구 정책.',{dTfr:0.25,dMig:12}]
+   ]}
+];
+let mIdx=0; const mChoice=[]; let mPicked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mPicked=false;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML='<div class="scen"><span class="type">'+m.type+'</span><br>'+
+    '<span class="emoji">'+m.emoji+'</span> <b>미션 '+(mIdx+1)+' / '+MISSIONS.length+'</b><br>'+m.txt+'</div>';
+  el('mOpts').innerHTML=m.opts.map((o,i)=>'<button onclick="choose('+i+',this)">'+o[0]+'</button>').join('');
+  el('mFeedback').innerHTML=''; el('mNext').classList.add('hide');
+}
+function choose(i,btn){
+  if(mPicked) return; mPicked=true;
+  const m=MISSIONS[mIdx], o=m.opts[i], pts=o[1], d=o[3];
+  mChoice[mIdx]={i,pts};
+  // 랩 슬라이더에 반영
+  el('tfr').value=clamp(P.tfr+d.dTfr,0.5,3.0).toFixed(2);
+  el('mig').value=Math.round(clamp(P.mig+d.dMig,-10,50));
+  P.tfr=+el('tfr').value; P.mig=+el('mig').value;
+  [...el('mOpts').children].forEach((b,j)=>{ b.disabled=true;
+    if(j===i) b.classList.add(pts>=2?'picked-good':(pts===1?'picked-mid':'picked-bad')); });
+  el('mFeedback').innerHTML='<div class="feedback">'+(pts>=2?'🌟':pts===1?'💡':'🤔')+' +'+pts+'점 · '+o[2]+'</div>';
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function nextMission(){ if(mIdx<MISSIONS.length-1){mIdx++;renderMission();} else {go('result');drawResult();} }
+function totalPts(){ return mChoice.reduce((s,c)=>s+(c?c.pts:0),0); }
+
+/* ===== 결과 카드 (PNG) ===== */
+function gradeOf(pts,aging){
+  if(pts>=10) return {t:'🏆 인구 정책 설계자',s:'한 방을 찾지 않고 여러 대책을 엮어 항아리를 다시 세웠다'};
+  if(pts>=7)  return {t:'🧭 균형 잡힌 전략가',s:'큰 방향은 제대로 잡았다. 이제 디테일 차례'};
+  if(pts>=4)  return {t:'🌱 성장하는 예측가',s:'구조를 바꾸는 손이 조금만 더 필요하다'};
+  return {t:'💭 위기를 배우는 중',s:'대응을 미룰수록 인구 절벽은 더 가팔라진다'};
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const {M,F}=projectTo(2070); const ind=indic(M,F);
+  const g=gradeOf(totalPts(),ind.aging);
+  // 배경
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#8E7CC3'); bg.addColorStop(1,'#6a599e');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W-68,H-68,28); ctx.fill();
+  ctx.textAlign='center';
+  ctx.fillStyle='#6a599e'; ctx.font='bold 34px "Malgun Gothic",sans-serif';
+  ctx.fillText('👥 나의 2070 인구 리포트', W/2, 104);
+  ctx.fillStyle='#6f6a86'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅴ 미래와 지속가능한 삶', W/2, 138);
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#2b2740'; ctx.font='bold 26px "Malgun Gothic",sans-serif'; ctx.fillText(name+' 인구정책관', W/2, 182);
+  // 사회 유형 배지
+  let by=210;
+  ctx.fillStyle=ind.soc.col; roundRect(ctx,W/2-220,by,440,50,15); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 24px "Malgun Gothic",sans-serif';
+  ctx.fillText(ind.soc.k+' · '+ind.shape.k, W/2, by+33);
+  // 미니 피라미드
+  by=286;
+  ctx.textAlign='left'; ctx.fillStyle='#6a599e'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  ctx.fillText('2070년 예상 인구 피라미드', 70, by);
+  drawPyramid(ctx,{x:150,y:by+14,w:W-150-70,h:250},M,F,computeScale(M,F),{gap:26,fs:13});
+  by+=14+250+30;
+  // 고령화율 링
+  const cx=W/2, cy=by+90, r=78, pctv=clamp(ind.aging,0,40)/40;
+  ctx.lineWidth=20; ctx.strokeStyle='#efe9fa'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle=ind.soc.col; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pctv); ctx.stroke(); ctx.lineCap='butt';
+  ctx.textAlign='center'; ctx.fillStyle='#2b2740'; ctx.font='bold 42px "Malgun Gothic",sans-serif';
+  ctx.fillText(ind.aging.toFixed(1)+'%', cx, cy+2);
+  ctx.fillStyle='#6f6a86'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.fillText('고령화율(65+)', cx, cy+28);
+  by=cy+r+46;
+  // 지표 막대
+  ctx.textAlign='left'; ctx.fillStyle='#2b2740'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('부양·생산 지표', 72, by); by+=16;
+  const bx=210, barW=W-72-bx;
+  const drawBar=(label,val,disp,frac,col,yy)=>{
+    ctx.fillStyle='#6f6a86'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.textAlign='left';
+    ctx.fillText(label, 72, yy+17);
+    ctx.fillStyle='#efeaf7'; roundRect(ctx,bx,yy+2,barW,20,10); ctx.fill();
+    ctx.fillStyle=col; roundRect(ctx,bx,yy+2,Math.max(6,barW*clamp(frac,0,1)),20,10); ctx.fill();
+    ctx.fillStyle='#2b2740'; ctx.font='bold 15px "Malgun Gothic",sans-serif'; ctx.textAlign='right';
+    ctx.fillText(disp, W-78, yy+17);
+  };
+  drawBar('💪 생산가능인구 비중', ind.workShare, ind.workShare.toFixed(1)+'%', ind.workShare/100, '#5F9E7A', by); by+=32;
+  drawBar('🧮 총부양비(100명당)', ind.totDep, Math.round(ind.totDep)+'명', ind.totDep/120, '#E7B75F', by); by+=32;
+  drawBar('👵 노년부양비(100명당)', ind.oldDep, Math.round(ind.oldDep)+'명', ind.oldDep/100, '#8E7CC3', by); by+=44;
+  // 등급
+  ctx.textAlign='center'; ctx.fillStyle=ind.soc.col; ctx.font='bold 26px "Malgun Gothic",sans-serif';
+  ctx.fillText(g.t, W/2, by); by+=28;
+  ctx.fillStyle='#6f6a86'; ctx.font='16px "Malgun Gothic",sans-serif'; ctx.fillText(g.s, W/2, by); by+=30;
+  // 미션 요약 박스
+  ctx.fillStyle='#f4f1fb'; roundRect(ctx,72,by,W-144,90,14); ctx.fill();
+  ctx.textAlign='left'; ctx.fillStyle='#2b2740'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  ctx.fillText('인구 정책 미션 ('+totalPts()+'/12점)', 92, by+28);
+  ctx.font='15px "Malgun Gothic",sans-serif';
+  const colW=(W-184)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const c=mChoice[i], row=Math.floor(i/3), col=i%3;
+    const yy=by+52+row*26, xx=92+col*colW;
+    ctx.fillStyle='#2b2740'; ctx.textAlign='left';
+    ctx.fillText(MISSIONS[i].emoji, xx, yy);
+    ctx.textAlign='left'; ctx.fillStyle=c?(c.pts>=2?'#5F9E7A':c.pts===1?'#c8912f':'#c56b56'):'#a9a3bd';
+    ctx.font='bold 15px "Malgun Gothic",sans-serif';
+    ctx.fillText(c?('+'+c.pts):'–', xx+30, yy);
+    ctx.font='15px "Malgun Gothic",sans-serif';
+  }
+  by+=90+8;
+  // 슬라이더 요약
+  ctx.textAlign='center'; ctx.fillStyle='#a9a3bd'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('설정 · 합계출산율 '+P.tfr.toFixed(2)+'명 · 기대수명 '+P.le.toFixed(1)+'세 · 순이민 '+(P.mig>=0?'+':'')+P.mig+'만명', W/2, by+16);
+  ctx.fillStyle='#8a83a6'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('인구는 정해진 운명이 아니다 · 풀어쓰는 사회학 AI · 인구구조 시뮬레이터', W/2, H-52);
+}
+function savePNG(){ drawResult(); const a=document.createElement('a');
+  a.download='2070인구리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click(); }
+function openResultTab(){ drawResult(); window.open(el('resultCanvas').toDataURL('image/png'),'_blank'); }
+
+/* ===== 탭 ===== */
+let labInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','lab','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='lab'){ syncLab(true); }
+  if(tab==='result'){ drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+['tfr','le','mig'].forEach(k=>el(k).addEventListener('input',()=>syncLab(true)));
+
+/* 초기화 */
+renderMission();
+syncLab(false);
+</script>
+</body>
+</html>

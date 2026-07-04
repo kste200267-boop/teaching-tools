@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지속가능발전 도시 설계 · 통합사회2 Ⅴ 미래와 지속가능한 삶</title>
+<style>
+  :root{
+    --bg:#f5f7f0; --surface:#ffffff; --ink:#1e2a1c; --sub:#5f6f57;
+    --primary:#2f6b3c; --primary-d:#1f4d2a; --sage:#8cb369; --ocher:#d8973c; --ocher-d:#b57a26;
+    --env:#2f8b4e; --eco:#d8973c; --soc:#4f83a3;
+    --line:#e4e8dc; --ok:#2f8b4e; --warn:#c0562f;
+    --shadow:0 6px 20px rgba(40,60,30,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:940px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;bottom:-40px;width:170px;height:170px;
+    background:radial-gradient(circle,rgba(216,151,60,.32),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.9;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:25px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.93}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:80px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--ocher)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#eaf1e4;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .concept{background:#f2f6ec;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+  .concept b{color:var(--primary-d)}
+  .hide{display:none}
+  .axisbox{border-radius:12px;padding:13px;font-size:13.5px;border:1px solid var(--line)}
+  .axisbox.env{background:#eef7f0;border-color:#cbe6d3}
+  .axisbox.eco{background:#fbf3e3;border-color:#efdcb4}
+  .axisbox.soc{background:#eef4f8;border-color:#cfe0eb}
+  .axisbox h3{margin:0 0 4px}
+  /* 설계 화면 */
+  .designgrid{display:grid;grid-template-columns:1.05fr 1fr;gap:16px}
+  @media(max-width:720px){.designgrid{grid-template-columns:1fr}}
+  canvas{max-width:100%;height:auto;display:block}
+  #radar{width:100%;max-width:320px;margin:0 auto;background:#fff}
+  .gauges{margin-top:8px}
+  .gauge{margin:9px 0}
+  .gauge .glab{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:3px}
+  .gauge .track{height:16px;background:#eef1e8;border-radius:99px;overflow:hidden}
+  .gauge .track i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.4,1.3,.5,1)}
+  .gauge.env .track i{background:linear-gradient(90deg,#6fbf8b,var(--env))}
+  .gauge.eco .track i{background:linear-gradient(90deg,#eab866,var(--eco))}
+  .gauge.soc .track i{background:linear-gradient(90deg,#82adc7,var(--soc))}
+  .gauge.env .glab .v{color:var(--env)} .gauge.eco .glab .v{color:var(--eco-d,#b57a26)} .gauge.soc .glab .v{color:var(--soc)}
+  .budgetbar{display:flex;align-items:center;gap:10px;background:#f2f6ec;border:1px solid var(--line);
+    border-radius:12px;padding:10px 13px;margin-bottom:10px;font-size:13.5px;font-weight:700}
+  .budgetbar .track{flex:1;height:12px;background:#e2e8dc;border-radius:99px;overflow:hidden}
+  .budgetbar .track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sage),var(--ocher));transition:width .3s}
+  .budgetbar.over .track i{background:var(--warn)}
+  .balancebox{display:flex;align-items:center;gap:12px;background:#f2f6ec;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-top:10px}
+  .balancebox .big{font-size:30px;font-weight:800;color:var(--primary-d);min-width:52px;text-align:center;line-height:1.05}
+  .balancebox .big small{display:block;font-size:11px;color:var(--sub);font-weight:700}
+  .balancebar{flex:1}
+  .balancebar .track{height:12px;background:#e6ecdf;border-radius:99px;overflow:hidden}
+  .balancebar .track i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--soc),var(--env),var(--ocher));transition:width .4s}
+  .balancebar .glab{font-size:13.5px;font-weight:800;margin-top:4px;color:var(--primary-d)}
+  .warnbadge{display:none;background:#fbeee6;border:1px solid #edc7ad;color:#9c4a1f;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-top:10px}
+  .warnbadge.on{display:block;animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,86,47,.28)}50%{box-shadow:0 0 0 6px rgba(192,86,47,0)}}
+  .cardlist{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  @media(max-width:560px){.cardlist{grid-template-columns:1fr}}
+  .fcard{border:1.5px solid var(--line);border-radius:12px;padding:10px 11px;background:#fff;transition:.15s}
+  .fcard.placed{border-color:var(--sage);background:#f4f9ee}
+  .fcard.pop{animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
+  .fcard .top{display:flex;align-items:center;gap:7px}
+  .fcard .emo{font-size:22px}
+  .fcard .nm{font-weight:800;font-size:14px;line-height:1.2}
+  .fcard .cost{margin-left:auto;font-size:12px;font-weight:800;color:var(--ocher-d)}
+  .fcard .eff{display:flex;gap:5px;margin:7px 0 6px;flex-wrap:wrap}
+  .fcard .ef{font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px}
+  .ef.env{background:#e4f2e8;color:var(--env)} .ef.eco{background:#faeecf;color:var(--ocher-d)} .ef.soc{background:#e4eef4;color:var(--soc)}
+  .ef.neg{opacity:.95;text-decoration:none}
+  .fcard .ctr{display:flex;align-items:center;gap:8px}
+  .fcard .ctr button{width:30px;height:30px;border:none;border-radius:8px;background:#eef1e8;color:var(--primary-d);
+    font-size:18px;font-weight:800;cursor:pointer;line-height:1}
+  .fcard .ctr button:disabled{opacity:.35;cursor:default}
+  .fcard .ctr .qty{font-weight:800;min-width:20px;text-align:center;font-size:15px}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.ocher{background:var(--ocher);color:#3a2c07}
+  .btn.ghost{background:#eef1e8;color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
+  .presets button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;
+    font-size:12.5px;font-weight:800;cursor:pointer;color:var(--primary-d)}
+  .presets button:active{transform:scale(.96)}
+  /* 미션 */
+  .mission-scenario{background:#fbf6ea;border:1px solid #ecd9a8;border-radius:12px;padding:15px;font-size:15px;animation:cardin .35s ease}
+  @keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .mission-scenario .emoji{font-size:28px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left;transition:.12s}
+  .opts button:hover{border-color:var(--primary)}
+  .opts button.sel{border-color:var(--primary);background:#eef5ea;color:var(--primary-d)}
+  .opts button.best{border-color:var(--ok);background:#e6f5ec;color:#1a7a44}
+  .opts button.bad{border-color:var(--warn);background:#fbeee6;color:#9c4a1f}
+  .opts button:disabled{cursor:default}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e6f5ec;color:#1a7a44}
+  .feedback.mid{background:#fbf3e0;color:#8a6a1a}
+  .feedback.no{background:#fbeee6;color:#9c4a1f}
+  .progress{height:8px;background:#eef1e8;border-radius:99px;overflow:hidden;margin:10px 0 14px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--soc),var(--primary),var(--ocher));width:0;transition:.3s}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvasWrap{text-align:center}
+  #resultCanvas{max-width:380px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:56%;max-width:220px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px;line-height:1.7}
+  .tag{font-size:11.5px;color:var(--sub);background:#eef1e8;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);background:#f2f6ec;border-radius:8px;padding:9px 11px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅴ 미래와 지속가능한 삶 · 5-2 지속가능한 발전</div>
+    <h1>🏙️ 지속가능발전 도시 설계 — 3축 균형 시뮬레이터</h1>
+    <p>시장으로 당선된 당신에게 한정된 예산이 주어졌다. 공장을 지어 일자리를 늘릴까, 공원을 지어 숨통을 틔울까? <b>환경·경제·사회</b> 셋 다 잡을 수 있을까? 한 축만 몰면 나머지가 무너진다.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="design">2. 도시 설계</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>지속가능한 발전이란?</h2>
+      <p class="lead"><b>지속가능한 발전(SDGs)</b>은 <b>"미래 세대가 그들의 필요를 충족할 능력을 해치지 않으면서 현재 세대의 필요를 채우는 발전"</b>이다. 핵심은 환경·경제·사회 <b>세 축의 균형</b>이다.</p>
+      <div class="grid3">
+        <div class="axisbox env"><h3 style="color:var(--env)">🌱 환경</h3>대기·물·녹지·생태계와 <b>탄소중립</b>. 자원을 아껴 미래 세대에게 물려준다.</div>
+        <div class="axisbox eco"><h3 style="color:var(--ocher-d)">💰 경제</h3>일자리·세수·성장 동력. 도시가 <b>스스로 돌아갈</b> 힘을 만든다.</div>
+        <div class="axisbox soc"><h3 style="color:var(--soc)">🤝 사회</h3>주거·복지·교육·교통 <b>접근성</b>과 형평. 모두가 살 만한 도시.</div>
+      </div>
+
+      <h3>세 축은 서로 상충한다 (트레이드오프)</h3>
+      <div class="grid2">
+        <div class="concept">🏭 <b>공장·산업단지</b>는 일자리·세수(경제)를 크게 늘리지만, 대기오염·탄소(환경)를 악화시킨다.</div>
+        <div class="concept">🌳 <b>공원·복지시설</b>은 삶의 질(사회)과 환경을 높이지만, 당장 <b>수익이 나지 않아</b> 경제엔 부담이 된다.</div>
+      </div>
+      <p class="lead" style="margin-top:10px">그래서 <b>한 축에만 몰빵</b>하면 나머지가 무너진다. 지속가능한 도시는 <b>세 축을 고르게</b> 끌어올린 도시다.</p>
+
+      <h3>미래 도시의 핵심 이슈</h3>
+      <div>
+        <span class="pill">⚡ 에너지 전환(태양광·재생)</span>
+        <span class="pill">🚆 교통·이동권</span>
+        <span class="pill">🏢 주거 안정</span>
+        <span class="pill">🌳 녹지·생태</span>
+        <span class="pill">🤝 복지·형평</span>
+        <span class="pill">♻️ 자원순환</span>
+      </div>
+      <div class="note">※ 이 교구의 예산·점수·효과 값은 이해를 돕기 위한 <b>교육용 단순 가정값</b>이며, 실제 도시계획 수치가 아닙니다.</div>
+      <div class="note">👩‍🏫 이렇게 쓰세요: 모둠별로 도시를 설계해 균형점수로 겨루고, 왜 그 시설을 택했는지 발표시키면 '균형'이 저절로 토론 주제가 됩니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('design')">내 도시를 설계하러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 도시 설계 ===== -->
+  <section id="tab-design" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>내 도시 설계 · 예산으로 시설·정책 배치</h2>
+      <p class="lead">이제 당신의 도시다. 예산 <b>120</b>을 어디에 쓸지는 온전히 시장의 몫. 시설 하나를 놓을 때마다 <b>환경·경제·사회</b> 3축 게이지와 레이더가 살아 움직인다. 예산은 냉정하니, 욕심은 금물이다.</p>
+
+      <div class="budgetbar" id="budgetBar">
+        <span>💵 예산</span>
+        <div class="track"><i id="budgetFill"></i></div>
+        <span id="budgetTxt">0 / 120</span>
+      </div>
+
+      <div class="designgrid">
+        <div>
+          <canvas id="radar" width="320" height="300"></canvas>
+          <div class="gauges">
+            <div class="gauge env"><div class="glab"><span>🌱 환경</span><span class="v" id="gvEnv">0</span></div><div class="track"><i id="gEnv"></i></div></div>
+            <div class="gauge eco"><div class="glab"><span>💰 경제</span><span class="v" id="gvEco">0</span></div><div class="track"><i id="gEco"></i></div></div>
+            <div class="gauge soc"><div class="glab"><span>🤝 사회</span><span class="v" id="gvSoc">0</span></div><div class="track"><i id="gSoc"></i></div></div>
+          </div>
+          <div class="balancebox">
+            <div class="big" id="balNum">0<small>균형점수</small></div>
+            <div class="balancebar">
+              <div class="track"><i id="balBar"></i></div>
+              <div class="glab" id="balGrade">시설을 배치해 보자</div>
+            </div>
+          </div>
+          <div class="warnbadge" id="warnBadge"></div>
+        </div>
+        <div>
+          <div class="presets">
+            <button onclick="applyPreset('green')">🌱 환경중심</button>
+            <button onclick="applyPreset('growth')">💰 성장중심</button>
+            <button onclick="applyPreset('balance')">⚖️ 균형중심</button>
+            <button onclick="applyPreset('reset')">↺ 초기화</button>
+          </div>
+          <div class="cardlist" id="cardList"></div>
+        </div>
+      </div>
+
+      <div class="note">➕/➖로 시설 수를 조절합니다. 예산을 넘기면 더 배치할 수 없어요. 한 축이 <b>75↑</b>인데 다른 축이 <b>40↓</b>이면 <b>불균형 경고</b>가 뜹니다.</div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">도시 위기 미션 도전 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>도시 위기 시나리오 (6)</h2>
+      <p class="lead">임기 중 도시를 잇달아 덮치는 6가지 위기. 시장의 결단이 시민의 삶을 가른다. SDGs 3축 균형을 근거로 최선의 정책을 골라보자. (선택마다 0~2점)</p>
+      <div class="progress"><i id="mProg"></i></div>
+      <div class="mission-scenario" id="mScenario"></div>
+      <div class="opts" id="mOpts"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn ghost hide" id="mPrev" onclick="prevMission()">← 이전</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>지속가능도시 설계 리포트</h2>
+      <p class="lead">임기가 끝났다. 당신이 설계한 도시의 성적표다. 이름을 넣고 카드를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div id="resultCanvasWrap"><canvas id="resultCanvas" width="720" height="1040"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn ocher" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('design')">설계 다시</button>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <a href="#" onclick="openPNG();return false;" style="font-size:12.5px;color:var(--sub);font-weight:700">📱 저장이 안 되면 여기(새 탭)</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅴ 미래와 지속가능한 삶 · 지속가능한 발전(SDGs)·환경·경제·사회 3축 균형 [10통사2-11] · 단일 HTML 웹교구 · 오프라인 동작<br>
+    예산·점수는 교육용 가정값입니다 · <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el = id=>document.getElementById(id);
+
+/* ============ 데이터 ============ */
+const BUDGET = 120;
+const BASE = {env:35, eco:35, soc:35};      // 기본 도시 상태
+const AX = ['env','eco','soc'];
+const AXINFO = {
+  env:{nm:'환경', emoji:'🌱', color:'#2f8b4e'},
+  eco:{nm:'경제', emoji:'💰', color:'#d8973c'},
+  soc:{nm:'사회', emoji:'🤝', color:'#4f83a3'}
+};
+// 시설·정책 카드: cost=예산, e/c/s=축 효과(단위당)
+const CARDS = [
+  {k:'solar',   emo:'☀️', nm:'태양광 발전단지', cost:16, e:13,  c:4,  s:1},
+  {k:'transit', emo:'🚆', nm:'대중교통망',       cost:15, e:8,   c:4,  s:9},
+  {k:'park',    emo:'🌳', nm:'도시숲·공원',       cost:10, e:11,  c:-3, s:6},
+  {k:'industry',emo:'🏭', nm:'첨단산업단지',      cost:20, e:-11, c:18, s:2},
+  {k:'housing', emo:'🏢', nm:'공공주택단지',      cost:12, e:-3,  c:5,  s:12},
+  {k:'welfare', emo:'🏥', nm:'복지·보건센터',     cost:13, e:0,   c:-4, s:13},
+  {k:'recycle', emo:'♻️', nm:'자원순환센터',      cost:9,  e:9,   c:4,  s:2},
+  {k:'grid',    emo:'🔌', nm:'스마트에너지그리드',cost:14, e:7,   c:6,  s:3},
+  {k:'bike',    emo:'🚲', nm:'자전거·보행 인프라',cost:7,  e:5,   c:1,  s:5},
+  {k:'edu',     emo:'📚', nm:'평생교육·문화센터', cost:11, e:1,   c:3,  s:10}
+];
+const CARDMAP = {}; CARDS.forEach(c=>CARDMAP[c.k]=c);
+let city = {}; CARDS.forEach(c=>city[c.k]=0);
+
+/* ============ 계산 ============ */
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function cityMetrics(){
+  let env=BASE.env, eco=BASE.eco, soc=BASE.soc, used=0;
+  CARDS.forEach(c=>{
+    const n=city[c.k];
+    env+=c.e*n; eco+=c.c*n; soc+=c.s*n; used+=c.cost*n;
+  });
+  env=clamp(env,0,100); eco=clamp(eco,0,100); soc=clamp(soc,0,100);
+  const vals=[env,eco,soc];
+  const avg=(env+eco+soc)/3;
+  const gap=Math.max(...vals)-Math.min(...vals);
+  const bal=clamp(avg*0.55 + (100-gap)*0.45, 0, 100);
+  // 등급
+  let grade,gicon;
+  if(bal>=85){grade='3축을 모두 잡은 명시장'; gicon='🏆';}
+  else if(bal>=70){grade='균형 잡힌 미래도시'; gicon='🌍';}
+  else if(bal>=55){grade='한 걸음씩 성장하는 도시'; gicon='🌱';}
+  else {grade='한쪽으로 기운 도시'; gicon='⚠️';}
+  // 뱃지
+  let badge;
+  if(gap<=12 && avg>=68) badge='⚖️ 완벽한 3축 균형';
+  else if(gap<=18 && avg>=55) badge='🌿 준수한 균형 설계';
+  else {
+    const hi=AX[vals.indexOf(Math.max(...vals))];
+    badge=AXINFO[hi].emoji+' '+AXINFO[hi].nm+' 특화 도시';
+  }
+  // 불균형 경고
+  const warn = (Math.max(...vals)>=75 && Math.min(...vals)<=40);
+  const over = used>BUDGET;
+  return {env,eco,soc,avg,gap,bal:Math.round(bal),grade,gicon,badge,warn,used,over};
+}
+
+/* ============ 레이더 ============ */
+function fitDPR(cv){
+  if(cv._fit) return cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1, w=cv.width, h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; cv.style.aspectRatio=w+'/'+h;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); cv._lw=w; cv._lh=h; cv._fit=true;
+  return ctx;
+}
+// 삼각 레이더를 ctx의 중심(cx,cy)·반지름 R에 그림. v={env,eco,soc}(0~100)
+function drawRadarOn(ctx, cx, cy, R, v, o){
+  o=o||{};
+  const ang={env:-Math.PI/2, eco:-Math.PI/2+2*Math.PI/3, soc:-Math.PI/2+4*Math.PI/3};
+  // 격자(동심 삼각)
+  ctx.strokeStyle=o.grid||'#e4e8dc'; ctx.lineWidth=1;
+  for(let g=1; g<=4; g++){
+    const rr=R*g/4;
+    ctx.beginPath();
+    AX.forEach((k,i)=>{ const x=cx+rr*Math.cos(ang[k]), y=cy+rr*Math.sin(ang[k]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.closePath(); ctx.stroke();
+  }
+  // 축선
+  AX.forEach(k=>{ ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(ang[k]), cy+R*Math.sin(ang[k])); ctx.stroke(); });
+  // 데이터 폴리곤
+  ctx.beginPath();
+  AX.forEach((k,i)=>{ const rr=R*clamp(v[k],0,100)/100; const x=cx+rr*Math.cos(ang[k]), y=cy+rr*Math.sin(ang[k]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+  ctx.closePath();
+  ctx.fillStyle=o.fill||'rgba(47,107,60,.22)'; ctx.fill();
+  ctx.strokeStyle=o.stroke||'#2f6b3c'; ctx.lineWidth=o.lw||2.4; ctx.lineJoin='round'; ctx.stroke();
+  // 꼭짓점
+  AX.forEach(k=>{ const rr=R*clamp(v[k],0,100)/100; const x=cx+rr*Math.cos(ang[k]), y=cy+rr*Math.sin(ang[k]);
+    ctx.fillStyle=AXINFO[k].color; ctx.beginPath(); ctx.arc(x,y,o.dot||4,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); });
+  // 라벨
+  ctx.font='bold '+(o.fs||13)+'px "Malgun Gothic",sans-serif'; ctx.textBaseline='middle';
+  AX.forEach(k=>{
+    const lx=cx+(R+ (o.lo||20))*Math.cos(ang[k]), ly=cy+(R+(o.lo||20))*Math.sin(ang[k]);
+    ctx.fillStyle=AXINFO[k].color;
+    ctx.textAlign = Math.abs(Math.cos(ang[k]))<0.3 ? 'center' : (Math.cos(ang[k])>0?'left':'right');
+    ctx.fillText(AXINFO[k].emoji+AXINFO[k].nm, lx, ly);
+  });
+}
+let radarDisp={env:BASE.env,eco:BASE.eco,soc:BASE.soc}, radarTimer=null;
+function drawRadar(){
+  const cv=el('radar'), ctx=fitDPR(cv);
+  ctx.clearRect(0,0,cv._lw,cv._lh);
+  drawRadarOn(ctx, cv._lw/2, cv._lh/2+6, 96, radarDisp, {});
+}
+function animateRadar(target){
+  if(radarTimer) clearInterval(radarTimer);
+  radarTimer=setInterval(()=>{
+    let done=true;
+    AX.forEach(k=>{ const d=target[k]-radarDisp[k];
+      if(Math.abs(d)>0.6){ radarDisp[k]+=d*0.28; done=false; } else radarDisp[k]=target[k]; });
+    drawRadar();
+    if(done){ clearInterval(radarTimer); radarTimer=null; }
+  },20);
+}
+
+/* ============ 설계 UI ============ */
+function buildCards(){
+  el('cardList').innerHTML = CARDS.map(c=>{
+    const chips = [['env',c.e],['eco',c.c],['soc',c.s]].filter(x=>x[1]!==0).map(x=>{
+      const sign=x[1]>0?'+':''; return `<span class="ef ${x[0]}${x[1]<0?' neg':''}">${AXINFO[x[0]].emoji}${sign}${x[1]}</span>`;
+    }).join('');
+    return `<div class="fcard" id="fc-${c.k}">
+      <div class="top"><span class="emo">${c.emo}</span><span class="nm">${c.nm}</span><span class="cost">💵${c.cost}</span></div>
+      <div class="eff">${chips}</div>
+      <div class="ctr">
+        <button onclick="dec('${c.k}')" aria-label="빼기">−</button>
+        <span class="qty" id="q-${c.k}">0</span>
+        <button id="add-${c.k}" onclick="inc('${c.k}')" aria-label="더하기">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function inc(k){
+  const m=cityMetrics();
+  if(m.used + CARDMAP[k].cost > BUDGET) return;   // 예산 초과 방지
+  city[k]++; popCard(k); sync();
+}
+function dec(k){ if(city[k]>0){ city[k]--; popCard(k); sync(); } }
+function popCard(k){ const fc=el('fc-'+k); if(!fc) return; fc.classList.remove('pop'); void fc.offsetWidth; fc.classList.add('pop'); }
+function applyPreset(kind){
+  CARDS.forEach(c=>city[c.k]=0);
+  if(kind==='green')  Object.assign(city,{solar:2,park:2,recycle:2,bike:2,transit:1});
+  if(kind==='growth') Object.assign(city,{industry:3,grid:2,housing:1,solar:1});
+  if(kind==='balance')Object.assign(city,{transit:1,park:1,housing:1,welfare:1,recycle:1,solar:1,grid:1});
+  // 'reset'은 전부 0 유지
+  sync(true);
+}
+let lastMetrics=null;
+function sync(animated){
+  const m=cityMetrics(); lastMetrics=m;
+  CARDS.forEach(c=>{
+    el('q-'+c.k).textContent=city[c.k];
+    el('fc-'+c.k).classList.toggle('placed', city[c.k]>0);
+    el('add-'+c.k).disabled = (m.used + c.cost > BUDGET);
+  });
+  // 예산바
+  el('budgetTxt').textContent=m.used+' / '+BUDGET;
+  el('budgetFill').style.width=Math.min(100,m.used/BUDGET*100)+'%';
+  el('budgetBar').classList.toggle('over', m.over);
+  // 게이지
+  el('gEnv').style.width=m.env+'%'; el('gvEnv').textContent=Math.round(m.env);
+  el('gEco').style.width=m.eco+'%'; el('gvEco').textContent=Math.round(m.eco);
+  el('gSoc').style.width=m.soc+'%'; el('gvSoc').textContent=Math.round(m.soc);
+  // 균형점수
+  el('balNum').innerHTML=m.bal+'<small>균형점수</small>';
+  el('balBar').style.width=m.bal+'%';
+  el('balGrade').textContent=m.gicon+' '+m.grade+' · '+m.badge;
+  // 경고
+  const wb=el('warnBadge');
+  if(m.warn){ wb.classList.add('on');
+    wb.innerHTML='⚠️ <b>불균형 경고!</b> 한 축이 너무 높고 다른 축이 낮습니다. 세 축을 <b>고르게</b> 올려야 지속가능한 도시예요.';
+  } else if(m.over){ wb.classList.add('on'); wb.innerHTML='⚠️ 예산을 초과했습니다.'; }
+  else wb.classList.remove('on');
+  // 레이더
+  const target={env:m.env,eco:m.eco,soc:m.soc};
+  if(animated) animateRadar(target);
+  else { radarDisp=target; drawRadar(); }
+}
+
+/* ============ 미션 ============ */
+const MISSIONS=[
+  {emoji:'🌫️', title:'미세먼지·탄소 위기', desc:'대기오염과 탄소배출로 시민 건강이 나빠지고 있다. 도시는 어떤 정책을 우선할까?',
+   opts:[
+     {t:'태양광·대중교통·자전거로 에너지·교통을 전환한다', pts:2},
+     {t:'공장 가동을 전면 중단해 배출을 즉시 0으로 만든다', pts:1},
+     {t:'경제 성장이 먼저다, 대책 없이 산업단지를 더 늘린다', pts:0}],
+   why:'✅ 정답은 <b>에너지·교통 전환</b>. 환경을 지키되 일자리(경제)와 이동권(사회)을 함께 살린다. 공장 전면 중단은 환경엔 좋아도 <b>일자리·경제가 붕괴</b>해 지속가능하지 않다.'},
+  {emoji:'💼', title:'청년 실업·재정난', desc:'일자리가 부족하고 도시 재정이 바닥났다. 어떻게 경제를 살릴까?',
+   opts:[
+     {t:'친환경 산업·재생에너지 등 지속가능 일자리를 키운다', pts:2},
+     {t:'규제 없는 오염 공장을 대거 유치해 세수를 늘린다', pts:1},
+     {t:'복지·환경 예산을 모두 삭감해 기업에 몰아준다', pts:0}],
+   why:'✅ 정답은 <b>지속가능 일자리</b>. 경제를 키우되 환경·사회 기반을 훼손하지 않는다. 오염 공장·복지 삭감은 단기 세수는 늘려도 <b>환경·사회 축이 무너져</b> 미래 세대에 부담을 넘긴다.'},
+  {emoji:'🏘️', title:'주거난·젠트리피케이션', desc:'집값이 치솟아 원주민과 청년이 도시 밖으로 밀려나고 있다.',
+   opts:[
+     {t:'공공주택을 늘리고 대중교통으로 접근성을 높인다', pts:2},
+     {t:'개발업체에 맡겨 고급 아파트만 최대한 짓는다', pts:1},
+     {t:'아무 대책 없이 시장에 완전히 맡긴다', pts:0}],
+   why:'✅ 정답은 <b>공공주택 + 교통 접근성</b>. 사회적 형평(주거권)을 지키는 정책이다. 고급 개발만·무대책은 불평등을 키워 <b>사회 지속가능성</b>을 해친다.'},
+  {emoji:'🔥', title:'폭염·기후재난', desc:'기록적 폭염과 홍수로 도시가 위협받는다. 기후위기에 어떻게 <b>적응</b>할까?',
+   opts:[
+     {t:'도시숲·녹지와 물순환 시설로 도시를 식히고 대비한다', pts:2},
+     {t:'에어컨을 무제한 보급하고 화석연료 발전을 늘린다', pts:1},
+     {t:'재난은 어쩔 수 없다, 아무 대비도 하지 않는다', pts:0}],
+   why:'✅ 정답은 <b>녹지·물순환 등 기후 적응</b>. 환경과 시민 안전(사회)을 함께 지킨다. 화석연료 에어컨 확대는 당장은 시원해도 <b>탄소를 늘려 위기를 키우는</b> 악순환이다.'},
+  {emoji:'⚖️', title:'개발 vs 보전 갈등', desc:'도시 외곽 마지막 습지를 두고 "산업단지 개발"과 "생태 보전"이 충돌한다.',
+   opts:[
+     {t:'핵심 생태는 보전하고, 개발은 이미 훼손된 부지로 유도한다', pts:2},
+     {t:'습지를 전부 메워 대규모 산업단지로 개발한다', pts:1},
+     {t:'경제활동을 전면 금지하고 사람 출입도 막는다', pts:0}],
+   why:'✅ 정답은 <b>보전과 개발의 조화</b>. 지속가능한 발전은 개발과 보전 중 하나를 <b>완전히 버리지 않는다</b>. 습지 전면 개발은 환경을, 경제 전면 금지는 주민 생계를 무너뜨린다.'},
+  {emoji:'🌍', title:'미래 세대와 세계 시민', desc:'지속가능한 발전에 대한 가장 성숙한 태도는?',
+   opts:[
+     {t:'환경·경제·사회, 그리고 미래 세대까지 함께 고려한다', pts:2},
+     {t:'우리 세대의 편리와 성장이 가장 중요하다', pts:1},
+     {t:'환경만 지키면 경제·사회는 희생돼도 괜찮다', pts:0}],
+   why:'✅ 정답은 <b>3축 + 미래 세대 통합 고려</b>. 지속가능한 발전의 정의 그 자체다. 현재 성장만·환경만 강조하는 태도는 모두 <b>균형</b>을 놓친 편향이다.'}
+];
+let mIdx=0; const mResult=new Array(MISSIONS.length).fill(null);
+function renderMission(){
+  const m=MISSIONS[mIdx];
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<span class="emoji">${m.emoji}</span> <b>위기 ${mIdx+1}/${MISSIONS.length} · ${m.title}</b><br>${m.desc}`;
+  el('mScenario').style.animation='none'; void el('mScenario').offsetWidth; el('mScenario').style.animation='';
+  const chosen=mResult[mIdx];
+  el('mOpts').innerHTML=m.opts.map((o,i)=>{
+    let cls='';
+    if(chosen){ if(o.pts===2) cls=' best'; else if(o.pts===0) cls=' bad'; if(chosen.pick===i) cls+=' sel'; }
+    return `<button class="${cls.trim()}" ${chosen?'disabled':''} onclick="pickOpt(${i})">${o.t} <b style="float:right">${chosen?('+'+o.pts):''}</b></button>`;
+  }).join('');
+  el('mFeedback').innerHTML = chosen ? feedbackHTML(m, chosen.pts) : '';
+  el('mPrev').classList.toggle('hide', mIdx===0);
+  el('mNext').classList.toggle('hide', !chosen);
+  el('mNext').textContent = mIdx===MISSIONS.length-1 ? '결과 보기 →' : '다음 →';
+}
+function feedbackHTML(m, pts){
+  const cls = pts===2?'ok' : pts===1?'mid':'no';
+  const head = pts===2?'✅ 최선의 선택! (+2)' : pts===1?'🟡 나쁘진 않지만 더 나은 선택이 있어. (+1)':'❌ 균형을 놓친 선택! (+0)';
+  return `<div class="feedback ${cls}">${head}<br>${m.why}</div>`;
+}
+function pickOpt(i){
+  if(mResult[mIdx]) return;
+  const m=MISSIONS[mIdx];
+  mResult[mIdx]={pick:i, pts:m.opts[i].pts, emoji:m.emoji};
+  renderMission();
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+}
+function prevMission(){ if(mIdx>0){ mIdx--; renderMission(); } }
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+function missionTotal(){ return mResult.reduce((s,r)=>s+(r?r.pts:0),0); }
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const m=lastMetrics||cityMetrics();
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  // 배경(포레스트 그라데)
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2f6b3c'); g.addColorStop(1,'#1f4d2a');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,34,34,W-68,H-68,26); ctx.fill();
+  // 헤더
+  ctx.textAlign='center';
+  ctx.fillStyle='#1f4d2a'; ctx.font='bold 37px "Malgun Gothic",sans-serif';
+  ctx.fillText('🏙️ 지속가능도시 리포트', W/2, 106);
+  ctx.fillStyle='#5f6f57'; ctx.font='18px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅴ · 지속가능한 발전(SDGs) [10통사2-11]', W/2, 142);
+  // 오커 구분선
+  ctx.strokeStyle='#d8973c'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-120,164); ctx.lineTo(W/2+120,164); ctx.stroke();
+  // 이름
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1e2a1c'; ctx.font='bold 28px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+' 시장의 도시', W/2, 204);
+  // 레이더
+  drawRadarOn(ctx, W/2, 340, 96, {env:m.env,eco:m.eco,soc:m.soc},
+    {grid:'#e0e6d8', fill:'rgba(47,107,60,.20)', stroke:'#2f6b3c', lw:2.6, dot:5, fs:16, lo:24});
+  // 3축 값 요약
+  ctx.font='bold 20px "Malgun Gothic",sans-serif';
+  const rows=[['🌱 환경', Math.round(m.env), '#2f8b4e'],['💰 경제', Math.round(m.eco), '#b57a26'],['🤝 사회', Math.round(m.soc), '#4f83a3']];
+  let y=486; const colW=(W-160)/3;
+  rows.forEach((rw,i)=>{
+    const x=80+i*colW+colW/2;
+    ctx.textAlign='center'; ctx.fillStyle='#5f6f57'; ctx.font='17px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[0], x, y);
+    ctx.fillStyle=rw[2]; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+    ctx.fillText(rw[1], x, y+34);
+  });
+  // 균형점수 게이지
+  const pct=m.bal/100, cx=W/2, cy=628, r=84;
+  ctx.lineWidth=20; ctx.strokeStyle='#eef2ea'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle= pct>=0.85?'#2f8b4e' : pct>=0.7?'#2f6b3c' : pct>=0.55?'#d8973c':'#c0562f';
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1e2a1c'; ctx.textAlign='center'; ctx.font='bold 50px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.bal+'', cx, cy+4);
+  ctx.fillStyle='#5f6f57'; ctx.font='17px "Malgun Gothic",sans-serif'; ctx.fillText('균형점수', cx, cy+30);
+  ctx.fillStyle='#1f4d2a'; ctx.font='bold 25px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.gicon+' '+m.grade, cx, cy+r+48);
+  ctx.fillStyle='#b57a26'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText(m.badge, cx, cy+r+78);
+  // 미션 점수표
+  y=cy+r+118; ctx.textAlign='left'; ctx.fillStyle='#1f4d2a'; ctx.font='bold 19px "Malgun Gothic",sans-serif';
+  ctx.fillText('도시 위기 미션  ('+missionTotal()+'/'+(MISSIONS.length*2)+')', 80, y); y+=30;
+  const mcolW=(W-160)/3;
+  for(let i=0;i<MISSIONS.length;i++){
+    const col=i%3, row=Math.floor(i/3);
+    const x=80+col*mcolW, yy=y+row*34;
+    const rr=mResult[i];
+    ctx.textAlign='left'; ctx.fillStyle='#1e2a1c'; ctx.font='19px "Malgun Gothic",sans-serif';
+    ctx.fillText(MISSIONS[i].emoji, x, yy);
+    ctx.fillStyle= rr? (rr.pts===2?'#2f8b4e':rr.pts===1?'#b57a26':'#c0562f') : '#a9b4a0';
+    ctx.font='bold 19px "Malgun Gothic",sans-serif';
+    ctx.fillText(rr? (rr.pts+'/2') : '–', x+34, yy);
+  }
+  // 푸터
+  ctx.textAlign='center'; ctx.fillStyle='#a9b4a0'; ctx.font='15px "Malgun Gothic",sans-serif';
+  ctx.fillText('예산·점수는 교육용 가정값입니다', W/2, H-70);
+  ctx.fillStyle='#8896a6'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 지속가능발전 도시 설계', W/2, H-46);
+}
+function savePNG(){
+  drawResult();
+  const a=document.createElement('a');
+  a.download='지속가능도시리포트_'+((el('studentName').value||'학생')).slice(0,12)+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+let designInit=false, missionInit=false;
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  ['concept','design','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide', t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='design'){ if(!designInit){ buildCards(); designInit=true; } sync(true); }
+  if(tab==='mission'){ if(!missionInit){ renderMission(); missionInit=true; } }
+  if(tab==='result'){ if(!lastMetrics) cityMetrics(); drawResult(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* 초기화 */
+buildCards(); designInit=true; sync(false);
+</script>
+</body>
+</html>

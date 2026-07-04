@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>문화 변동 분류 게임 · 통합사회1 Ⅳ 문화와 다양성</title>
+<style>
+  /* 팔레트: INDEX id 08 Playful Workshop (민트 파스텔) — 발랄한 게임 톤 */
+  :root{
+    --bg:#eefaf8; --surface:#ffffff; --ink:#1f2b33; --sub:#5c6b73;
+    --primary:#2fb3a6; --primary-d:#1e847a; --accent:#ff6b6b;
+    --yellow:#f6a821; --yellow-d:#c9820f; --purple:#7c5cff; --purple-d:#5b3fd6;
+    --blue:#3f8ee0; --pink:#ef5f8b;
+    --line:#dbeeeb; --ok:#2e9e6b; --no:#e15b4c;
+    --shadow:0 6px 20px rgba(20,60,55,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;
+    background:radial-gradient(circle,rgba(246,168,33,.40),transparent 70%);border-radius:50%}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.9;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.94}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--yellow)}
+  h3{font-size:16px;margin:14px 0 6px;color:var(--primary-d)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .pill{display:inline-block;background:#e5f6f3;color:var(--primary-d);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.pp{background:#ece7ff;color:var(--purple-d)}
+  .pill.yl{background:#fdefd3;color:var(--yellow-d)}
+  .hide{display:none}
+  canvas{display:block}
+  /* 개념 트리 */
+  .tree{margin:12px 0}
+  .tnode{border-radius:12px;padding:12px 14px;margin:8px 0;border:1px solid var(--line);background:#f6fcfb}
+  .tnode .th{font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px}
+  .tnode .td{font-size:13.5px;color:var(--sub);margin-top:3px}
+  .tnode .kids{margin:10px 0 2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  @media(max-width:640px){.tnode .kids{grid-template-columns:1fr}}
+  .leaf{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px}
+  .leaf .ln{font-weight:800;font-size:13.5px}
+  .leaf .lx{font-size:12px;color:var(--sub);margin-top:2px}
+  .leaf.pp{border-color:#cfc2ff} .leaf.pp .ln{color:var(--purple-d)}
+  .leaf.yl{border-color:#f4d79a} .leaf.yl .ln{color:var(--yellow-d)}
+  .leaf.mt{border-color:#a6e0d9} .leaf.mt .ln{color:var(--primary-d)}
+  .leaf.bl{border-color:#bcd8f5} .leaf.bl .ln{color:var(--blue)}
+  .leaf.pk{border-color:#f6c0d1} .leaf.pk .ln{color:var(--pink)}
+  .warn{font-size:12.5px;color:var(--sub);background:#fff6f5;border:1px solid #ffd9d4;border-radius:10px;padding:10px 12px;margin-top:10px}
+  .warn b{color:var(--no)}
+  /* 게임 */
+  .gamebar{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .stat{background:#eefaf8;border-radius:12px;padding:7px 14px;text-align:center;min-width:78px}
+  .stat .lab{font-size:11.5px;color:var(--sub);font-weight:700}
+  .stat .val{font-size:19px;font-weight:800}
+  .progress{height:9px;background:#e4f2ef;border-radius:99px;overflow:hidden;margin:8px 0 12px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),var(--primary));width:0;transition:.3s}
+  .roundhint{font-size:13.5px;color:var(--sub);margin:2px 0 10px}
+  .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:56px;padding:10px;border:2px dashed var(--line);
+    border-radius:12px;background:#fbfefe;margin-bottom:14px}
+  .pool.empty{align-items:center;justify-content:center;color:#9fb2ad;font-weight:700;font-size:13.5px}
+  .card-item{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.8px solid var(--line);
+    border-radius:12px;padding:9px 12px;font-size:13.5px;font-weight:700;cursor:grab;max-width:100%;
+    box-shadow:0 2px 6px rgba(20,60,55,.06);transition:.12s;user-select:none}
+  .card-item .cemo{font-size:19px}
+  .card-item .ctx{max-width:230px}
+  .card-item.sel{border-color:var(--primary);background:#e5f6f3;box-shadow:0 0 0 3px rgba(47,179,166,.25)}
+  .card-item.dragging{opacity:.45}
+  .card-item.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .baskets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:640px){.baskets{grid-template-columns:1fr}}
+  .basket{border-radius:14px;border:2.5px solid var(--line);background:#fbfefe;padding:10px;min-height:120px;transition:.12s}
+  .basket.over{border-style:dashed;box-shadow:0 0 0 4px rgba(47,179,166,.18)}
+  .basket .bhead{font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px}
+  .basket .bdesc{font-size:11.5px;color:var(--sub);margin:2px 0 8px}
+  .basket .bcards{display:flex;flex-direction:column;gap:6px}
+  .placed{display:flex;align-items:center;gap:6px;border-radius:9px;padding:6px 8px;font-size:12.5px;font-weight:700;line-height:1.35}
+  .placed.ok{background:#e7f6ee;color:#1f7c53}
+  .placed.no{background:#fdece9;color:#b5432f}
+  .placed .pmk{font-weight:800}
+  .placed .fix{display:block;font-size:11px;font-weight:700;color:var(--no);margin-top:2px}
+  .btop{border-top-width:6px;border-top-style:solid}
+  .toast{margin:12px 0 4px;padding:12px;border-radius:10px;font-size:13.8px;font-weight:600}
+  .toast.ok{background:#e7f6ee;color:#1f7c53}
+  .toast.no{background:#fdece9;color:#b5432f}
+  .toast.info{background:#eef6ff;color:#37628c}
+  .toast b{font-weight:800}
+  .combo{color:var(--yellow-d);font-weight:800}
+  /* 도전 퀴즈 */
+  .mission-scenario{background:#fff8ea;border:1px solid #f4dfb0;border-radius:12px;padding:14px;font-size:15px}
+  .mission-scenario .emoji{font-size:24px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opts button{border:1.6px solid var(--line);background:#fff;border-radius:10px;padding:12px;
+    font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+  .opts button:disabled{opacity:.95;cursor:default}
+  .opts button.correct{border-color:var(--ok);background:#e7f6ee;color:#1f7c53}
+  .opts button.wrong{border-color:var(--no);background:#fdece9;color:#b5432f}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;font-weight:600}
+  .feedback.ok{background:#e7f6ee;color:#1f7c53}
+  .feedback.no{background:#fdece9;color:#b5432f}
+  .qhead{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--sub)}
+  /* 버튼 */
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.yellow{background:var(--yellow);color:#3a2a06}
+  .btn.ghost{background:#e9f4f2;color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn:active{transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.6px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e9f4f2;border-radius:6px;padding:2px 7px;font-weight:700}
+  .note{font-size:12px;color:var(--sub);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회1 · Ⅳ 문화와 다양성 · 문화 변동의 요인과 양상</div>
+    <h1>🔄 문화 변동 분류 게임</h1>
+    <p>한글, K-pop, 김치버스… 문화는 어떻게 태어나고, 만나고, 섞일까? 사례 카드를 제자리에 분류하다 보면 문화 변동의 규칙이 손에 잡힌다. 발명·발견·전파부터 문화접변(병존·동화·융합)까지, 실시간 채점과 🔥콤보로 도전!</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="game">2. 분류 게임</button>
+    <button data-tab="challenge">3. 도전 퀴즈</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>문화는 왜, 어떻게 변할까?</h2>
+      <p class="lead"><b>문화 변동</b>이란 새로운 문화 요소가 등장하거나 다른 문화와 만나면서 문화가 바뀌는 현상이다. 변동의 <b>요인</b>은 크게 <b>내재적(사회 내부)</b>과 <b>외재적(문화 전파)</b>으로 나뉜다.</p>
+
+      <div class="tree">
+        <div class="tnode">
+          <div class="th">🏠 내재적 변동 <span class="pill">사회 내부에서 스스로</span></div>
+          <div class="td">그 사회 안에서 새로운 문화 요소가 만들어지거나 알려지며 일어나는 변동.</div>
+          <div class="kids">
+            <div class="leaf pp"><div class="ln">💡 발명</div><div class="lx">이전에 <b>없던</b> 것을 새로 만듦 (한글, 컴퓨터, 전화기)</div></div>
+            <div class="leaf yl"><div class="ln">🔍 발견</div><div class="lx">이미 <b>있었지만</b> 몰랐던 것을 찾아냄 (불, 전기, 비타민, 만유인력)</div></div>
+            <div class="leaf" style="border-style:dashed"><div class="ln">➕ 핵심</div><div class="lx">발명=창조, 발견=원래 존재. 헷갈리기 쉬움!</div></div>
+          </div>
+        </div>
+
+        <div class="tnode">
+          <div class="th">🌐 외재적 변동 (문화 전파) <span class="pill">다른 사회에서 들어옴</span></div>
+          <div class="td">다른 사회의 문화 요소가 전해져 일어나는 변동. 전해지는 <b>방식</b>에 따라 셋으로 나뉜다.</div>
+          <div class="kids">
+            <div class="leaf pk"><div class="ln">🤝 직접 전파</div><div class="lx">사람 간 <b>직접 접촉</b>(교역·전쟁·이주)으로 (한자·불교 전래)</div></div>
+            <div class="leaf bl"><div class="ln">📡 간접 전파</div><div class="lx"><b>매개체</b>(TV·인터넷·인쇄물)를 통해 (한류의 세계 확산)</div></div>
+            <div class="leaf pp"><div class="ln">💫 자극 전파</div><div class="lx">다른 문화의 <b>아이디어(자극)</b>를 얻어 새 요소 발명 (체로키 문자·이두)</div></div>
+          </div>
+        </div>
+
+        <div class="tnode">
+          <div class="th">🔗 문화접변 — 오래 접촉하면? <span class="pill mt">두 문화가 지속 접촉</span></div>
+          <div class="td">서로 다른 문화가 오랫동안 <b>직접 접촉</b>하며 나타나는 변동. 결과는 세 가지 양상으로 나타난다.</div>
+          <div class="kids">
+            <div class="leaf mt"><div class="ln">🤝 문화 병존(공존)</div><div class="lx">각 문화가 <b>정체성 유지</b>하며 나란히 (차이나타운, 양력·음력 병용)</div></div>
+            <div class="leaf pk"><div class="ln">➡️ 문화 동화</div><div class="lx">한 문화가 다른 문화에 <b>흡수·대체</b> (원주민 언어 상실)</div></div>
+            <div class="leaf yl"><div class="ln">✨ 문화 융합</div><div class="lx">둘이 합쳐져 <b>제3의 새 문화</b> (간다라 미술, 과달루페 성모)</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warn">⚠️ 자주 틀리는 포인트: <b>발명(없던 것)</b>과 <b>발견(있던 것)</b> 구분, <b>자극 전파</b>는 '전파+발명'이 섞인 것, <b>동화(하나가 사라짐)</b>와 <b>융합(제3의 것 탄생)</b>은 완전히 다르다.</div>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 먼저 각자 3라운드+퀴즈로 개인 최고 기록을 세운 뒤, 결과 카드 점수·콤보로 모둠·반 대결을 붙여 보세요. 오답 카드에 뜨는 '정답 위치'로 즉석 복습까지 됩니다.</p>
+      <div class="rowbtns"><button class="btn primary" onclick="go('game')">분류 게임 시작 →</button></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 분류 게임 ===== -->
+  <section id="tab-game" class="hide">
+    <div class="card">
+      <div class="gamebar">
+        <h2 style="margin:0"><span class="dot"></span><span id="roundTitle">라운드</span></h2>
+        <div style="display:flex;gap:8px">
+          <div class="stat"><div class="lab">점수</div><div class="val" id="gScore">0</div></div>
+          <div class="stat"><div class="lab">콤보</div><div class="val combo" id="gCombo">0</div></div>
+          <div class="stat"><div class="lab">시간</div><div class="val" id="gTime" style="font-size:16px;padding-top:2px">0:00</div></div>
+        </div>
+      </div>
+      <div class="progress"><i id="gProg"></i></div>
+      <div class="roundhint" id="roundHint"></div>
+      <p class="lead" style="margin:0 0 6px">카드를 알맞은 바구니로 <b>끌어다 놓거나</b>(PC), 카드를 <b>탭해 선택</b>한 뒤 바구니를 <b>탭</b>하세요(모바일).</p>
+      <div class="pool" id="pool"></div>
+      <div class="baskets" id="baskets"></div>
+      <div id="gToast"></div>
+      <div class="rowbtns">
+        <button class="btn ghost" onclick="restartRound()">🔀 이 라운드 다시</button>
+        <button class="btn primary hide" id="nextRoundBtn" onclick="nextRound()">다음 라운드 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 도전 퀴즈 ===== -->
+  <section id="tab-challenge" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>도전 퀴즈 — 헷갈리는 것만 골라냈다</h2>
+      <div class="qhead"><span id="qCount">문항 1 / 7</span><span class="combo" id="qCombo"></span></div>
+      <div class="progress"><i id="qProg"></i></div>
+      <div class="mission-scenario" id="qScenario"></div>
+      <div class="opts" id="qOpts"></div>
+      <div id="qFeedback"></div>
+      <div class="mnav">
+        <span class="stat" style="min-width:0;padding:6px 14px"><span class="lab">점수 </span><b id="qScore">0</b> / 7</span>
+        <button class="btn primary hide" id="qNext" onclick="nextQuiz()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>학습 결과 카드</h2>
+      <p class="lead">이름을 넣으면 오늘의 성적표가 완성됩니다. 카드를 이미지로 저장해 제출하거나 친구와 점수 대결을 걸어 보세요.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1020"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn yellow" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('game')">게임 다시</button>
+      </div>
+      <div class="note" style="text-align:center"><a href="#" onclick="openPNG(event)">📱 저장이 안 되면 여기(새 탭)</a></div>
+    </div>
+  </section>
+
+  <footer>
+    통합사회1 Ⅳ 문화와 다양성 · 문화 변동의 요인(내재·외재)과 문화접변 양상 · 단일 HTML 웹교구 · 오프라인 동작<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+var el = function(id){ return document.getElementById(id); };
+
+/* ============ 라운드 데이터 ============ */
+var ROUNDS = [
+  {
+    title:"라운드 1 · 변동의 요인: 발명 / 발견 / 전파",
+    hint:"내부에서 스스로 생긴 것(발명·발견)과 밖에서 들어온 것(전파)을 구분하자.",
+    baskets:[
+      {id:"invent", name:"💡 발명", color:"var(--purple)", desc:"없던 것을 새로 만듦"},
+      {id:"discover", name:"🔍 발견", color:"var(--yellow)", desc:"있던 것을 찾아냄"},
+      {id:"spread", name:"🌐 전파(외재적)", color:"var(--primary)", desc:"다른 사회에서 들어옴"}
+    ],
+    cards:[
+      {id:"r1a", emoji:"📜", text:"세종대왕이 한글을 창제했다", cat:"invent",
+        why:"이전에 없던 새 문자를 만들어 냄 → <b>발명</b>(내재적)."},
+      {id:"r1b", emoji:"🍎", text:"뉴턴이 만유인력 법칙을 알아냈다", cat:"discover",
+        why:"원리는 원래 존재했고 그것을 찾아냄 → <b>발견</b>. 만드는 게 아니다."},
+      {id:"r1c", emoji:"🛕", text:"불교가 중국을 거쳐 우리나라에 전해졌다", cat:"spread",
+        why:"다른 사회의 종교가 전해짐 → <b>전파</b>(외재적 변동)."},
+      {id:"r1d", emoji:"💻", text:"세계 최초의 컴퓨터가 만들어졌다", cat:"invent",
+        why:"없던 기계를 새로 만들어 냄 → <b>발명</b>."},
+      {id:"r1e", emoji:"🔥", text:"인류가 불을 이용하는 법을 알게 되었다", cat:"discover",
+        why:"불은 자연에 이미 존재했고 그 이용을 알아냄 → <b>발견</b>."},
+      {id:"r1f", emoji:"🎵", text:"한류 K-pop이 유튜브로 세계에 퍼졌다", cat:"spread",
+        why:"우리 문화가 다른 사회로 전해짐 → <b>전파</b>(외재적). 방식은 다음 라운드에서!"}
+    ]
+  },
+  {
+    title:"라운드 2 · 전파의 3유형: 직접 / 간접 / 자극",
+    hint:"사람이 직접? 매개체를 통해? 아이디어만 얻어 새로 발명? 을 구분하자.",
+    baskets:[
+      {id:"direct", name:"🤝 직접 전파", color:"var(--pink)", desc:"사람 간 직접 접촉"},
+      {id:"indirect", name:"📡 간접 전파", color:"var(--blue)", desc:"매개체(TV·인터넷)"},
+      {id:"stimulus", name:"💫 자극 전파", color:"var(--purple)", desc:"아이디어 얻어 새 발명"}
+    ],
+    cards:[
+      {id:"r2a", emoji:"🐪", text:"상인들이 실크로드를 오가며 서역 문물을 들여왔다", cat:"direct",
+        why:"사람이 직접 접촉·교역하며 전함 → <b>직접 전파</b>."},
+      {id:"r2b", emoji:"📺", text:"인터넷 방송을 보고 외국의 춤이 국내에서 유행했다", cat:"indirect",
+        why:"방송·인터넷이라는 매개체를 통함 → <b>간접 전파</b>."},
+      {id:"r2c", emoji:"✍️", text:"신라 설총이 한자에서 아이디어를 얻어 '이두'를 만들었다", cat:"stimulus",
+        why:"다른 문화의 아이디어(자극)를 받아 새 문화 요소를 발명 → <b>자극 전파</b>."},
+      {id:"r2d", emoji:"🔤", text:"세쿼야가 알파벳에 착안해 '체로키 문자'를 만들었다", cat:"stimulus",
+        why:"자극 전파의 대표 사례. 알파벳을 그대로 쓴 게 아니라 새 문자를 창안."},
+      {id:"r2e", emoji:"⚔️", text:"전쟁 중 만난 이웃 나라 병사들을 통해 새 기술이 전해졌다", cat:"direct",
+        why:"사람 간 직접 접촉(전쟁·이주)으로 전해짐 → <b>직접 전파</b>."},
+      {id:"r2f", emoji:"📱", text:"SNS를 통해 외국의 음식 문화가 국내에 소개되었다", cat:"indirect",
+        why:"SNS라는 매개체를 통함 → <b>간접 전파</b>."}
+    ]
+  },
+  {
+    title:"라운드 3 · 문화접변: 병존 / 동화 / 융합",
+    hint:"각자 유지(병존)? 하나로 흡수(동화)? 합쳐져 새것 탄생(융합)?",
+    baskets:[
+      {id:"coexist", name:"🤝 문화 병존", color:"var(--primary)", desc:"각자 정체성 유지"},
+      {id:"assimil", name:"➡️ 문화 동화", color:"var(--pink)", desc:"한쪽이 흡수·대체"},
+      {id:"fusion", name:"✨ 문화 융합", color:"var(--yellow)", desc:"제3의 새 문화"}
+    ],
+    cards:[
+      {id:"r3a", emoji:"📅", text:"우리나라에서 양력과 음력(설날)을 함께 사용한다", cat:"coexist",
+        why:"두 문화가 각각의 정체성을 유지하며 나란히 존재 → <b>문화 병존(공존)</b>."},
+      {id:"r3b", emoji:"🏮", text:"미국 대도시의 차이나타운에 중국 전통이 그대로 남아 있다", cat:"coexist",
+        why:"외래문화가 고유성을 유지하며 공존 → <b>문화 병존</b>."},
+      {id:"r3c", emoji:"🪶", text:"아메리카 원주민이 고유 언어를 잃고 유럽 언어·종교를 따르게 되었다", cat:"assimil",
+        why:"기존 문화가 외래문화에 흡수·대체됨 → <b>문화 동화</b>."},
+      {id:"r3d", emoji:"🗿", text:"간다라 미술: 인도 불교와 그리스 조각이 만나 새 불상 양식이 생겼다", cat:"fusion",
+        why:"두 문화가 결합해 이전에 없던 제3의 문화 탄생 → <b>문화 융합</b>."},
+      {id:"r3e", emoji:"🌹", text:"멕시코 과달루페 성모: 가톨릭 신앙과 원주민 전통이 결합했다", cat:"fusion",
+        why:"서로 다른 신앙이 합쳐진 새로운 문화 → <b>문화 융합</b>."},
+      {id:"r3f", emoji:"🧳", text:"이주민들이 모국어를 버리고 현지 언어만 쓰게 되었다", cat:"assimil",
+        why:"자기 문화를 잃고 다른 문화에 흡수됨 → <b>문화 동화</b>."}
+    ]
+  }
+];
+
+var basketName = {}; /* id -> 이름 (해설용) */
+(function(){
+  for(var r=0;r<ROUNDS.length;r++){
+    for(var b=0;b<ROUNDS[r].baskets.length;b++){
+      basketName[ROUNDS[r].baskets[b].id] = ROUNDS[r].baskets[b].name;
+    }
+  }
+})();
+
+/* ============ 게임 상태 ============ */
+var curRound = 0;
+var placedCount = 0;
+var selectedCard = null;
+var dragCard = null;
+var gScore = 0;              /* 분류 총점 (최대 18) */
+var gCombo = 0, gMaxCombo = 0;
+var roundScore = [0,0,0];    /* 라운드별 정답 수 */
+var cardState = {};          /* cardId -> {placed:bool, correct:bool} */
+var timerStarted = false, timerId = null, elapsed = 0;
+
+function totalCards(){ var n=0; for(var i=0;i<ROUNDS.length;i++) n+=ROUNDS[i].cards.length; return n; }
+
+function startTimer(){
+  if(timerStarted) return;
+  timerStarted = true;
+  timerId = setInterval(function(){
+    elapsed++;
+    var m = Math.floor(elapsed/60), s = elapsed%60;
+    el('gTime').textContent = m + ':' + (s<10?'0':'') + s;
+  }, 1000);
+}
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+
+function initGame(){
+  curRound = 0; placedCount = 0; selectedCard = null;
+  gScore = 0; gCombo = 0; gMaxCombo = 0;
+  roundScore = [0,0,0]; cardState = {};
+  el('gScore').textContent = '0'; el('gCombo').textContent = '0';
+  renderRound();
+}
+
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+
+function renderRound(){
+  var R = ROUNDS[curRound];
+  el('roundTitle').textContent = R.title;
+  el('roundHint').innerHTML = '🎯 ' + R.hint;
+  el('gToast').innerHTML = '';
+  el('nextRoundBtn').classList.add('hide');
+  selectedCard = null;
+  /* 이 라운드 카드 상태 초기화 */
+  for(var i=0;i<R.cards.length;i++){ cardState[R.cards[i].id] = {placed:false, correct:false}; }
+  renderPool();
+  renderBaskets();
+  updateProgress();
+}
+
+function renderPool(){
+  var R = ROUNDS[curRound];
+  var pending = R.cards.filter(function(c){ return !cardState[c.id].placed; });
+  var pool = el('pool');
+  if(pending.length===0){
+    pool.className = 'pool empty';
+    pool.innerHTML = '✅ 모든 카드를 분류했어요!';
+    return;
+  }
+  pool.className = 'pool';
+  var order = shuffle(pending);
+  var html = '';
+  for(var i=0;i<order.length;i++){
+    var c = order[i];
+    html += '<div class="card-item" draggable="true" data-card="'+c.id+'" '+
+      'onclick="tapCard(\''+c.id+'\')">'+
+      '<span class="cemo">'+c.emoji+'</span><span class="ctx">'+c.text+'</span></div>';
+  }
+  pool.innerHTML = html;
+  bindDrag();
+}
+
+function renderBaskets(){
+  var R = ROUNDS[curRound];
+  var wrap = el('baskets');
+  var html = '';
+  for(var b=0;b<R.baskets.length;b++){
+    var bk = R.baskets[b];
+    var inner = '';
+    for(var i=0;i<R.cards.length;i++){
+      var c = R.cards[i];
+      var st = cardState[c.id];
+      if(st.placed && c.cat===bk.id){
+        var cls = st.correct ? 'ok' : 'no';
+        var mk = st.correct ? '✓' : '✗';
+        var fix = st.correct ? '' : '<span class="fix">← 여기가 정답이에요</span>';
+        inner += '<div class="placed '+cls+'"><span class="pmk">'+mk+'</span>'+
+          '<span>'+c.emoji+' '+c.text+fix+'</span></div>';
+      }
+    }
+    html += '<div class="basket btop" data-basket="'+bk.id+'" style="border-top-color:'+bk.color+'" '+
+      'onclick="tapBasket(\''+bk.id+'\')">'+
+      '<div class="bhead" style="color:'+bk.color+'">'+bk.name+'</div>'+
+      '<div class="bdesc">'+bk.desc+'</div>'+
+      '<div class="bcards">'+inner+'</div></div>';
+  }
+  wrap.innerHTML = html;
+  bindDrop();
+}
+
+function bindDrag(){
+  var items = el('pool').querySelectorAll('.card-item');
+  items.forEach(function(it){
+    it.addEventListener('dragstart', function(){ dragCard=this.dataset.card; this.classList.add('dragging'); });
+    it.addEventListener('dragend', function(){ this.classList.remove('dragging'); dragCard=null; });
+  });
+}
+function bindDrop(){
+  var bs = el('baskets').querySelectorAll('.basket');
+  bs.forEach(function(bk){
+    bk.addEventListener('dragover', function(e){ e.preventDefault(); this.classList.add('over'); });
+    bk.addEventListener('dragleave', function(){ this.classList.remove('over'); });
+    bk.addEventListener('drop', function(e){
+      e.preventDefault(); this.classList.remove('over');
+      if(dragCard) place(dragCard, this.dataset.basket);
+    });
+  });
+}
+
+function tapCard(cardId){
+  if(cardState[cardId] && cardState[cardId].placed) return;
+  if(selectedCard===cardId){ selectedCard=null; }
+  else { selectedCard=cardId; }
+  var items = el('pool').querySelectorAll('.card-item');
+  items.forEach(function(it){ it.classList.toggle('sel', it.dataset.card===selectedCard); });
+}
+function tapBasket(basketId){
+  if(!selectedCard) return;
+  var cid = selectedCard; selectedCard=null;
+  place(cid, basketId);
+}
+
+function findCard(cardId){
+  var R = ROUNDS[curRound];
+  for(var i=0;i<R.cards.length;i++){ if(R.cards[i].id===cardId) return R.cards[i]; }
+  return null;
+}
+
+function place(cardId, basketId){
+  var st = cardState[cardId];
+  if(!st || st.placed) return;
+  startTimer();
+  var c = findCard(cardId);
+  var correct = (c.cat===basketId);
+  st.placed = true; st.correct = correct;
+  placedCount++;
+  if(correct){
+    gScore++; gCombo++; if(gCombo>gMaxCombo) gMaxCombo=gCombo;
+    roundScore[curRound]++;
+  } else {
+    /* 오답: 잘못 놓은 카드 흔들기 연출은 재렌더 전에 못 하므로 토스트로 안내 */
+    gCombo = 0;
+  }
+  el('gScore').textContent = gScore;
+  el('gCombo').textContent = gCombo;
+  renderPool();
+  renderBaskets();
+  updateProgress();
+  showPlaceToast(c, correct, basketId);
+  checkRoundDone();
+}
+
+function showPlaceToast(c, correct, chosen){
+  var t = el('gToast');
+  if(correct){
+    var bonus = gCombo>=2 ? ' <span class="combo">🔥 '+gCombo+' 콤보!</span>' : '';
+    t.innerHTML = '<div class="toast ok">✅ <b>정답!</b>'+bonus+'<br>'+c.why+'</div>';
+  } else {
+    t.innerHTML = '<div class="toast no">❌ <b>아쉬워요.</b> 「'+c.text+'」은(는) <b>'+
+      basketName[c.cat].replace(/^[^ ]+ /,'')+'</b>입니다.<br>'+c.why+'</div>';
+  }
+}
+
+function updateProgress(){
+  el('gProg').style.width = (placedCount/totalCards()*100) + '%';
+}
+
+function checkRoundDone(){
+  var R = ROUNDS[curRound];
+  var done = R.cards.every(function(c){ return cardState[c.id].placed; });
+  if(!done) return;
+  var t = el('gToast');
+  var sc = roundScore[curRound], tot = R.cards.length;
+  var msg;
+  if(sc===tot) msg = '<div class="toast ok">🏆 <b>퍼펙트!</b> '+sc+'/'+tot+' 완벽하게 분류했어요.</div>';
+  else if(sc>=Math.ceil(tot*0.6)) msg = '<div class="toast info">👍 라운드 클리어 — '+sc+'/'+tot+'. 오답 해설을 확인하고 넘어가요.</div>';
+  else msg = '<div class="toast no">💪 '+sc+'/'+tot+'. 바구니에 정답 위치가 표시됐어요. 다시 도전해도 좋아요.</div>';
+  t.innerHTML = msg;
+  if(curRound < ROUNDS.length-1){
+    el('nextRoundBtn').classList.remove('hide');
+    el('nextRoundBtn').textContent = '다음 라운드 →';
+  } else {
+    el('nextRoundBtn').classList.remove('hide');
+    el('nextRoundBtn').textContent = '도전 퀴즈로 →';
+    el('nextRoundBtn').onclick = function(){ go('challenge'); };
+  }
+}
+
+function nextRound(){
+  if(curRound < ROUNDS.length-1){
+    curRound++;
+    renderRound();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+function restartRound(){
+  var R = ROUNDS[curRound];
+  /* 이 라운드 점수·상태 되돌리기 */
+  for(var i=0;i<R.cards.length;i++){
+    var st = cardState[R.cards[i].id];
+    if(st && st.placed){ placedCount--; }
+  }
+  gScore -= roundScore[curRound];
+  if(gScore<0) gScore=0;
+  roundScore[curRound]=0;
+  gCombo=0;
+  el('gScore').textContent = gScore;
+  el('gCombo').textContent = gCombo;
+  renderRound();
+}
+
+/* ============ 도전 퀴즈 ============ */
+var QUIZ = [
+  { emoji:'🔍', txt:"이미 존재하고 있었지만 <b>알려지지 않았던</b> 것을 찾아내는 문화 변동 요인은?",
+    opts:[['💡 발명','no'],['🔍 발견','yes']],
+    ans:'yes', why:"발견=원래 있던 것을 찾아냄(불·전기·비타민). 발명=없던 것을 새로 만듦(한글·컴퓨터)." },
+  { emoji:'💫', txt:"다른 사회의 문화에서 <b>아이디어(자극)만 얻어</b> 스스로 새 문화 요소를 만든 것은?",
+    opts:[['🤝 직접 전파','no1'],['📡 간접 전파','no2'],['💫 자극 전파','yes']],
+    ans:'yes', why:"자극 전파는 '전파+발명'. 한자에서 착안한 이두, 알파벳에서 착안한 체로키 문자가 대표 사례." },
+  { emoji:'📡', txt:"TV·인터넷·SNS 같은 <b>매개체</b>를 거쳐 문화가 전해지는 것은?",
+    opts:[['🤝 직접 전파','no'],['📡 간접 전파','yes'],['💫 자극 전파','no2']],
+    ans:'yes', why:"간접 전파=매개체 경유(한류의 세계 확산). 직접 전파=사람 간 직접 접촉(교역·이주)." },
+  { emoji:'✨', txt:"서로 다른 두 문화가 합쳐져 <b>이전에 없던 제3의 문화</b>가 나타나는 문화접변 양상은?",
+    opts:[['🤝 문화 병존','no'],['➡️ 문화 동화','no2'],['✨ 문화 융합','yes']],
+    ans:'yes', why:"융합=제3의 새 문화 탄생(간다라 미술, 과달루페 성모). 병존=각자 유지, 동화=한쪽 흡수." },
+  { emoji:'🪶', txt:"다음 중 <b>문화 동화</b>의 사례로 알맞은 것은?",
+    opts:[['미국 차이나타운에 중국 전통이 유지됨','no1'],['원주민이 고유 언어를 잃고 유럽 언어를 씀','yes'],['간다라 미술이 탄생함','no2']],
+    ans:'yes', why:"동화=기존 문화가 외래문화에 흡수·대체. 차이나타운=병존, 간다라 미술=융합." },
+  { emoji:'⚖️', txt:"\"문화 융합이 일어나면 원래 두 문화 중 하나는 반드시 사라진다.\" — 맞을까?",
+    opts:[['⭕ 맞다','no'],['❌ 아니다','yes']],
+    ans:'yes', why:"하나가 사라지는 것은 '동화'다. 융합은 둘이 결합해 새로운 제3의 문화가 생기는 것." },
+  { emoji:'📜', txt:"세종대왕의 <b>한글 창제</b>는 문화 변동의 어떤 요인일까?",
+    opts:[['🏠 내재적 변동(발명)','yes'],['🌐 외재적 변동(전파)','no']],
+    ans:'yes', why:"사회 내부에서 없던 문자를 새로 만들어 냄 → 내재적 변동 중 발명. 밖에서 들어온 게 아니다." }
+];
+var qIdx=0, qScore=0, qCombo=0, qMaxCombo=0, qPicked=false;
+var qResult = [];
+function renderQuiz(){
+  var q = QUIZ[qIdx]; qPicked=false;
+  el('qCount').textContent = '문항 '+(qIdx+1)+' / '+QUIZ.length;
+  el('qProg').style.width = (qIdx/QUIZ.length*100)+'%';
+  el('qScenario').innerHTML = '<span class="emoji">'+q.emoji+'</span> <b>Q'+(qIdx+1)+'.</b><br>'+q.txt;
+  el('qOpts').innerHTML = q.opts.map(function(o,i){
+    return '<button onclick="pickQuiz('+i+',this)">'+o[0]+'</button>';
+  }).join('');
+  el('qFeedback').innerHTML='';
+  el('qNext').classList.add('hide');
+  el('qScore').textContent = qScore;
+  updateQCombo();
+}
+function updateQCombo(){
+  el('qCombo').textContent = qCombo>=2 ? ('🔥 '+qCombo+' 콤보') : '';
+}
+function pickQuiz(i, btn){
+  if(qPicked) return; qPicked=true;
+  var q = QUIZ[qIdx];
+  var chosen = q.opts[i][1];
+  var ok = chosen === q.ans;
+  qResult[qIdx] = ok;
+  if(ok){ qScore++; qCombo++; if(qCombo>qMaxCombo) qMaxCombo=qCombo; }
+  else { qCombo=0; }
+  var kids = el('qOpts').children;
+  for(var j=0;j<kids.length;j++){
+    kids[j].disabled = true;
+    if(q.opts[j][1]===q.ans) kids[j].classList.add('correct');
+  }
+  if(!ok) btn.classList.add('wrong');
+  el('qScore').textContent = qScore;
+  el('qProg').style.width = ((qIdx+1)/QUIZ.length*100)+'%';
+  updateQCombo();
+  var bonus = (ok && qCombo>=2) ? ' · 🔥'+qCombo+' 콤보!' : '';
+  el('qFeedback').innerHTML = '<div class="feedback '+(ok?'ok':'no')+'">'+
+    (ok?'✅ 정답!'+bonus:'❌ 아쉬워요. 정답은 <b>'+qAnsLabel(q)+'</b>')+'<br>'+q.why+'</div>';
+  el('qNext').classList.remove('hide');
+  if(qIdx===QUIZ.length-1) el('qNext').textContent='결과 보기 →';
+}
+function qAnsLabel(q){
+  for(var i=0;i<q.opts.length;i++){ if(q.opts[i][1]===q.ans) return q.opts[i][0]; }
+  return '';
+}
+function nextQuiz(){
+  if(qIdx<QUIZ.length-1){ qIdx++; renderQuiz(); }
+  else { stopTimer(); go('result'); drawResult(); }
+}
+
+/* ============ 결과 카드 (PNG) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function gradeInfo(pct){
+  if(pct>=0.9) return {g:'문화 변동 마스터 🏆', c:'#f6a821'};
+  if(pct>=0.75) return {g:'문화 분석가 📚', c:'#2fb3a6'};
+  if(pct>=0.55) return {g:'성장하는 학습자 🌱', c:'#3f8ee0'};
+  return {g:'다시 도전 💪', c:'#e15b4c'};
+}
+function drawResult(){
+  var cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  var classMax = totalCards();          /* 18 */
+  var quizMax = QUIZ.length;             /* 7 */
+  var total = gScore + qScore;          /* 0~25 */
+  var max = classMax + quizMax;
+  var pct = max>0 ? total/max : 0;
+  var gi = gradeInfo(pct);
+  var maxCombo = Math.max(gMaxCombo, qMaxCombo);
+  /* 배경 */
+  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2fb3a6'); g.addColorStop(1,'#1e847a');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,40,40,W-80,H-80,28); ctx.fill();
+  ctx.fillStyle='#f6a821'; roundRect(ctx,40,40,W-80,10,6); ctx.fill();
+  /* 헤더 */
+  ctx.textAlign='center';
+  ctx.fillStyle='#1e847a'; ctx.font='bold 38px "Malgun Gothic",sans-serif';
+  ctx.fillText('🔄 문화 변동 분류 게임', W/2, 126);
+  ctx.fillStyle='#5c6b73'; ctx.font='21px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회1 Ⅳ · 문화와 다양성', W/2, 164);
+  /* 이름 */
+  var name = (el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1f2b33'; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+  ctx.fillText(name, W/2, 222);
+  /* 원형 게이지 */
+  var cx=W/2, cy=372, r=104;
+  ctx.lineWidth=24; ctx.strokeStyle='#e8f2f0';
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke();
+  ctx.strokeStyle=gi.c; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke();
+  ctx.lineCap='butt';
+  ctx.fillStyle='#1f2b33'; ctx.font='bold 54px "Malgun Gothic",sans-serif';
+  ctx.fillText(String(total), cx, cy+2);
+  ctx.fillStyle='#5c6b73'; ctx.font='20px "Malgun Gothic",sans-serif';
+  ctx.fillText('/ '+max+'점  ('+Math.round(pct*100)+'%)', cx, cy+36);
+  /* 등급 */
+  ctx.fillStyle=gi.c; ctx.font='bold 28px "Malgun Gothic",sans-serif';
+  ctx.fillText(gi.g, W/2, cy+r+58);
+  /* 세부: 분류 / 퀴즈 */
+  var by = cy+r+90;
+  ctx.fillStyle='#eefaf8'; roundRect(ctx,90,by,258,74,14); ctx.fill();
+  roundRect(ctx,372,by,258,74,14); ctx.fill();
+  ctx.fillStyle='#5c6b73'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('분류 게임', 90+129, by+28);
+  ctx.fillText('도전 퀴즈', 372+129, by+28);
+  ctx.fillStyle='#1e847a'; ctx.font='bold 26px "Malgun Gothic",sans-serif';
+  ctx.fillText(gScore+' / '+classMax, 90+129, by+58);
+  ctx.fillText(qScore+' / '+quizMax, 372+129, by+58);
+  /* 라운드별 */
+  var ry = by+110;
+  ctx.textAlign='left'; ctx.fillStyle='#1f2b33'; ctx.font='bold 20px "Malgun Gothic",sans-serif';
+  ctx.fillText('라운드별 정답', 92, ry);
+  ry += 32;
+  var rlabels = ['① 발명·발견·전파','② 직접·간접·자극','③ 병존·동화·융합'];
+  ctx.font='19px "Malgun Gothic",sans-serif';
+  for(var i=0;i<3;i++){
+    ctx.fillStyle='#1f2b33';
+    ctx.fillText(rlabels[i], 100, ry);
+    var per = roundScore[i], tot = ROUNDS[i].cards.length;
+    ctx.fillStyle = (per===tot)?'#2e9e6b':(per>=Math.ceil(tot*0.6)?'#3f8ee0':'#e15b4c');
+    ctx.textAlign='right';
+    ctx.fillText(per+' / '+tot, W-100, ry);
+    ctx.textAlign='left';
+    ry += 32;
+  }
+  /* 콤보·시간 */
+  ry += 8;
+  ctx.textAlign='center';
+  ctx.fillStyle='#c9820f'; ctx.font='bold 20px "Malgun Gothic",sans-serif';
+  var m=Math.floor(elapsed/60), s=elapsed%60;
+  ctx.fillText('🔥 최고 콤보 '+maxCombo+'   ·   ⏱ '+m+':'+(s<10?'0':'')+s, W/2, ry);
+  ry += 34;
+  ctx.fillStyle='#1e847a'; ctx.font='bold 18px "Malgun Gothic",sans-serif';
+  var comment = pct>=0.9 ? '내재·외재·문화접변을 완벽히 구분했어요!'
+    : pct>=0.55 ? '핵심 개념을 잘 잡았어요. 오답만 복습!'
+    : '개념 트리를 다시 보고 재도전해요!';
+  ctx.fillText(comment, W/2, ry);
+  /* 푸터 */
+  ctx.fillStyle='#9fb2ad'; ctx.font='17px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 문화 변동 분류 게임', W/2, H-58);
+}
+function savePNG(){
+  drawResult();
+  var a=document.createElement('a');
+  a.download='문화변동분류_결과_'+(el('studentName').value||'학생')+'.png';
+  a.href=el('resultCanvas').toDataURL('image/png');
+  a.click();
+}
+function openPNG(e){
+  if(e) e.preventDefault();
+  drawResult();
+  var url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+function go(tab){
+  var buttons = document.querySelectorAll('nav button');
+  buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
+  ['concept','game','challenge','result'].forEach(function(t){
+    el('tab-'+t).classList.toggle('hide', t!==tab);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(function(b){
+  b.addEventListener('click', function(){ go(b.dataset.tab); });
+});
+
+/* ============ 초기화 ============ */
+initGame();
+renderQuiz();
+</script>
+</body>
+</html>

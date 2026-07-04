@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헌법 기본권 판례 판결 시뮬레이터 · 통합사회2 Ⅰ 인권 보장과 헌법</title>
+<style>
+  :root{
+    /* 팔레트 id 12 · 법무 네이비 */
+    --bg:#eef1f6; --surface:#ffffff; --ink:#1a2434; --sub:#59647a;
+    --primary:#22406b; --primary-d:#152941; --navy2:#2f5488;
+    --gold:#c69749; --gold-d:#a97f34;
+    --haphon:#1c8a5a; --wihon:#c0392b;
+    --free:#2f6fb0; --equal:#8a5cc4; --parti:#2aa198; --claim:#d98324; --social:#c05a7a;
+    --line:#e0e5ee; --shadow:0 6px 20px rgba(20,35,60,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.62;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-d));
+    color:#fff;border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header::after{content:"⚖️";position:absolute;right:-6px;bottom:-14px;font-size:96px;opacity:.10}
+  header .kicker{font-size:13px;letter-spacing:1px;opacity:.85;font-weight:700}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800}
+  header p{margin:0;font-size:14px;opacity:.92;max-width:640px}
+  nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+  nav button{flex:1 1 auto;min-width:82px;border:none;border-radius:12px;padding:11px 8px;
+    background:var(--surface);color:var(--sub);font-weight:700;font-size:14px;cursor:pointer;
+    box-shadow:var(--shadow);transition:.15s;font-family:inherit}
+  nav button.active{background:var(--primary);color:#fff}
+  .card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:19px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  h2 .dot{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+  h3{font-size:16px;margin:16px 0 6px;color:var(--primary)}
+  p.lead{color:var(--sub);font-size:14.5px;margin:0 0 10px}
+  .concept{background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.3px}
+  .concept b{color:var(--primary)}
+  .hide{display:none}
+  .pill{display:inline-block;background:#e9eff8;color:var(--primary);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.warn{background:#fdece8;color:var(--wihon)}
+  .pill.gold{background:#f7eed9;color:var(--gold-d)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.grid5{grid-template-columns:1fr 1fr}}
+  .rt{border-radius:12px;padding:12px 10px;color:#fff;font-size:13px}
+  .rt b{display:block;font-size:14.5px;margin-bottom:3px}
+  .rt.free{background:var(--free)} .rt.equal{background:var(--equal)}
+  .rt.parti{background:var(--parti)} .rt.claim{background:var(--claim)} .rt.social{background:var(--social)}
+  .steps{counter-reset:s;margin:8px 0 0}
+  .steps .st{position:relative;padding:9px 10px 9px 40px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;font-size:14px;background:#fff}
+  .steps .st::before{counter-increment:s;content:counter(s);position:absolute;left:9px;top:9px;
+    width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-weight:800;font-size:13px;text-align:center;line-height:22px}
+  /* 실습 */
+  canvas{max-width:100%;height:auto;display:block}
+  .scalewrap{text-align:center;margin:4px 0 10px}
+  #scaleCanvas{width:100%;max-width:520px;border-radius:12px;background:#fbfcfe}
+  .caseChips,.rightChips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .caseChips button,.rightChips button{border:1.5px solid var(--line);background:#fff;border-radius:999px;
+    padding:7px 12px;font-size:12.8px;font-weight:700;cursor:pointer;color:var(--ink);font-family:inherit}
+  .caseChips button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .rightChips button.on{background:#e9eff8;border-color:var(--navy2);color:var(--primary)}
+  .caseBox{background:#f4f7fc;border:1px solid #d7e0ee;border-left:5px solid var(--navy2);border-radius:12px;padding:14px;font-size:14.5px;margin:6px 0}
+  .caseBox .type{display:inline-block;font-size:11.5px;font-weight:800;background:var(--navy2);color:#fff;border-radius:6px;padding:2px 8px;margin-bottom:6px}
+  .caseBox .emoji{font-size:24px}
+  .reqs{margin:6px 0}
+  .req{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .req:last-child{border-bottom:none}
+  .req .rn{flex:1;font-size:13.8px;font-weight:700}
+  .req .rn small{display:block;font-weight:600;color:var(--sub);font-size:12px}
+  .req .yn{display:flex;gap:6px}
+  .req .yn button{border:1.5px solid var(--line);background:#fff;border-radius:9px;width:52px;padding:8px 0;
+    font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;color:var(--sub)}
+  .req .yn button.o.on{background:#e6f4ee;border-color:var(--haphon);color:var(--haphon)}
+  .req .yn button.x.on{background:#fbe9e6;border-color:var(--wihon);color:var(--wihon)}
+  .verdict{margin-top:12px;padding:14px;border-radius:12px;text-align:center;font-weight:800;font-size:19px;display:none}
+  .verdict.show{display:block;animation:pop .4s}
+  .verdict.haphon{background:#e6f4ee;color:var(--haphon);border:2px solid #bfe4d1}
+  .verdict.wihon{background:#fbe9e6;color:var(--wihon);border:2px solid #f2c9c1}
+  @keyframes pop{0%{transform:scale(.9);opacity:.4}45%{transform:scale(1.04)}100%{transform:scale(1)}}
+  .expl{margin-top:10px;font-size:13.6px}
+  .expl .er{padding:8px 10px;border-radius:9px;margin-bottom:6px;background:#f6f8fc;border:1px solid var(--line)}
+  .expl .er b{color:var(--primary)}
+  .expl .er .ok{color:var(--haphon);font-weight:800}
+  .expl .er .no{color:var(--wihon);font-weight:800}
+  .lean{margin-top:12px;background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .lean .lt{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--sub);margin-bottom:4px}
+  .lean .track{height:14px;border-radius:99px;background:linear-gradient(90deg,var(--free),#dfe4ee 50%,var(--gold));position:relative}
+  .lean .track i{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--primary);transform:translate(-50%,-50%);transition:left .5s cubic-bezier(.22,1,.36,1);left:50%}
+  .lean .acc{margin-top:8px;font-size:13px;color:var(--ink);font-weight:700}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.gold{background:var(--gold);color:#fff}
+  .btn.ghost{background:#e7ebf2;color:var(--ink)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn:active:not(:disabled){transform:translateY(1px)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+  /* 미션 */
+  .progress{height:8px;background:#e7ebf2;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+  .progress i{display:block;height:100%;background:var(--gold);width:0;transition:.3s}
+  .q{margin:12px 0}
+  .q .qt{font-weight:800;font-size:14.3px;margin-bottom:6px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opts.col{flex-direction:column}
+  .opts button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;
+    font-weight:700;font-size:13.6px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink)}
+  .opts button.sel{border-color:var(--primary);background:#e9eff8;color:var(--primary)}
+  .opts button.correct{border-color:var(--haphon);background:#e6f4ee;color:var(--haphon)}
+  .opts button.wrong{border-color:var(--wihon);background:#fbe9e6;color:var(--wihon)}
+  .opts button:disabled{cursor:default}
+  .feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:13.8px;font-weight:600}
+  .feedback.ok{background:#e6f4ee;color:#12805a}
+  .feedback.no{background:#fbe9e6;color:#b23a22}
+  .mnav{display:flex;justify-content:space-between;margin-top:14px}
+  /* 결과 */
+  #resultCanvas{max-width:360px;width:100%;border-radius:14px;box-shadow:var(--shadow)}
+  input[type=text]{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;width:60%;max-width:240px;font-family:inherit}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:18px 0 34px}
+  .tag{font-size:11.5px;color:var(--sub);background:#e7ebf2;border-radius:6px;padding:2px 7px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">통합사회2 · Ⅰ 인권 보장과 헌법</div>
+    <h1>⚖️ 헌법 기본권 판례 판결 시뮬레이터</h1>
+    <p>법정에 앉았다. 앞엔 헌법, 양옆엔 부딪치는 두 권리. 어디까지가 자유이고, 어디부터가 침해일까? 오늘 판결봉을 쥔 사람은 <b>너</b>다. 과잉금지원칙 4요건의 저울로 <b>합헌</b>과 <b>위헌</b>을 가른다.</p>
+  </header>
+
+  <nav>
+    <button data-tab="concept" class="active">1. 개념</button>
+    <button data-tab="court">2. 판결 실습</button>
+    <button data-tab="mission">3. 미션</button>
+    <button data-tab="result">4. 결과</button>
+  </nav>
+
+  <!-- ===== 1. 개념 ===== -->
+  <section id="tab-concept">
+    <div class="card">
+      <h2><span class="dot"></span>기본권의 유형 — 헌법이 보장하는 권리</h2>
+      <p class="lead">우리 헌법은 인간의 존엄과 가치를 바탕으로 여러 <b>기본권</b>을 보장한다. 크게 다섯 가지로 나뉜다.</p>
+      <div class="grid5">
+        <div class="rt free"><b>자유권</b>국가의 간섭을 받지 않을 권리(신체·표현·집회·종교의 자유)</div>
+        <div class="rt equal"><b>평등권</b>합리적 이유 없이 차별받지 않을 권리</div>
+        <div class="rt parti"><b>참정권</b>국가 의사 결정에 참여할 권리(선거권·공무담임권)</div>
+        <div class="rt claim"><b>청구권</b>침해된 권리 구제를 요구할 권리(재판·청원·국가배상)</div>
+        <div class="rt social"><b>사회권</b>인간다운 생활 보장을 국가에 요구할 권리(교육·근로·사회보장)</div>
+      </div>
+      <p class="note">※ 청구권은 다른 기본권을 지키기 위한 '기본권을 위한 기본권'이며, 사회권은 국가의 적극적 개입을 요구하는 현대적 권리다.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>기본권 제한의 요건 — 헌법 제37조 제2항</h2>
+      <div class="concept">
+        “국민의 모든 자유와 권리는 <b>국가안전보장·질서유지 또는 공공복리</b>를 위하여 필요한 경우에 한하여 <b>법률로써</b> 제한할 수 있으며, 제한하는 경우에도 <b>자유와 권리의 본질적인 내용을 침해할 수 없다.</b>”
+      </div>
+      <h3>제한의 4가지 조건</h3>
+      <div class="steps">
+        <div class="st"><b>목적</b> — 국가안전보장·질서유지·공공복리를 위해서만 제한할 수 있다.</div>
+        <div class="st"><b>형식</b> — 반드시 국회가 만든 <b>법률로써</b> 제한해야 한다(법률유보).</div>
+        <div class="st"><b>정도</b> — <b>과잉금지원칙</b>(비례의 원칙)을 지켜, 필요한 최소한으로만 제한한다.</div>
+        <div class="st"><b>한계</b> — 어떤 경우에도 기본권의 <b>본질적 내용은 침해할 수 없다.</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>과잉금지원칙 — 판결의 저울 ⚖️</h2>
+      <p class="lead">제한이 정당한지 재는 <b>네 개의 저울</b>이다. <b>넷 중 하나라도 통과하지 못하면 위헌</b>이다.</p>
+      <div class="grid2">
+        <div class="concept"><h3 style="margin-top:0">① 목적의 정당성</h3>제한하려는 <b>목적 자체가 정당</b>한가? (국가안전보장·질서유지·공공복리)</div>
+        <div class="concept"><h3 style="margin-top:0">② 수단의 적합성</h3>그 수단이 <b>목적 달성에 도움</b>이 되는 적합한 방법인가?</div>
+        <div class="concept"><h3 style="margin-top:0">③ 침해의 최소성</h3>같은 목적을 이룰 <b>덜 침해적인 방법</b>은 없었나? 필요 최소한인가?</div>
+        <div class="concept"><h3 style="margin-top:0">④ 법익의 균형성</h3>제한으로 <b>얻는 공익</b> ≥ 제한으로 <b>잃는 기본권</b>인가?</div>
+      </div>
+      <p class="note">여기에 더해 <b>본질적 내용 침해금지</b>까지 지켜야 비로소 '합헌'이다.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>기본권의 충돌과 조정</h2>
+      <p class="lead">한 사람의 기본권과 다른 사람의 기본권이 부딪칠 때가 있다. 이를 <b>기본권 충돌</b>이라 한다.</p>
+      <div>
+        <span class="pill gold">예) 표현의 자유 ↔ 타인의 인격권(명예)</span>
+        <span class="pill gold">예) 흡연권 ↔ 혐연권</span>
+      </div>
+      <div class="concept" style="margin-top:10px">
+        조정 방법 — <b>①이익 형량</b>(더 중요한 법익 우선), <b>②규범 조화적 해석</b>(양쪽을 최대한 함께 살리는 절충점)을 통해 균형을 찾는다. 어느 한쪽을 완전히 없애지 않는다.
+      </div>
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('court')">판결 실습 시작하기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 판결 실습 ===== -->
+  <section id="tab-court" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>판결 실습 — 당신이 헌법 재판관</h2>
+      <p class="lead">사건 파일을 펼쳤다. 사례를 고르고 ①관련 기본권을 찾은 뒤 ②과잉금지 4요건을 하나씩 저울에 올려 <b>판결</b>하라. 저울이 기우는 순간, 합헌과 위헌이 갈린다.</p>
+      <p class="note">👩‍🏫 이렇게 쓰세요: 학생이 개별 판결을 내린 뒤 "왜 위헌/합헌인가"를 근거로 쟁점 토론까지 이어가면 사고가 깊어집니다.</p>
+      <div class="caseChips" id="caseChips"></div>
+      <div class="caseBox" id="caseBox"></div>
+
+      <div class="scalewrap"><canvas id="scaleCanvas" width="520" height="270"></canvas></div>
+
+      <h3>① 관련 기본권은? <small style="font-weight:600;color:var(--sub)">(해당하는 것 선택)</small></h3>
+      <div class="rightChips" id="rightChips"></div>
+
+      <h3>② 과잉금지 4요건 판단 <small style="font-weight:600;color:var(--sub)">(충족 O / 미충족 X)</small></h3>
+      <div class="reqs" id="reqs"></div>
+
+      <div class="rowbtns">
+        <button class="btn gold" id="judgeBtn" onclick="doJudge()">⚖️ 판결하기</button>
+        <button class="btn ghost" onclick="resetCase()">↺ 다시</button>
+      </div>
+
+      <div class="verdict" id="verdict"></div>
+      <div class="expl" id="expl"></div>
+
+      <div class="lean">
+        <div class="lt"><span>🕊️ 인권 보장 성향</span><span>판결 성향</span><span>공익 우선 성향 🏛️</span></div>
+        <div class="track"><i id="leanDot"></i></div>
+        <div class="acc" id="accText">아직 판결 기록이 없습니다. 여러 사례를 판결해 성향과 정확도를 확인하세요.</div>
+      </div>
+
+      <div class="rowbtns">
+        <button class="btn primary" onclick="go('mission')">미션 도전하기 →</button>
+      </div>
+      <p class="note">※ 모든 사례는 개념 학습을 위한 <b>가상·일반화 사례</b>이며, 특정 실존 판결이나 정치적 입장을 나타내지 않습니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== 3. 미션 ===== -->
+  <section id="tab-mission" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>판례 미션 — 6건의 사건, 흔들리지 말고 판결하라</h2>
+      <div class="progress"><i id="mProg"></i></div>
+      <div id="mScenario"></div>
+      <div id="mQuestions"></div>
+      <div id="mFeedback"></div>
+      <div class="mnav">
+        <button class="btn ghost" id="mCheck" onclick="checkMission()">판결 확정</button>
+        <button class="btn primary hide" id="mNext" onclick="nextMission()">다음 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 결과 ===== -->
+  <section id="tab-result" class="hide">
+    <div class="card">
+      <h2><span class="dot"></span>나의 헌법 판결 리포트</h2>
+      <p class="lead">이름을 넣고 리포트를 이미지로 저장해 제출·공유하자.</p>
+      <div style="margin-bottom:12px">
+        <input type="text" id="studentName" placeholder="이름 입력" maxlength="12">
+        <button class="btn ghost" onclick="drawResult()">카드 갱신</button>
+      </div>
+      <div style="text-align:center"><canvas id="resultCanvas" width="720" height="1020"></canvas></div>
+      <div class="rowbtns" style="justify-content:center">
+        <button class="btn gold" onclick="savePNG()">🖼️ 이미지로 저장 (PNG)</button>
+        <button class="btn ghost" onclick="go('mission')">미션 다시</button>
+      </div>
+      <p class="note" style="text-align:center"><a href="#" onclick="openPNG();return false;" style="color:var(--primary);font-weight:700">📱 저장이 안 되면 여기(새 탭)</a></p>
+    </div>
+  </section>
+
+  <footer>
+    통합사회2 Ⅰ 인권 보장과 헌법 · 기본권과 그 제한(헌법 제37조 제2항)·과잉금지원칙 · 단일 HTML 웹교구 · 오프라인 동작<br>
+    모든 사례는 가상·일반화이며 특정 실존 판결·정치적 입장을 지칭하지 않습니다.<br>
+    <span class="tag">풀어쓰는 사회학 AI</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ============ 기본권 유형 ============ */
+const RIGHTS=[
+  {k:'자유권',c:'#2f6fb0'},{k:'평등권',c:'#8a5cc4'},{k:'참정권',c:'#2aa198'},
+  {k:'청구권',c:'#d98324'},{k:'사회권',c:'#c05a7a'},{k:'인격권',c:'#59647a'}
+];
+const REQ_LABELS=[
+  ['① 목적의 정당성','제한 목적이 정당한가'],
+  ['② 수단의 적합성','수단이 목적 달성에 적합한가'],
+  ['③ 침해의 최소성','더 덜 침해적인 방법은 없나'],
+  ['④ 법익의 균형성','얻는 공익 ≥ 잃는 기본권']
+];
+
+/* ============ 실습 사례 ============ */
+/* req: 각 요건의 정답(true=충족 O, false=미충족 X). verdict는 4요건 모두 충족이면 합헌 */
+const CASES=[
+  {type:'집회의 자유', emoji:'📢', chip:'집회 전면금지',
+   txt:'한 지방자치단체가 <b>도심 광장에서의 모든 집회를 시간·장소 구분 없이 전면 금지</b>하는 조례를 만들었다.',
+   rights:['자유권'], req:[true,true,false,false],
+   expl:[
+     '공공의 안녕과 질서 유지라는 <b>목적은 정당</b>하다.',
+     '집회 제한이 질서 유지에 기여할 수 있어 <b>수단은 적합</b>하다.',
+     '시간·장소·방법을 한정하지 않고 <b>전면 금지</b>한 것은, 덜 침해적인 규제를 두고도 지나치게 제한한 것이다.',
+     '얻는 질서 이익보다 <b>침해되는 집회의 자유가 훨씬 크다.</b>'
+   ],
+   note:'전면 금지 대신 시간·장소·방법의 최소 규제로 충분하므로 위헌.'},
+
+  {type:'표현의 자유↔인격권', emoji:'📰', chip:'명예훼손 처벌',
+   txt:'<b>허위 사실을 퍼뜨려 타인의 명예를 훼손</b>하는 행위를 처벌하는 법률이 표현의 자유를 침해하는지 다툼이 되었다.',
+   rights:['자유권'], req:[true,true,true,true],
+   expl:[
+     '타인의 <b>명예·인격권 보호</b>라는 목적은 정당하다.',
+     '허위 사실 유포 처벌은 명예 보호에 <b>적합한 수단</b>이다.',
+     '진실이거나 공익 목적인 표현은 처벌에서 제외하고 <b>‘허위’에 한정</b>해 최소한으로 제한한다.',
+     '보호되는 인격권과 제한되는 표현의 자유가 <b>균형</b>을 이룬다.'
+   ],
+   note:'표현의 자유와 인격권이 부딪치는 기본권 충돌을 비례로 조정한 합헌 사례.'},
+
+  {type:'자기결정권', emoji:'✂️', chip:'학생 두발 규제',
+   txt:'한 학교가 <b>모든 학생의 머리 길이를 일률적으로 제한</b>하는 규정을 두어, 개성 침해 논란이 일었다.',
+   rights:['자유권'], req:[true,false,false,false],
+   expl:[
+     '면학 분위기 조성이라는 <b>목적 자체는 정당</b>하다고 볼 수 있다.',
+     '두발 길이와 학습 능력의 인과가 뚜렷하지 않아 <b>수단의 적합성이 의심</b>된다.',
+     '일률적·획일적 규제는 자율 규정 등 <b>덜 침해적 대안</b>을 무시한 것이다.',
+     '학생의 개성 발현·자기결정권 <b>침해가 더 크다.</b>'
+   ],
+   note:'일률적 규제는 침해최소성·법익균형에 어긋나 위헌.'},
+
+  {type:'신체의 자유↔공공복리', emoji:'💉', chip:'감염병 방역 조치',
+   txt:'감염병 대유행기에 <b>다중이용시설 출입 시 접종 확인을 요구</b>하되, 의학적 예외를 인정하고 유행 기간에 한해 적용했다.',
+   rights:['자유권'], req:[true,true,true,true],
+   expl:[
+     '감염병 확산 방지와 <b>국민 건강(공공복리)</b>은 정당한 목적이다.',
+     '접종 확인은 확산 억제에 <b>적합한 수단</b>이다.',
+     '의학적 예외 인정, 유행기 한시 적용 등으로 <b>최소한</b>에 그친다.',
+     '다수의 생명·건강 보호 이익이 제한되는 자유와 <b>균형</b>을 이룬다.'
+   ],
+   note:'예외·기간 제한이 없었다면 침해최소·법익균형 위반으로 위헌이 될 수 있다.'},
+
+  {type:'평등권', emoji:'🚻', chip:'자의적 차별',
+   txt:'한 기관이 <b>합리적 이유 없이 특정 집단을 채용에서 배제</b>하는 기준을 두어 평등권 침해가 문제되었다.',
+   rights:['평등권'], req:[false,false,false,false],
+   expl:[
+     '합리적 이유 없는 배제는 <b>정당한 목적이 없다.</b>',
+     '차별은 어떤 정당한 목적에도 <b>적합하지 않다.</b>',
+     '차별 자체가 부당하므로 <b>최소성 판단 이전에 위법</b>하다.',
+     '평등권 침해만 있고 <b>정당한 공익이 없어 균형이 무너진다.</b>'
+   ],
+   note:'평등권은 ‘합리적 이유 없는 차별’을 금지한다(자의금지). 명백한 위헌.'}
+];
+
+/* 실습 상태 */
+let cIdx=0;
+let selRights=new Set();
+let selReq=[null,null,null,null];
+let judged=false;
+let leanO=0, leanX=0;   // 요건 판단 누적: O(공익)·X(인권)
+let accSum=0, accN=0;
+
+/* ============ 저울 캔버스 ============ */
+const scv=el('scaleCanvas');
+const sx=scv.getContext('2d');
+let curAngle=0, targetAngle=0, animId=0;
+function drawScale(a){
+  const W=scv.width,H=scv.height;
+  sx.clearRect(0,0,W,H);
+  const cx=W/2, topY=44, beamLen=150, panDrop=64;
+  // 기둥·받침
+  sx.strokeStyle='#9aa6ba'; sx.fillStyle='#c9d2e0';
+  sx.lineWidth=8; sx.beginPath(); sx.moveTo(cx,topY); sx.lineTo(cx,H-40); sx.stroke();
+  sx.fillStyle='#8a96ab'; sx.beginPath();
+  sx.moveTo(cx-52,H-30); sx.lineTo(cx+52,H-30); sx.lineTo(cx+34,H-44); sx.lineTo(cx-34,H-44); sx.closePath(); sx.fill();
+  // 받침점 원
+  sx.fillStyle='#c69749'; sx.beginPath(); sx.arc(cx,topY,9,0,7); sx.fill();
+  // 빔(기울기 a)
+  const lx=cx-Math.cos(a)*beamLen, ly=topY+Math.sin(a)*beamLen;
+  const rx=cx+Math.cos(a)*beamLen, ry=topY-Math.sin(a)*beamLen;
+  sx.strokeStyle='#22406b'; sx.lineWidth=7; sx.lineCap='round';
+  sx.beginPath(); sx.moveTo(lx,ly); sx.lineTo(rx,ry); sx.stroke();
+  // 접시 그리기
+  const pan=(px,py,label,col)=>{
+    sx.strokeStyle='#9aa6ba'; sx.lineWidth=2;
+    sx.beginPath(); sx.moveTo(px,py); sx.lineTo(px,py+panDrop-12); sx.stroke();
+    sx.fillStyle=col;
+    sx.beginPath(); sx.ellipse(px,py+panDrop,40,13,0,0,Math.PI); sx.fill();
+    sx.strokeStyle=col; sx.lineWidth=3;
+    sx.beginPath(); sx.moveTo(px-40,py+panDrop); sx.lineTo(px+40,py+panDrop); sx.stroke();
+    sx.fillStyle='#1a2434'; sx.font='bold 13px "Malgun Gothic",sans-serif'; sx.textAlign='center';
+    sx.fillText(label,px,py+panDrop+30);
+  };
+  pan(lx,ly,'기본권(개인)','rgba(47,111,176,.85)');
+  pan(rx,ry,'공익(제한)','rgba(198,151,73,.9)');
+  sx.lineCap='butt';
+}
+function animateScale(target){
+  targetAngle=target;
+  cancelAnimationFrame(animId);
+  const step=()=>{
+    curAngle+=(targetAngle-curAngle)*0.18;
+    drawScale(curAngle);
+    if(Math.abs(targetAngle-curAngle)>0.002) animId=requestAnimationFrame(step);
+    else { curAngle=targetAngle; drawScale(curAngle); }
+  };
+  step();
+}
+
+/* ============ 실습 UI ============ */
+function buildCaseChips(){
+  el('caseChips').innerHTML=CASES.map((c,i)=>
+    `<button class="${i===cIdx?'on':''}" onclick="selectCase(${i})">${c.emoji} ${c.chip}</button>`).join('');
+}
+function buildRightChips(){
+  el('rightChips').innerHTML=RIGHTS.map(r=>
+    `<button data-r="${r.k}" onclick="toggleRight('${r.k}',this)">${r.k}</button>`).join('');
+}
+function buildReqs(){
+  el('reqs').innerHTML=REQ_LABELS.map((r,i)=>`
+    <div class="req">
+      <div class="rn">${r[0]}<small>${r[1]}</small></div>
+      <div class="yn" data-i="${i}">
+        <button class="o" onclick="setReq(${i},true,this)">O</button>
+        <button class="x" onclick="setReq(${i},false,this)">X</button>
+      </div>
+    </div>`).join('');
+}
+function selectCase(i){ cIdx=i; resetCase(); buildCaseChips(); }
+function renderCaseBox(){
+  const c=CASES[cIdx];
+  el('caseBox').innerHTML=`<span class="type">${c.type}</span><br>
+    <span class="emoji">${c.emoji}</span> ${c.txt}`;
+}
+function toggleRight(k,btn){
+  if(judged) return;
+  if(selRights.has(k)){ selRights.delete(k); btn.classList.remove('on'); }
+  else { selRights.add(k); btn.classList.add('on'); }
+}
+function setReq(i,val,btn){
+  if(judged) return;
+  selReq[i]=val;
+  const grp=btn.parentNode;
+  [...grp.children].forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function resetCase(){
+  judged=false;
+  selRights=new Set(); selReq=[null,null,null,null];
+  renderCaseBox(); buildRightChips(); buildReqs();
+  el('verdict').className='verdict'; el('verdict').innerHTML='';
+  el('expl').innerHTML='';
+  el('judgeBtn').disabled=false;
+  animateScale(0);
+}
+function doJudge(){
+  if(judged) return;
+  const c=CASES[cIdx];
+  if(selRights.size===0 || selReq.includes(null)){
+    el('verdict').className='verdict wihon show';
+    el('verdict').innerHTML='⚠️ 기본권을 고르고, 4요건을 모두 판단해 주세요.';
+    return;
+  }
+  judged=true; el('judgeBtn').disabled=true;
+  // 사용자 판결: 4요건 모두 충족이면 합헌
+  const userHaphon = selReq.every(v=>v===true);
+  // 정답 판결
+  const modelHaphon = c.req.every(v=>v===true);
+  // 저울: 충족(O) 개수 기준. O 많으면 공익(오른쪽) 무거워 합헌 → 오른쪽 아래로.
+  const oCount=selReq.filter(v=>v===true).length;
+  const bal=(oCount-2)/2; // -1..1
+  animateScale(bal*0.34);
+  // 채점: 4요건 일치 + 기본권 식별
+  const reqMatch=c.req.reduce((s,v,i)=>s+(v===selReq[i]?1:0),0);
+  const rightMatch = c.rights.every(r=>selRights.has(r)) && selRights.size===c.rights.length;
+  const acc=Math.round((reqMatch/4*0.7 + (rightMatch?1:0)*0.3)*100);
+  accSum+=acc; accN++;
+  // 성향 누적
+  leanO+=selReq.filter(v=>v===true).length;
+  leanX+=selReq.filter(v=>v===false).length;
+  // 판결 배너
+  const vb=el('verdict');
+  vb.className='verdict show '+(modelHaphon?'haphon':'wihon');
+  const userTxt=userHaphon?'합헌':'위헌';
+  const modelTxt=modelHaphon?'합헌':'위헌';
+  const hit=userHaphon===modelHaphon;
+  vb.innerHTML=`판결: <span style="font-size:24px">${modelTxt}</span>`+
+    `<div style="font-size:13px;font-weight:700;margin-top:6px;color:${hit?'inherit':'var(--wihon)'}">`+
+    `나의 판단: ${userTxt} · ${hit?'✅ 판결이 일치합니다':'❌ 다시 살펴보세요'} · 정확도 ${acc}%</div>`;
+  // 요건별 해설
+  const glyph=v=>v?'<span class="ok">O 충족</span>':'<span class="no">X 미충족</span>';
+  let html=`<div class="er" style="border-color:${rightMatch?'#bfe4d1':'#f2c9c1'}">`+
+    `<b>관련 기본권</b> — 정답: ${c.rights.join('·')} · 내 선택: ${[...selRights].join('·')||'없음'} `+
+    `${rightMatch?'<span class="ok">일치</span>':'<span class="no">불일치</span>'}</div>`;
+  for(let i=0;i<4;i++){
+    const okMark=(selReq[i]===c.req[i]);
+    html+=`<div class="er"><b>${REQ_LABELS[i][0]}</b> 정답 ${glyph(c.req[i])} `+
+      `${okMark?'':' · 내 판단 '+glyph(selReq[i])}<br>${c.expl[i]}</div>`;
+  }
+  html+=`<div class="er" style="background:#f7eed9;border-color:#e7d6ad"><b>정리</b> — ${c.note}</div>`;
+  el('expl').innerHTML=html;
+  updateLean();
+}
+function updateLean(){
+  const tot=leanO+leanX;
+  const pos = tot? (leanO/tot) : 0.5; // 0=인권(X 많음) .. 1=공익(O 많음)
+  el('leanDot').style.left=(pos*100)+'%';
+  const avg=accN?Math.round(accSum/accN):0;
+  let tag= pos>0.62?'공익 우선 성향(제한을 합헌으로 보는 편)'
+          : pos<0.38?'인권 보장 성향(제한을 위헌으로 보는 편)'
+          : '균형 잡힌 성향';
+  el('accText').innerHTML=`판결 ${accN}건 · 평균 정확도 <b>${avg}%</b> · <b>${tag}</b>`;
+}
+
+/* ============ 미션 6건 ============ */
+/* r1: 관련 기본권(정답) · verdict: '합헌'/'위헌' · why: 해설 */
+const MISSIONS=[
+  {emoji:'📢', type:'집회의 자유', txt:'심야 시간대의 <b>모든 옥외 집회를 예외 없이 전면 금지</b>하는 법을 두었다.',
+   r1:'자유권', verdict:'위헌',
+   why:'목적(질서유지)은 정당하나, 시간·장소를 한정하지 않은 전면 금지는 침해최소성·법익균형에 어긋나 위헌.'},
+  {emoji:'📰', type:'표현의 자유↔인격권', txt:'<b>허위 사실로 타인의 명예를 훼손</b>하는 표현을 처벌하는 법이 다투어졌다.',
+   r1:'자유권', verdict:'합헌',
+   why:'표현의 자유와 인격권의 충돌을 조정한 것으로, 허위에 한정해 4요건을 모두 충족하는 합헌.'},
+  {emoji:'🚻', type:'평등권', txt:'<b>합리적 이유 없이 특정 집단을 자격에서 배제</b>하는 기준을 두었다.',
+   r1:'평등권', verdict:'위헌',
+   why:'정당한 목적 없는 자의적 차별은 평등권의 본질을 침해한다. 위헌.'},
+  {emoji:'🍚', type:'사회권', txt:'국가가 최저 생계 지원을 <b>인간다운 생활이 불가능할 만큼 과도하게 삭감</b>했다.',
+   r1:'사회권', verdict:'위헌',
+   why:'인간다운 생활을 할 권리(사회권)의 본질적 내용을 침해하는 조치로 위헌.'},
+  {emoji:'🗳️', type:'참정권', txt:'선거 공정을 위해 <b>중대 선거범죄자에 한해 기간·범위를 정해</b> 선거권을 제한했다.',
+   r1:'참정권', verdict:'합헌',
+   why:'대상과 기간을 한정한 필요 최소한의 제한으로, 과잉금지원칙을 지켜 합헌.'},
+  {emoji:'📜', type:'청구권', txt:'재판 청구 시 <b>합리적 절차와 요건</b>을 정하되, 저소득층에게는 비용을 면제했다.',
+   r1:'청구권', verdict:'합헌',
+   why:'재판청구권의 본질을 해치지 않는 합리적 절차 규정으로 합헌.'}
+];
+let mIdx=0; const mAnswer={}; const mResult=[]; let mChecked=false;
+function renderMission(){
+  const m=MISSIONS[mIdx]; mChecked=false; mAnswer.r1=null; mAnswer.v=null;
+  el('mProg').style.width=(mIdx/MISSIONS.length*100)+'%';
+  el('mScenario').innerHTML=`<div class="caseBox"><span class="type">${m.type}</span><br>
+    <span class="emoji">${m.emoji}</span> <b>미션 ${mIdx+1} / ${MISSIONS.length}</b><br>${m.txt}</div>`;
+  el('mQuestions').innerHTML=`
+    <div class="q"><div class="qt">① 주로 관련된 기본권은?</div>
+      <div class="opts" data-k="r1">
+        ${['자유권','평등권','참정권','청구권','사회권'].map(r=>
+          `<button onclick="pick('r1','${r}',this)">${r}</button>`).join('')}
+      </div></div>
+    <div class="q"><div class="qt">② 이 제한에 대한 판결은?</div>
+      <div class="opts" data-k="v">
+        <button onclick="pick('v','합헌',this)">🟢 합헌 (과잉금지 통과)</button>
+        <button onclick="pick('v','위헌',this)">🔴 위헌 (과잉금지 위반)</button>
+      </div></div>`;
+  el('mFeedback').innerHTML='';
+  el('mCheck').classList.remove('hide'); el('mNext').classList.add('hide');
+}
+function pick(k,v,btn){
+  if(mChecked) return;
+  mAnswer[k]=v;
+  if(btn&&btn.parentNode)[...btn.parentNode.children].forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function checkMission(){
+  const m=MISSIONS[mIdx];
+  if(!mAnswer.r1||!mAnswer.v){
+    el('mFeedback').innerHTML='<div class="feedback no">두 문항을 모두 판단해 주세요.</div>'; return;
+  }
+  mChecked=true;
+  const ok1=mAnswer.r1===m.r1, ok2=mAnswer.v===m.verdict;
+  const score=(ok1?1:0)+(ok2?1:0);
+  mResult[mIdx]={score,of:2,emoji:m.emoji,verdict:m.verdict,ok2};
+  // 정답 표시
+  document.querySelectorAll('#mQuestions .opts').forEach(g=>{
+    const k=g.dataset.k, good=(k==='r1'?m.r1:m.verdict);
+    [...g.children].forEach(b=>{
+      b.disabled=true;
+      const isGood=b.textContent.includes(good);
+      if(isGood) b.classList.add('correct');
+      if(b.classList.contains('sel') && !isGood) b.classList.add('wrong');
+    });
+  });
+  const all=score===2;
+  el('mFeedback').innerHTML=`<div class="feedback ${all?'ok':'no'}">${all?'⚖️ 정확한 판결!':'💡 판결 근거 확인!'} (${score}/2)<br>${m.why}</div>`;
+  el('mProg').style.width=((mIdx+1)/MISSIONS.length*100)+'%';
+  el('mCheck').classList.add('hide'); el('mNext').classList.remove('hide');
+  if(mIdx===MISSIONS.length-1) el('mNext').textContent='결과 보기 →';
+}
+function nextMission(){
+  if(mIdx<MISSIONS.length-1){ mIdx++; renderMission(); }
+  else { go('result'); drawResult(); }
+}
+
+/* ============ 결과 카드 (PNG) ============ */
+function totalScore(){ return mResult.reduce((s,r)=>s+(r?r.score:0),0); }
+function gradeOf(pct){
+  if(pct>=0.92) return {t:'🏛️ 헌법 수호 대법관', c:'#22406b'};
+  if(pct>=0.75) return {t:'⚖️ 균형 잡힌 재판관', c:'#1c8a5a'};
+  if(pct>=0.5)  return {t:'📖 성장하는 법관', c:'#c69749'};
+  return {t:'🌱 헌법을 배우는 중', c:'#c05a7a'};
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawResult(){
+  const cv=el('resultCanvas'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  const total=totalScore(), max=MISSIONS.length*2, pct=max?total/max:0, g=gradeOf(pct);
+  // 배경
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#22406b'); bg.addColorStop(1,'#152941');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff'; roundRect(ctx,36,36,W-72,H-72,28); ctx.fill();
+  // 골드 상단 띠
+  ctx.fillStyle='#c69749'; roundRect(ctx,36,36,W-72,10,6); ctx.fill();
+  ctx.textAlign='center';
+  // 제목
+  ctx.fillStyle='#22406b'; ctx.font='bold 38px "Malgun Gothic",sans-serif';
+  ctx.fillText('⚖️ 헌법 판결 리포트', W/2, 122);
+  ctx.fillStyle='#59647a'; ctx.font='19px "Malgun Gothic",sans-serif';
+  ctx.fillText('통합사회2 Ⅰ 인권 보장과 헌법 · 기본권 판례 판결', W/2, 156);
+  // 이름
+  const name=(el('studentName').value||'학생').slice(0,12);
+  ctx.fillStyle='#1a2434'; ctx.font='bold 30px "Malgun Gothic",sans-serif';
+  ctx.fillText(name+' 재판관', W/2, 214);
+  // 점수 원
+  const cx=W/2, cy=356, r=104;
+  ctx.lineWidth=22; ctx.strokeStyle='#e7ebf2'; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  ctx.strokeStyle=g.c; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*pct); ctx.stroke(); ctx.lineCap='butt';
+  ctx.fillStyle='#1a2434'; ctx.font='bold 56px "Malgun Gothic",sans-serif';
+  ctx.fillText(total+'', cx, cy+6);
+  ctx.fillStyle='#59647a'; ctx.font='20px "Malgun Gothic",sans-serif'; ctx.fillText('/ '+max+'점', cx, cy+40);
+  // 등급
+  ctx.fillStyle=g.c; ctx.font='bold 28px "Malgun Gothic",sans-serif'; ctx.fillText(g.t, W/2, cy+r+56);
+  // 실습 성향(있으면)
+  if(accN>0){
+    const tot=leanO+leanX, pos=tot?leanO/tot:0.5;
+    const tag= pos>0.62?'공익 우선 성향':pos<0.38?'인권 보장 성향':'균형 잡힌 성향';
+    ctx.fillStyle='#59647a'; ctx.font='17px "Malgun Gothic",sans-serif';
+    ctx.fillText('실습 정확도 '+Math.round(accSum/accN)+'% · '+tag, W/2, cy+r+86);
+  }
+  // 미션 표
+  let y=cy+r+130;
+  ctx.font='bold 20px "Malgun Gothic",sans-serif'; ctx.textAlign='left'; ctx.fillStyle='#22406b';
+  ctx.fillText('판례 미션 판결 결과', 72, y); y+=14;
+  ctx.font='19px "Malgun Gothic",sans-serif';
+  for(let i=0;i<MISSIONS.length;i++){
+    const rr=mResult[i]; y+=34;
+    ctx.textAlign='left'; ctx.fillStyle='#1a2434';
+    ctx.fillText(`${MISSIONS[i].emoji} 미션 ${i+1} · ${MISSIONS[i].type}`, 78, y);
+    ctx.textAlign='right';
+    if(rr){
+      ctx.fillStyle= rr.score===2?'#1c8a5a':(rr.score===1?'#c69749':'#c0392b');
+      ctx.fillText((rr.score===2?'✅ ':'')+rr.score+'/2 ('+rr.verdict+')', W-78, y);
+    } else { ctx.fillStyle='#9aa6ba'; ctx.fillText('미완료', W-78, y); }
+  }
+  // 하단 문구
+  ctx.textAlign='center'; ctx.fillStyle='#59647a'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('“제한하더라도 자유와 권리의 본질적 내용은 침해할 수 없다” — 헌법 §37②', W/2, H-96);
+  ctx.fillStyle='#9aa6ba'; ctx.font='16px "Malgun Gothic",sans-serif';
+  ctx.fillText('풀어쓰는 사회학 AI · 헌법 기본권 판례 판결 시뮬레이터', W/2, H-62);
+}
+function savePNG(){
+  drawResult();
+  const cv=el('resultCanvas');
+  const a=document.createElement('a');
+  a.download=`헌법판결리포트_${(el('studentName').value||'학생')}.png`;
+  a.href=cv.toDataURL('image/png'); a.click();
+}
+function openPNG(){
+  drawResult();
+  const url=el('resultCanvas').toDataURL('image/png');
+  window.open(url,'_blank');
+}
+
+/* ============ 탭 전환 ============ */
+function go(tab){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['concept','court','mission','result'].forEach(t=>el('tab-'+t).classList.toggle('hide',t!==tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tab==='court'){ drawScale(curAngle); }
+  if(tab==='result') drawResult();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+/* ============ 초기화 ============ */
+buildCaseChips(); resetCase(); renderMission();
+drawScale(0);
+</script>
+</body>
+</html>
