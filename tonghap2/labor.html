@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<script>
+(function(){
+  if (window.storage) return;
+  function K(key, shared){ return (shared ? "S:" : "P:") + key; }
+  window.storage = {
+    get: function(key, shared){ return new Promise(function(res){ var v = null; try { v = localStorage.getItem(K(key, shared)); } catch(e){} res(v === null ? null : { key:key, value:v, shared:!!shared }); }); },
+    set: function(key, value, shared){ return new Promise(function(res){ try { localStorage.setItem(K(key, shared), value); res({ key:key, value:value, shared:!!shared }); } catch(e){ res(null); } }); },
+    "delete": function(key, shared){ return new Promise(function(res){ try { localStorage.removeItem(K(key, shared)); } catch(e){} res({ key:key, deleted:true }); }); },
+    list: function(prefix, shared){ return new Promise(function(res){ var keys = [], i, p = K(prefix || "", shared); try { for (i=0;i<localStorage.length;i++){ var k = localStorage.key(i); if (k.indexOf(p) === 0) keys.push(k.slice(2)); } } catch(e){} res({ keys:keys, prefix:prefix, shared:!!shared }); }); }
+  };
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>나의 근로계약서 작성 | 통합사회2 수행평가</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; word-break:keep-all; }
+body { font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background:#f4f6fa; color:#2c3e50; line-height:1.6; }
+.lc-wrap { max-width:520px; margin:0 auto; min-height:100vh; background:#fff; box-shadow:0 0 20px rgba(0,0,0,.06); padding-bottom:90px; }
+.lc-header { background:linear-gradient(135deg,#1a5276,#2874a6); color:#fff; padding:18px 20px 14px; position:sticky; top:0; z-index:50; }
+.lc-header h1 { font-size:17px; font-weight:800; }
+.lc-header .sub { font-size:12px; opacity:.85; margin-top:2px; }
+.lc-progress { height:6px; background:rgba(255,255,255,.25); border-radius:3px; margin-top:10px; overflow:hidden; }
+.lc-progress-bar { height:100%; background:#f7dc6f; width:0%; transition:width .3s; border-radius:3px; }
+.lc-save { font-size:11px; opacity:.8; margin-top:6px; text-align:right; }
+.lc-body { padding:18px 18px 10px; }
+.step { display:none; animation:fadein .3s; }
+.step.active { display:block; }
+@keyframes fadein { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+.badge { display:inline-block; background:#eaf2f8; color:#1a5276; font-size:12px; font-weight:700; padding:4px 10px; border-radius:12px; margin-bottom:8px; }
+.badge.pt { background:#fdf2e0; color:#b9770e; }
+h2 { font-size:18px; font-weight:800; margin-bottom:6px; }
+.desc { font-size:13px; color:#5d6d7e; margin-bottom:14px; }
+.eval-box { background:#fef9e7; border:1.5px solid #f4d03f; border-radius:10px; padding:10px 12px; font-size:12.5px; margin-bottom:14px; }
+.eval-box b { color:#b9770e; }
+label { display:block; font-size:13.5px; font-weight:700; margin:14px 0 5px; }
+label .req { color:#c0392b; }
+label .pts { font-weight:600; color:#b9770e; font-size:12px; }
+input[type=text], input[type=number], input[type=date], input[type=time], textarea, select {
+  width:100%; padding:11px 12px; border:1.5px solid #d5dbdb; border-radius:10px; font-size:16px; font-family:inherit; background:#fbfcfd;
+}
+textarea { min-height:84px; resize:vertical; }
+input:focus, textarea:focus, select:focus { outline:none; border-color:#2874a6; background:#fff; }
+.hint { font-size:12px; color:#7f8c8d; margin-top:4px; }
+.row2 { display:flex; gap:10px; }
+.row2 > div { flex:1; }
+.wage-check { font-size:13px; font-weight:700; margin-top:6px; padding:8px 10px; border-radius:8px; display:none; }
+.wage-check.ok { display:block; background:#e8f8f0; color:#1e8449; }
+.wage-check.bad { display:block; background:#fdecea; color:#c0392b; }
+.info-card { background:#ebf5fb; border-left:4px solid #2874a6; border-radius:8px; padding:12px 14px; font-size:12.5px; margin:12px 0; }
+.info-card b { color:#1a5276; }
+.info-card ul { margin:6px 0 0 16px; }
+.case-doc { background:#fdfefe; border:1.5px solid #aab7b8; border-radius:10px; padding:14px; font-size:13px; margin:12px 0; }
+.case-doc h3 { font-size:14px; text-align:center; margin-bottom:8px; letter-spacing:2px; }
+.case-doc ol { margin-left:18px; }
+.case-doc li { margin-bottom:6px; }
+.check-item { display:flex; align-items:flex-start; gap:8px; background:#fbfcfd; border:1.5px solid #d5dbdb; border-radius:10px; padding:10px 12px; margin-bottom:8px; font-size:13px; cursor:pointer; }
+.check-item.sel { border-color:#c0392b; background:#fdf3f2; }
+.check-item input { margin-top:3px; }
+.btn-row { display:flex; gap:10px; margin-top:20px; }
+button { font-family:inherit; cursor:pointer; }
+.btn { flex:1; padding:14px; font-size:15px; font-weight:800; border:none; border-radius:12px; min-height:48px; }
+.btn-next { background:#2874a6; color:#fff; }
+.btn-prev { background:#eaecee; color:#5d6d7e; flex:.6; }
+.btn-submit { background:#1e8449; color:#fff; }
+.btn-copy { background:#f4d03f; color:#6e2c00; }
+.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:#2c3e50; color:#fff; padding:10px 18px; border-radius:20px; font-size:13px; z-index:99; opacity:0; transition:opacity .3s; pointer-events:none; max-width:90%; text-align:center; }
+.toast.show { opacity:1; }
+.preview-doc { border:2px solid #2c3e50; border-radius:6px; padding:18px 16px; font-size:13px; background:#fff; }
+.preview-doc h3 { text-align:center; font-size:16px; letter-spacing:4px; margin-bottom:12px; }
+.preview-doc table { width:100%; border-collapse:collapse; margin-bottom:8px; }
+.preview-doc td { border:1px solid #85929e; padding:6px 8px; vertical-align:top; }
+.preview-doc td.k { background:#f2f4f4; font-weight:700; width:88px; font-size:12px; }
+.preview-sec { font-weight:800; margin:10px 0 4px; font-size:13px; color:#1a5276; }
+.preview-txt { background:#fbfcfd; border:1px dashed #aab7b8; border-radius:6px; padding:8px 10px; margin-bottom:6px; white-space:pre-wrap; }
+.footer { text-align:center; font-size:11px; color:#95a5a6; padding:16px 0 8px; }
+.lock-overlay { position:fixed; inset:0; background:linear-gradient(160deg,#1a5276,#154360); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+.lock-box { background:#fff; border-radius:18px; padding:28px 22px; max-width:400px; width:100%; text-align:center; }
+.lock-box .emoji { font-size:46px; }
+.lock-box h2 { font-size:18px; margin:8px 0 4px; }
+.lock-box p { font-size:13px; color:#5d6d7e; margin-bottom:14px; }
+.lock-box input { text-align:center; font-size:17px; letter-spacing:1px; }
+.lock-err { color:#c0392b; font-size:13px; font-weight:700; margin-top:8px; min-height:20px; }
+.lock-cls { display:inline-block; background:#e8f8f0; color:#1e8449; font-weight:800; font-size:13px; padding:4px 12px; border-radius:12px; margin-top:6px; }
+.admin-box { margin-top:16px; text-align:left; background:#fef9e7; border-radius:10px; padding:12px; font-size:12px; display:none; }
+.admin-box code { display:block; word-break:break-all; background:#fff; border-radius:6px; padding:6px; margin-top:6px; font-size:11px; }
+.start-hero { text-align:center; padding:10px 0 4px; }
+.start-hero .emoji { font-size:44px; }
+.rubric-table { width:100%; border-collapse:collapse; font-size:12px; margin:10px 0; }
+.rubric-table th { background:#1a5276; color:#fff; padding:6px 4px; font-size:11.5px; }
+.rubric-table td { border:1px solid #d5dbdb; padding:6px 6px; }
+.rubric-table td:last-child { text-align:center; font-weight:700; color:#b9770e; white-space:nowrap; }
+.t-wrap { display:none; max-width:980px; margin:0 auto; padding:16px; }
+.t-card { background:#fff; border-radius:14px; padding:16px 18px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+.t-card h2 { font-size:15.5px; color:#1a5276; margin-bottom:10px; }
+.stu-chip { padding:8px 14px; border-radius:20px; border:1.5px solid #d5dbdb; background:#fbfcfd; font-size:13px; font-weight:700; margin:0 6px 6px 0; }
+.stu-chip.done { border-color:#1e8449; background:#e8f8f0; color:#1e8449; }
+.stu-chip.cur { border-color:#2874a6; background:#2874a6; color:#fff; }
+.t-item { border:1.5px solid #e5e8ec; border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+.t-item-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
+.t-title { font-weight:800; font-size:13.5px; }
+.t-title .max { color:#b9770e; font-size:12px; }
+.t-ans { background:#f8f9fa; border-radius:8px; padding:8px 10px; font-size:13px; margin:8px 0; white-space:pre-wrap; }
+.t-ans b { color:#1a5276; }
+.t-ans .empty { color:#c0392b; font-weight:700; }
+.sb { padding:7px 13px; border-radius:8px; border:1.5px solid #d5dbdb; background:#fff; font-weight:800; font-size:13px; min-width:44px; margin:2px; cursor:pointer; }
+.sb.sel { background:#1a5276; color:#fff; border-color:#1a5276; }
+.sb.auto { border-color:#f4d03f; }
+.t-total { position:sticky; bottom:0; background:#2c3e50; color:#fff; border-radius:12px; padding:12px 18px; display:flex; justify-content:space-between; font-weight:800; z-index:10; }
+.t-total .num { font-size:20px; color:#f7dc6f; }
+table.result { width:100%; border-collapse:collapse; font-size:12.5px; }
+table.result th { background:#1a5276; color:#fff; padding:7px 5px; font-size:12px; }
+table.result td { border:1px solid #e5e8ec; padding:6px 5px; text-align:center; }
+.byte-count { font-size:12.5px; font-weight:700; margin-top:6px; }
+.byte-count.ok { color:#1e8449; } .byte-count.warn { color:#c0392b; }
+.t-btn { padding:10px 16px; font-size:13.5px; font-weight:700; border:none; border-radius:10px; background:#2874a6; color:#fff; cursor:pointer; margin-right:8px; }
+.t-btn.gold { background:#f4d03f; color:#6e2c00; }
+.t-btn.gray { background:#eaecee; color:#5d6d7e; }
+@media (max-width:480px){ .lc-body{padding:14px 14px 8px;} h2{font-size:17px;} }
+</style>
+<style>
+.law-card { border:1.5px solid #aed6f1; border-radius:12px; margin:10px 0; overflow:hidden; }
+.law-toggle { width:100%; text-align:left; background:#ebf5fb; border:none; padding:11px 14px; font-size:13.5px; font-weight:800; color:#1a5276; cursor:pointer; font-family:inherit; }
+.law-toggle:after { content:" ▾"; }
+.law-card.open .law-toggle:after { content:" ▴"; }
+.law-body { display:none; padding:12px 14px; font-size:13px; background:#fff; }
+.law-card.open .law-body { display:block; }
+.law-quote { background:#fdfefe; border-left:3px solid #2874a6; padding:8px 12px; margin-bottom:8px; font-size:12.5px; color:#34495e; }
+.law-easy { background:#fef9e7; border-radius:8px; padding:8px 12px; font-size:12.5px; }
+.law-easy b { color:#b9770e; }
+.bubble-btn { display:inline-block; background:#eaf2f8; color:#1a5276; border:1.5px solid #aed6f1; border-radius:16px; padding:6px 14px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+.bubble { display:none; background:#2c3e50; color:#fff; border-radius:12px; padding:12px 14px; font-size:13px; margin-top:8px; position:relative; }
+.bubble.show { display:block; animation:fadein .25s; }
+.bubble:before { content:""; position:absolute; top:-7px; left:24px; border:7px solid transparent; border-bottom-color:#2c3e50; border-top:none; }
+.grid2 { display:flex; gap:10px; }
+.grid2 > div { flex:1; }
+.learn-hero { background:linear-gradient(135deg,#1a5276,#2874a6); color:#fff; border-radius:12px; padding:14px 16px; margin-bottom:12px; font-size:13px; }
+.learn-hero b { color:#f7dc6f; }
+.help-card { background:#fdf3f2; border:1.5px solid #f1948a; border-radius:12px; padding:12px 14px; font-size:13px; margin:12px 0; }
+.help-card b { color:#c0392b; }
+.help-card ol { margin:6px 0 0 18px; }
+.help-card li { margin-bottom:5px; }
+select { width:100%; padding:11px 12px; border:1.5px solid #d5dbdb; border-radius:10px; font-size:16px; font-family:inherit; background:#fbfcfd; }
+select:focus { outline:none; border-color:#2874a6; background:#fff; }
+</style>
+<style>
+#teachBar { display:none; }
+body.teach .lc-wrap { box-shadow:none; }
+.tb-qr { position:fixed; top:10px; left:10px; z-index:300; background:#fff; border:3px solid #1a5276; border-radius:14px; padding:8px; text-align:center; width:172px; }
+.tb-qr #teachQr img, .tb-qr #teachQr canvas { display:block; margin:0 auto; }
+.tb-qr .tb-cap { font-size:11px; font-weight:800; color:#1a5276; margin-top:4px; }
+.tb-url-set { margin-top:4px; }
+.tb-url-set input { width:100%; font-size:11px; padding:5px 6px; border:1.5px solid #d5dbdb; border-radius:6px; font-family:inherit; }
+.tb-url-set button { width:100%; margin-top:4px; padding:6px; font-size:11.5px; font-weight:800; border:none; border-radius:7px; background:#2874a6; color:#fff; cursor:pointer; font-family:inherit; }
+.tb-pw { position:fixed; top:10px; right:10px; z-index:300; background:#0f172a; color:#fff; border-radius:14px; padding:10px 14px; text-align:center; min-width:210px; }
+.tb-pw select { width:100%; font-size:13px; padding:6px; border-radius:8px; border:none; font-family:inherit; font-weight:800; }
+.tb-pw .tb-pwv { font-size:30px; font-weight:900; color:#fbbf24; letter-spacing:2px; margin-top:5px; line-height:1.15; }
+.tb-pw .tb-live { font-size:12.5px; color:#a7f3d0; margin-top:6px; font-weight:700; }
+.tb-pw .tb-miss { font-size:11px; color:#fca5a5; margin-top:3px; max-width:230px; word-break:keep-all; }
+.tb-min { position:absolute; top:2px; right:6px; background:none; border:none; font-weight:900; cursor:pointer; font-size:15px; color:#94a3b8; font-family:inherit; padding:2px 4px; }
+.tb-qr { position:fixed; }
+.tb-qr .tb-mini-label { display:none; }
+.tb-qr.min { width:auto; padding:7px 30px 7px 12px; cursor:pointer; }
+.tb-qr.min #teachQr, .tb-qr.min .tb-cap, .tb-qr.min .tb-url-set { display:none; }
+.tb-qr.min .tb-mini-label { display:inline; font-weight:800; color:#1a5276; font-size:13.5px; }
+.tb-pw.min { min-width:0; padding:7px 30px 7px 12px; cursor:pointer; }
+.tb-pw.min select, .tb-pw.min .tb-pwv, .tb-pw.min .tb-miss { display:none; }
+.tb-pw.min .tb-live { margin-top:0; }
+.tb-exit { position:fixed; bottom:12px; left:10px; z-index:300; background:#7f1d1d; color:#fff; border:none; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+</style>
+</head>
+<body>
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-box">
+    <div class="emoji">🔐</div>
+    <h2>수행평가 입장</h2>
+    <p>선생님이 칠판에 적어 준 <b>우리 반 비밀번호</b>를 입력하세요.<br><span style="font-size:11px;color:#95a5a6;">(교사는 교사용 비밀번호로 입장)</span></p>
+    <input type="text" id="lockPw" placeholder="비밀번호 입력" autocomplete="off">
+    <div class="btn-row"><button type="button" class="btn btn-next" id="lockBtn">입장하기</button></div>
+    <div class="lock-err" id="lockErr"></div>
+  </div>
+</div>
+<div class="lc-wrap" id="app">
+
+  <div class="lc-header">
+    <h1>✍️ 나의 근로계약서 작성</h1>
+    <div class="sub">통합사회2 · 1학년 · 청소년 노동권 수행평가 <span id="clsBadge" style="font-weight:800;color:#f7dc6f;"></span></div>
+    <div class="lc-progress"><div class="lc-progress-bar" id="pbar"></div></div>
+    <div class="lc-save" id="saveStatus">자동 저장 중</div>
+  </div>
+
+  <div class="lc-body">
+
+    <!-- STEP 0: 시작 -->
+    <div class="step active" data-step="0">
+      <div class="start-hero"><div class="emoji">📋</div></div>
+      <h2>내가 사장님과 쓰는 첫 근로계약서</h2>
+      <p class="desc">현장실습을 나가거나 알바·취업을 시작하면 <b>가장 먼저 쓰게 되는 서류</b>가 근로계약서입니다. 오늘은 근로기준법을 직접 읽고, 법을 근거로 나의 근로계약서를 완성해요. 작성 내용은 자동 저장됩니다.</p>
+      <div class="eval-box"><b>📌 평가 안내 (총 100점)</b> — 아래 표의 요소가 그대로 채점 기준입니다. 모든 항목은 <b>항목당 5점</b>으로 배점과 1:1이에요.</div>
+      <table class="rubric-table">
+        <tr><th>평가 요소</th><th>배점</th></tr>
+        <tr><td>① 계약 당사자와 근로 조건 (당사자·업무·개시일·근로시간, 항목당 5점)</td><td>20점</td></tr>
+        <tr><td>② 임금 조건 (최저임금 이상 시급과 근거·지급일·방법, 항목당 5점)</td><td>20점</td></tr>
+        <tr><td>③ 휴일·휴가 조항 (조항당 5점)</td><td>10점</td></tr>
+        <tr><td>④ 연소근로자 보호 조항 (조항당 5점)</td><td>10점</td></tr>
+        <tr><td>⑤ 부당 조항 판별 (조항+이유 세트당 5점)</td><td>10점</td></tr>
+        <tr><td>⑥ 부당 조항 수정 (조항당 5점)</td><td>10점</td></tr>
+        <tr><td>⑦ 근로계약서의 필요성 서술</td><td>10점</td></tr>
+        <tr><td>⑧ 노동권 침해 해결 방안 서술</td><td>10점</td></tr>
+      </table>
+      <div class="grid2">
+        <div><label>학과·반 <span class="req">*</span></label>
+        <select id="sel_cls">
+          <option value="">선택하세요</option>
+          <option>스마트용접과 1반</option><option>스마트용접과 2반</option>
+          <option>융합기계과 1반</option><option>융합기계과 2반</option>
+          <option>스마트금형과 1반</option><option>스마트금형과 2반</option>
+        </select></div>
+        <div><label>번호 <span class="req">*</span></label><select id="sel_no"><option value="">선택</option></select></div>
+      </div>
+      <label>이름 <span class="req">*</span></label>
+      <input type="text" id="sname" placeholder="이름을 입력하세요" maxlength="10">
+      <div class="btn-row"><button type="button" class="btn btn-next" data-go="1">시작하기 →</button></div>
+    </div>
+
+    <!-- STEP 1: 근로기준법 배우기 -->
+    <div class="step" data-step="1">
+      <span class="badge">STEP 1 / 10</span><span class="badge pt">📚 배우기</span>
+      <h2>근로기준법, 원문으로 만나기</h2>
+      <div class="learn-hero">법은 어렵지 않아요. <b>일하는 사람을 지키기 위해 나라가 정한 최소한의 약속</b>입니다. 아래 조문을 직접 읽어보세요 — 이 법들이 뒤에서 여러분이 계약서를 쓰는 <b>근거</b>가 됩니다.</div>
+
+      <div class="law-card open"><button type="button" class="law-toggle">📖 제17조 (근로조건의 명시)</button>
+        <div class="law-body">
+          <div class="law-quote">"사용자는 근로계약을 체결할 때에 근로자에게 임금, 소정근로시간, 제55조에 따른 휴일, 제60조에 따른 연차 유급휴가 등의 사항을 명시하여야 한다. … 서면으로 명시하고 근로자에게 교부하여야 한다."</div>
+          <div class="law-easy"><b>쉽게 말하면</b> — 얼마 받는지, 몇 시간 일하는지, 언제 쉬는지를 <b>종이(계약서)에 적어서 나에게 줘야</b> 한다는 뜻. 말로만 하는 약속은 안 돼요!</div>
+        </div>
+      </div>
+      <div class="law-card open"><button type="button" class="law-toggle">📖 제43조 (임금 지급) + 최저임금법 제6조</button>
+        <div class="law-body">
+          <div class="law-quote">"임금은 통화(通貨)로 직접 근로자에게 그 전액을 지급하여야 한다. … 매월 1회 이상 일정한 날짜를 정하여 지급하여야 한다." / "최저임금액에 미치지 못하는 임금을 정한 부분은 무효로 한다."</div>
+          <div class="law-easy"><b>쉽게 말하면</b> — 임금은 ①돈으로 ②본인에게 ③전액을 ④정해진 날짜에! 상품권 지급, 부모님 계좌 입금, 일부만 주기 전부 위법. 그리고 최저임금은 <b>매년 새로 정해져요</b> — 올해 얼마인지는 뒤에서 직접 확인해 봅시다.</div>
+        </div>
+      </div>
+      <div class="law-card open"><button type="button" class="law-toggle">📖 제54조·제55조·제60조 (휴게·휴일·연차)</button>
+        <div class="law-body">
+          <div class="law-quote">"근로시간이 4시간인 경우에는 30분 이상, 8시간인 경우에는 1시간 이상의 휴게시간을 근로시간 도중에 주어야 한다." (제54조) / "1주에 평균 1회 이상의 유급휴일을 보장하여야 한다." (제55조) / "1년간 80퍼센트 이상 출근한 근로자에게 15일의 유급휴가를 주어야 한다." (제60조)</div>
+          <div class="law-easy"><b>쉽게 말하면</b> — 4시간 일하면 30분은 쉬어야 하고, 일주일 개근하면 <b>일 안 하고도 하루치 돈을 받는 날(주휴일)</b>이 생기고, 1년 잘 다니면 유급 휴가가 생겨요.</div>
+        </div>
+      </div>
+      <div class="law-card open"><button type="button" class="law-toggle">📖 제64조~제70조 (연소근로자 보호)</button>
+        <div class="law-body">
+          <div class="law-quote">"15세 이상 18세 미만인 사람의 근로시간은 1일에 7시간, 1주에 35시간을 초과하지 못한다." (제69조) / "사용자는 18세 미만자를 오후 10시부터 오전 6시까지의 시간 및 휴일에 근로시키지 못한다." (제70조) / "18세 미만인 사람에 대하여는 연령을 증명하는 증명서와 친권자 또는 후견인의 동의서를 사업장에 갖추어 두어야 한다." (제66조)</div>
+          <div class="law-easy"><b>쉽게 말하면</b> — 여러분(18세 미만)은 하루 7시간까지만, 밤 10시~아침 6시엔 일 못 시켜요. 부모님 동의서도 꼭 필요합니다. <b>나이가 어릴수록 법이 더 강하게 지켜줘요.</b></div>
+        </div>
+      </div>
+      <div class="law-card open"><button type="button" class="law-toggle">📖 제15조 (이 법을 위반한 근로계약)</button>
+        <div class="law-body">
+          <div class="law-quote">"이 법에서 정하는 기준에 미치지 못하는 근로조건을 정한 근로계약은 그 부분에 한정하여 무효로 한다."</div>
+          <div class="law-easy"><b>쉽게 말하면</b> — 법보다 나쁜 조건으로 계약서에 사인했어도 <b>그 부분은 처음부터 없던 것</b>이 돼요. "네가 동의했잖아"는 통하지 않습니다!</div>
+        </div>
+      </div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="0">←</button><button type="button" class="btn btn-next" data-go="2">다 읽었어요 →</button></div>
+    </div>
+
+    <!-- STEP 2: ⑦ 필요성 서술 -->
+    <div class="step" data-step="2">
+      <span class="badge">STEP 2 / 10</span><span class="badge pt">평가 요소 ⑦ · 10점</span>
+      <h2>왜 근로계약서를 써야 할까?</h2>
+      <p class="desc">방금 읽은 법 조문들을 떠올려 보세요. 근로계약서는 왜 청소년의 노동권을 지켜줄까요? <b>완성된 문장</b>으로 서술하세요. (서술 10점 / 단어 나열 5점)</p>
+      <textarea id="f_essay1" style="min-height:130px" placeholder="예: 근로기준법 제17조에 따라 근로 조건을 서면으로 남기면, 나중에 사장님이 약속과 다르게 행동할 때 증거가 되기 때문에..."></textarea>
+      <div class="hint">💡 제17조(서면 명시), 제15조(위반 계약 무효)를 근거로 쓰면 더 좋아요.</div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="1">←</button><button type="button" class="btn btn-next" data-go="3">다음 →</button></div>
+    </div>
+
+    <!-- STEP 3: ① 계약 조건 -->
+    <div class="step" data-step="3">
+      <span class="badge">STEP 3 / 10</span><span class="badge pt">평가 요소 ① · 20점</span>
+      <h2>계약 당사자와 근로 조건</h2>
+      <p class="desc">이제 진짜로 써 봅시다. 어디서, 무슨 일을, 언제부터, 몇 시간 일할지 — 제17조가 요구하는 그 내용이에요.</p>
+      <label>① 사업장(가게) 이름과 사업주 이름 <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="text" id="f_employer" placeholder="예: 든든분식 · 사장 김든든">
+      <label>② 내가 맡을 업무 내용 <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="text" id="f_job" placeholder="예: 홀 서빙 및 테이블 정리">
+      <label>③ 근로 개시일 <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="date" id="f_startdate">
+      <label>④ 근로 시간과 휴게 시간 <span class="req">*</span> <span class="pts">5점 (모두 작성해야 인정)</span></label>
+      <div class="row2">
+        <div><input type="time" id="f_tstart" value="16:00"></div>
+        <div style="flex:0 0 aupx; align-self:center;">~</div>
+        <div><input type="time" id="f_tend" value="20:00"></div>
+      </div>
+      <input type="text" id="f_break" placeholder="휴게 시간 (예: 18:00~18:30, 30분)" style="margin-top:8px;">
+      <div class="hint">💡 제54조 다시 보기 — 4시간 일하면 휴게는 최소 몇 분이어야 할까요?</div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="2">←</button><button type="button" class="btn btn-next" data-go="4">다음 →</button></div>
+    </div>
+
+    <!-- STEP 4: ② 임금 -->
+    <div class="step" data-step="4">
+      <span class="badge">STEP 4 / 10</span><span class="badge pt">평가 요소 ② · 20점</span>
+      <h2>임금 조건</h2>
+      <p class="desc">내 노동의 가격을 정할 시간!</p>
+      <button type="button" class="bubble-btn" id="wageInfoBtn">💬 임금이란?</button>
+      <div class="bubble" id="wageBubble">
+        임금은 일한 대가로 받는 돈이에요. 제43조 기억나죠? <b>돈으로 · 본인에게 · 전액 · 정해진 날짜에!</b><br><br>
+        그리고 나라가 정한 <b>최저임금</b>보다 적게 줄 수는 없어요. 최저임금은 매년 바뀌는데…<br>
+        🔍 <b>포털에 "2026 최저임금"을 검색해서 올해 시급이 얼마인지 직접 확인해 보세요.</b> 그 금액 이상으로 나의 시급을 정하면 됩니다.
+      </div>
+      <label>⑤ 나의 시급 (원) <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="number" id="f_wage" inputmode="numeric" placeholder="검색해서 확인한 최저임금 이상으로!">
+      <div class="wage-check" id="wageCheck"></div>
+      <label>⑥ 시급을 이렇게 정한 근거 <span class="req">*</span> <span class="pts">5점</span></label>
+      <textarea id="f_wagereason" placeholder="예: 2026년 최저임금이 시급 ○○○○○원이라는 것을 확인했고, 주말 저녁 시간대라서 그보다 조금 높게 정했다."></textarea>
+      <div class="row2">
+        <div><label>⑦ 임금 지급일 <span class="req">*</span> <span class="pts">5점</span></label><input type="text" id="f_payday" placeholder="예: 매월 10일"></div>
+        <div><label>⑧ 지급 방법 <span class="req">*</span> <span class="pts">5점</span></label><input type="text" id="f_paymethod" placeholder="예: 본인 명의 계좌이체"></div>
+      </div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="3">←</button><button type="button" class="btn btn-next" data-go="5">다음 →</button></div>
+    </div>
+
+    <!-- STEP 5: ③ 휴일·휴가 -->
+    <div class="step" data-step="5">
+      <span class="badge">STEP 5 / 10</span><span class="badge pt">평가 요소 ③ · 10점</span>
+      <h2>휴일·휴가 조항</h2>
+      <p class="desc">아래 조문을 <b>직접 읽고</b>, 법조항을 근거로 내 계약서의 휴일·휴가 조항을 쓰세요. "근로기준법 제○조에 의하면 ~" 형식으로! (조항당 5점)</p>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제55조 (휴일) 다시 보기</button>
+        <div class="law-body"><div class="law-quote">"사용자는 근로자에게 1주에 평균 1회 이상의 유급휴일을 보장하여야 한다."</div>
+        <div class="law-easy"><b>해석</b> — 1주 소정 근로일을 개근하면 유급 주휴일(주휴수당)이 생겨요.</div></div>
+      </div>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제60조 (연차 유급휴가) 다시 보기</button>
+        <div class="law-body"><div class="law-quote">"사용자는 1년간 80퍼센트 이상 출근한 근로자에게 15일의 유급휴가를 주어야 한다."</div>
+        <div class="law-easy"><b>해석</b> — 1년 성실히 다니면 돈 받으면서 쉬는 휴가가 생깁니다.</div></div>
+      </div>
+      <label>휴일·휴가 조항 1 <span class="req">*</span></label>
+      <textarea id="f_holiday1" placeholder="예: 근로기준법 제55조에 의하면 1주에 평균 1회 이상의 유급휴일을 보장해야 하므로, 근로자가 1주 개근 시 유급 주휴일을 부여한다."></textarea>
+      <label>휴일·휴가 조항 2 <span class="req">*</span></label>
+      <textarea id="f_holiday2" placeholder="예: 근로기준법 제60조에 의하면 연차 유급휴가를 주어야 하므로, 연차 유급 휴가는 법에서 정하는 바에 따라 부여한다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="4">←</button><button type="button" class="btn btn-next" data-go="6">다음 →</button></div>
+    </div>
+
+    <!-- STEP 6: ④ 연소보호 -->
+    <div class="step" data-step="6">
+      <span class="badge">STEP 6 / 10</span><span class="badge pt">평가 요소 ④ · 10점</span>
+      <h2>연소근로자 보호 조항</h2>
+      <p class="desc">나(18세 미만)를 지키는 조문들입니다. 원문을 읽고, 법조항을 근거로 내 계약서에 넣을 보호 조항을 쓰세요. (조항당 5점)</p>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제69조 (근로시간) 원문 보기</button>
+        <div class="law-body"><div class="law-quote">"15세 이상 18세 미만인 사람의 근로시간은 1일에 7시간, 1주에 35시간을 초과하지 못한다. 다만, 당사자 사이의 합의에 따라 1일에 1시간, 1주에 5시간을 한도로 연장할 수 있다."</div></div>
+      </div>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제70조 (야간근로와 휴일근로의 제한) 원문 보기</button>
+        <div class="law-body"><div class="law-quote">"사용자는 18세 미만자를 오후 10시부터 오전 6시까지의 시간 및 휴일에 근로시키지 못한다."</div></div>
+      </div>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제66조·제67조 (연소자 증명서·근로계약) 원문 보기</button>
+        <div class="law-body"><div class="law-quote">"18세 미만인 사람에 대하여는 그 연령을 증명하는 가족관계기록사항에 관한 증명서와 친권자 또는 후견인의 동의서를 사업장에 갖추어 두어야 한다." (제66조) / "친권자나 후견인은 미성년자의 근로계약을 대리할 수 없다." (제67조)</div></div>
+      </div>
+      <label>보호 조항 1 <span class="req">*</span></label>
+      <textarea id="f_minor1" placeholder="예: 근로기준법 제69조에 의하면 연소근로자의 근로시간은 1일 7시간을 초과할 수 없으므로, 근로시간은 1일 7시간, 1주 35시간을 넘지 않는다."></textarea>
+      <label>보호 조항 2 <span class="req">*</span></label>
+      <textarea id="f_minor2" placeholder="예: 근로기준법 제70조에 의하면 18세 미만자에게 야간근로를 시킬 수 없으므로, 오후 10시부터 오전 6시까지 근로하지 않는다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="5">←</button><button type="button" class="btn btn-next" data-go="7">다음 →</button></div>
+    </div>
+
+    <!-- STEP 7: ⑤ 부당 판별 -->
+    <div class="step" data-step="7">
+      <span class="badge">STEP 7 / 10</span><span class="badge pt">평가 요소 ⑤ · 10점</span>
+      <h2>부당 조항 판별</h2>
+      <p class="desc">배운 법을 무기로 써 봅시다. 아래는 편의점 알바를 시작한 고1 지훈이가 받은 계약서예요. <b>부당한 조항 2개</b>를 고르고, <b>법조항을 근거로</b> 이유를 쓰세요. (조항+이유가 한 세트, 세트당 5점)</p>
+      <div class="info-card"><b>🧭 판별 무기 정리</b><ul><li>최저임금법 제6조 — 최저임금 미만 약정은 무효</li><li>제54조 — 4시간에 30분 이상 휴게</li><li>제69조·제70조 — 연소자 1일 7시간, 야간 금지</li><li>제43조 — 임금은 돈으로·본인에게·전액</li><li>제20조 — 지각 등에 대한 위약금·손해배상 예정 금지</li></ul></div>
+      <div class="case-doc">
+        <h3>근 로 계 약 서</h3>
+        <p style="margin-bottom:8px;">사업주 ○○편의점 대표 박○○(이하 "갑")와 근로자 김지훈(17세, 이하 "을")은 다음과 같이 계약한다.</p>
+        <ol>
+          <li>을의 시급은 <b>9,000원</b>으로 한다.</li>
+          <li>근무시간은 <b>17:00~02:00(1일 9시간)</b>으로 하며, 별도의 휴게 시간은 없다.</li>
+          <li>임금은 매월 말일 <b>편의점 상품권</b>으로 지급한다.</li>
+          <li>지각 1회당 벌금 5만 원을 임금에서 공제한다.</li>
+          <li>근무 중 발생한 물품 파손·분실은 을이 전액 배상하며 임금에서 우선 공제한다.</li>
+        </ol>
+      </div>
+      <label>부당하다고 생각하는 조항 2개를 선택하세요 <span class="req">*</span></label>
+      <div id="caseChecks">
+        <label class="check-item"><input type="checkbox" value="1조(시급 9,000원)"> <span>1조 — 시급 9,000원</span></label>
+        <label class="check-item"><input type="checkbox" value="2조(17시~새벽2시, 9시간, 휴게 없음)"> <span>2조 — 17:00~02:00 근무, 휴게 없음</span></label>
+        <label class="check-item"><input type="checkbox" value="3조(상품권 지급)"> <span>3조 — 상품권으로 임금 지급</span></label>
+        <label class="check-item"><input type="checkbox" value="4조(지각 벌금 공제)"> <span>4조 — 지각 벌금 5만 원 공제</span></label>
+        <label class="check-item"><input type="checkbox" value="5조(파손 전액 배상 공제)"> <span>5조 — 파손·분실 전액 배상 공제</span></label>
+      </div>
+      <label>부당한 이유 1 (법조항 근거로!) <span class="req">*</span></label>
+      <textarea id="f_unfair1" placeholder="예: 1조는 최저임금법 제6조에 의하면 최저임금에 미치지 못하는 임금 약정은 무효이므로 부당하다."></textarea>
+      <label>부당한 이유 2 (법조항 근거로!) <span class="req">*</span></label>
+      <textarea id="f_unfair2" placeholder="예: 2조는 근로기준법 제69조·제70조에 의하면 연소근로자는 1일 7시간을 초과할 수 없고 야간근로가 금지되므로 위법이다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="6">←</button><button type="button" class="btn btn-next" data-go="8">다음 →</button></div>
+    </div>
+
+    <!-- STEP 8: ⑥ 수정 -->
+    <div class="step" data-step="8">
+      <span class="badge">STEP 8 / 10</span><span class="badge pt">평가 요소 ⑥ · 10점</span>
+      <h2>부당 조항 바로잡기</h2>
+      <p class="desc">앞에서 고른 부당 조항 2개를 근로기준법에 맞는 <b>올바른 조항 문장</b>으로 고쳐 쓰세요. (조항당 5점)</p>
+      <label>수정 조항 1 <span class="req">*</span></label>
+      <textarea id="f_fix1" placeholder="예: 1조 수정 → 을의 시급은 2026년 최저임금 이상인 ○○,○○○원으로 한다."></textarea>
+      <label>수정 조항 2 <span class="req">*</span></label>
+      <textarea id="f_fix2" placeholder="예: 2조 수정 → 근무시간은 17:00~21:00(1일 4시간)으로 하고, 근로기준법 제54조에 따라 30분의 휴게 시간을 준다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="7">←</button><button type="button" class="btn btn-next" data-go="9">다음 →</button></div>
+    </div>
+
+    <!-- STEP 9: 대처 배우기 + ⑧ 서술 -->
+    <div class="step" data-step="9">
+      <span class="badge">STEP 9 / 10</span><span class="badge pt">평가 요소 ⑧ · 10점</span>
+      <h2>부당한 일을 당했다면?</h2>
+      <p class="desc">먼저 <b>실제로 어떻게 대처하는지</b> 배우고, 나의 대처 계획을 서술하세요.</p>
+      <div class="help-card"><b>🚨 노동권 침해 대처 순서 — 이것만 기억하세요</b>
+        <ol>
+          <li><b>증거 모으기</b> — 근로계약서, 출퇴근 기록, 급여 내역, 대화 캡처</li>
+          <li><b>사업주에게 먼저 요구</b> — 계약서와 법을 근거로 시정 요청</li>
+          <li><b>상담하기</b> — 고용노동부 상담센터 <b>☎ 1350</b> (무료), 청소년근로권익센터 <b>☎ 1644-3119</b></li>
+          <li><b>유형에 맞는 기관에 신청</b> — 침해 유형마다 찾아갈 곳이 달라요!<br>
+            · 임금체불·최저임금 위반 → <b>고용노동부(지방고용노동관서)에 진정</b><br>
+            · 부당해고 → <b>노동위원회에 구제신청</b> (해고일부터 <b>3개월 이내!</b>)<br>
+            · 노조 활동 이유 불이익(부당노동행위) → <b>노동위원회에 구제신청</b></li>
+          <li>혼자 해결하려 하지 말고 <b>반드시 어른(부모님·선생님)에게 알리기</b></li>
+        </ol>
+      </div>
+      <label>⑧ 내가 일하다 부당한 일을 당하면 어떻게 대처할지, <b>침해 유형에 맞는 기관</b>까지 넣어 절차대로 서술하세요 <span class="req">*</span></label>
+      <textarea id="f_essay2" style="min-height:130px" placeholder="예: 먼저 근로계약서와 급여 내역 등 증거를 모으고, 사업주에게 시정을 요구한다. 해결되지 않으면 1350에 상담한 뒤, 임금 문제는 고용노동부에 진정하고 부당해고라면 3개월 이내에 노동위원회에 구제신청을 한다. 이 과정을 부모님과 선생님께 알리고 함께 진행한다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="8">←</button><button type="button" class="btn btn-next" data-go="10">완성본 확인 →</button></div>
+    </div>
+
+    <!-- STEP 10: 미리보기 + 제출 -->
+    <div class="step" data-step="10">
+      <span class="badge">완성 🎉</span>
+      <h2>나의 근로계약서</h2>
+      <p class="desc">완성된 계약서를 확인하고 제출하세요. 빈칸이 있으면 해당 STEP으로 돌아가 채워주세요.</p>
+      <div id="previewArea"></div>
+      <div class="btn-row"><button type="button" class="btn btn-submit" id="btnSubmit">📮 제출하기</button></div>
+      <div class="btn-row"><button type="button" class="btn btn-copy" id="btnCopy">📋 제출 내용 복사 (백업)</button></div>
+      <div class="hint" style="margin-top:8px;">제출하면 이 페이지의 저장소에 바로 기록됩니다. 여러 번 제출하면 <b>마지막 제출</b>이 채점 대상이에요.</div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="9">← 수정하기</button></div>
+    </div>
+
+    <div class="footer">© 풀어쓰는 사회학 · kstephullab.com</div>
+  </div>
+</div>
+<div class="t-wrap" id="teacherWrap">
+  <div class="t-card" style="background:linear-gradient(135deg,#1a5276,#2874a6); color:#fff;">
+    <h2 style="color:#fff;">🧑‍🏫 교사 채점 모드 — 근로계약서 수행평가</h2>
+    <div style="font-size:12.5px; opacity:.85;">학생 제출이 이 페이지 저장소에 실시간으로 쌓입니다. 새로고침으로 최신 제출을 불러오세요.</div>
+    <div style="margin-top:10px;"><button type="button" class="t-btn gold" id="btnReload">🔄 제출 새로고침</button><button type="button" class="t-btn" id="btnTeach" style="background:#059669;">🖥️ 수업 진행 모드</button><span id="loadInfo" style="font-size:13px; font-weight:700;"></span></div>
+  </div>
+  <div class="t-card"><h2>학생 선택 <span id="progressPill" style="font-size:12px; color:#1e8449;"></span></h2><div id="clsFilterRow" style="margin-bottom:8px;"></div><div id="stuList"></div><div id="rosterArea" style="margin-top:8px;"></div></div>
+  <div class="t-card" id="gradeCard" style="display:none;"><h2 id="gradeTitle">채점</h2>
+    <div style="font-size:12px;color:#7f8c8d;margin-bottom:8px;">노란 테두리 = 자동 제안(작성 여부·개수 기준). 내용 적절성은 반드시 직접 확인 후 확정하세요.</div>
+    <div id="items"></div>
+    <div class="t-total"><span id="totalName">-</span><span>총점 <span class="num" id="totalScore">0</span> / 100</span></div>
+  </div>
+  <div class="t-card" id="seteukCard" style="display:none;"><h2>과세특 초안</h2>
+    <div style="margin-bottom:8px;"><button type="button" class="t-btn gold" id="btnSeteuk">✨ 초안 생성</button><button type="button" class="t-btn gray" id="btnSeteukCopy">복사</button></div>
+    <textarea id="seteukText" style="min-height:150px; font-size:13.5px; line-height:1.7;"></textarea>
+    <div class="byte-count" id="byteCount">0 bytes (NEIS 한글 3byte 기준 · 권장 700~900)</div>
+  </div>
+  <div class="t-card"><h2>전체 점수표</h2>
+    <div style="overflow-x:auto;"><table class="result" id="resultTable"></table></div>
+    <div style="margin-top:12px;"><button type="button" class="t-btn" id="btnCsv">⬇️ 점수 CSV</button><button type="button" class="t-btn gray" id="btnCsvCopy">CSV 복사</button></div>
+    <textarea id="csvOut" style="display:none; min-height:120px; margin-top:8px; font-size:12px;"></textarea>
+  </div>
+  <div style="text-align:center; font-size:11px; color:#95a5a6; padding:10px 0 20px;">© 풀어쓰는 사회학 · kstephullab.com</div>
+</div>
+
+<div id="teachBar">
+  <div class="tb-qr" id="tbQr">
+    <button type="button" class="tb-min" id="qrMin">─</button><span class="tb-mini-label">📱 QR</span>
+    <div id="teachQr"></div>
+    <div class="tb-cap">📱 QR 찍고 접속!</div>
+    <div class="tb-url-set" id="urlSet" style="display:none;">
+      <input type="text" id="urlInput" placeholder="이 페이지 주소 붙여넣기">
+      <button type="button" id="btnUrlSave">주소 저장 (최초 1회)</button>
+    </div>
+  </div>
+  <div class="tb-pw" id="tbPw">
+    <button type="button" class="tb-min" id="pwMin">─</button>
+    <select id="teachCls">
+      <option>스마트용접과 1반</option><option>스마트용접과 2반</option>
+      <option>융합기계과 1반</option><option>융합기계과 2반</option>
+      <option>스마트금형과 1반</option><option>스마트금형과 2반</option>
+    </select>
+    <div class="tb-pwv" id="teachPw">…</div>
+    <div class="tb-live" id="teachLive">제출 현황 준비 중</div>
+    <div class="tb-miss" id="teachMiss"></div>
+  </div>
+  <button type="button" class="tb-exit" id="btnTeachExit">⏹ 수업 종료 → 채점 화면</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var CONFIG = {
+  TEACHER_HASH: "d11cd2430cddb142d47a655c2204f38307f9e58f8fcc7ee39787115e33c32f60",
+  MIN_WAGE: 10320,
+  CLASSES: [
+    { cls:"스마트용접과 1반", hash:"310ddec1ed91caa6ac3b9b2abdaa0badd261eedb308326d0ef829dab71b454db" },
+    { cls:"스마트용접과 2반", hash:"53abe429948e373e55a0bec26eada57aaf2d4910b18f7b2dee6d2a4507777709" },
+    { cls:"융합기계과 1반",  hash:"c81062ec3b0f374cf546979237b44862ed5868d04696d4c8827da06311ff07bf" },
+    { cls:"융합기계과 2반",  hash:"14594e7a47568da2f66f058a52021dd3e63059bb6c42d85314cf48ffe68fa437" },
+    { cls:"스마트금형과 1반", hash:"9287275d999456dbce74387be13ae0d850111f5cada5771b9e8c8d0de77b5cf0" },
+    { cls:"스마트금형과 2반", hash:"bcc1051db8c3e8881c7c8655e45c2713b52a60450ed0f22637ca4d56ded2c425" }
+  ]
+};
+var AUTH_CLS = "";
+var TPW = "";
+var PARENT_AUTH = "__PAUTH__";
+var PARENT_TPW = "__PTPW__";
+var STORE_KEY = "lc_tool_tonghap2_v2";
+var FIELDS = ["sel_cls","sel_no","sname","f_employer","f_job","f_startdate","f_tstart","f_tend","f_break",
+  "f_wage","f_wagereason","f_payday","f_paymethod","f_holiday1","f_holiday2",
+  "f_minor1","f_minor2","f_unfair1","f_unfair2","f_fix1","f_fix2","f_essay1","f_essay2"];
+var TOTAL_STEPS = 10;
+var curStep = 0;
+
+function $(id){ return document.getElementById(id); }
+function showToast(msg){
+  var t = $("toast"); t.textContent = msg; t.className = "toast show";
+  setTimeout(function(){ t.className = "toast"; }, 2600);
+}
+var saveTimer = null;
+function saveAll(){
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 1500);
+  $("saveStatus").textContent = "저장 중...";
+}
+function doSave(){
+  var data = {}, i;
+  for (i=0;i<FIELDS.length;i++){ var el=$(FIELDS[i]); if(el) data[FIELDS[i]]=el.value; }
+  data._checks = getCaseChecks();
+  data._step = curStep;
+  try {
+    window.storage.set(STORE_KEY, JSON.stringify(data)).then(function(){
+      $("saveStatus").textContent = "✓ 자동 저장됨 " + new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+    }).catch(function(){ $("saveStatus").textContent = "저장 실패 — 제출 전 [복사] 백업 권장"; });
+  } catch(e){ $("saveStatus").textContent = "저장 미지원 — 제출 전 [복사] 백업 권장"; }
+}
+function loadAll(){
+  try {
+    window.storage.get(STORE_KEY).then(function(res){
+      if (!res || !res.value) return;
+      var data = JSON.parse(res.value), i;
+      for (i=0;i<FIELDS.length;i++){ var el=$(FIELDS[i]); if(el && data[FIELDS[i]]!==undefined) el.value=data[FIELDS[i]]; }
+      if (data._checks){
+        var boxes = document.querySelectorAll("#caseChecks input");
+        for (i=0;i<boxes.length;i++){
+          if (data._checks.indexOf(boxes[i].value) >= 0){ boxes[i].checked = true; boxes[i].parentNode.className = "check-item sel"; }
+        }
+      }
+      if (typeof data._step === "number" && data._step > 0){ gotoStep(data._step); }
+      checkWage();
+    }).catch(function(){});
+  } catch(e){}
+}
+function getCaseChecks(){
+  var out = [], boxes = document.querySelectorAll("#caseChecks input"), i;
+  for (i=0;i<boxes.length;i++){ if (boxes[i].checked) out.push(boxes[i].value); }
+  return out;
+}
+function gotoStep(n){
+  var steps = document.querySelectorAll(".step"), i;
+  for (i=0;i<steps.length;i++){ steps[i].className = "step"; }
+  var target = document.querySelector('.step[data-step="'+n+'"]');
+  if (target) target.className = "step active";
+  curStep = n;
+  $("pbar").style.width = Math.round(n/TOTAL_STEPS*100) + "%";
+  window.scrollTo(0,0);
+  if (n === 10) renderPreview();
+  saveAll();
+}
+function validateStep(n){
+  if (TEACH.on) return true;
+  if (n === 0){
+    if (!$("sel_cls").value || !$("sel_no").value || !$("sname").value.trim()){ showToast("학과·반, 번호, 이름을 모두 선택·입력해 주세요"); return false; }
+  }
+  return true;
+}
+function checkWage(){
+  var v = parseInt($("f_wage").value, 10);
+  var box = $("wageCheck");
+  if (!v){ box.className = "wage-check"; return; }
+  if (v < CONFIG.MIN_WAGE){
+    box.className = "wage-check bad";
+    box.textContent = "⚠️ 이 시급은 2026년 최저임금보다 낮아요! '2026 최저임금'을 검색해서 다시 정해볼까요? (법보다 낮은 약속은 무효예요)";
+  } else {
+    box.className = "wage-check ok";
+    box.textContent = "✅ 좋아요! 최저임금 이상이에요.";
+  }
+}
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function val(id){ return $(id).value.trim(); }
+function orBlank(s){ return s ? esc(s) : '<span style="color:#c0392b;font-weight:700;">(미작성)</span>'; }
+
+function renderPreview(){
+  var checks = getCaseChecks();
+  var html = '<div class="preview-doc">'
+    + '<h3>근 로 계 약 서</h3>'
+    + '<table>'
+    + '<tr><td class="k">근로자</td><td>' + orBlank(val("sname")) + ' (' + orBlank(val("sel_cls")) + ' ' + orBlank(val("sel_no")) + '번)</td></tr>'
+    + '<tr><td class="k">사업장·사업주</td><td>' + orBlank(val("f_employer")) + '</td></tr>'
+    + '<tr><td class="k">업무 내용</td><td>' + orBlank(val("f_job")) + '</td></tr>'
+    + '<tr><td class="k">근로 개시일</td><td>' + orBlank(val("f_startdate")) + '</td></tr>'
+    + '<tr><td class="k">근로 시간</td><td>' + orBlank(val("f_tstart")) + ' ~ ' + orBlank(val("f_tend")) + ' (휴게: ' + orBlank(val("f_break")) + ')</td></tr>'
+    + '<tr><td class="k">임금</td><td>시급 ' + orBlank(val("f_wage")) + '원 · ' + orBlank(val("f_payday")) + ' · ' + orBlank(val("f_paymethod")) + '</td></tr>'
+    + '</table>'
+    + '<div class="preview-sec">■ 시급 책정 근거</div><div class="preview-txt">' + orBlank(val("f_wagereason")) + '</div>'
+    + '<div class="preview-sec">■ 휴일·휴가 조항</div><div class="preview-txt">1. ' + orBlank(val("f_holiday1")) + '\n2. ' + orBlank(val("f_holiday2")) + '</div>'
+    + '<div class="preview-sec">■ 연소근로자 보호 조항</div><div class="preview-txt">1. ' + orBlank(val("f_minor1")) + '\n2. ' + orBlank(val("f_minor2")) + '</div>'
+    + '<div class="preview-sec">■ 부당 조항 판별 (지훈이 사례)</div><div class="preview-txt">선택: ' + (checks.length ? esc(checks.join(", ")) : '<span style="color:#c0392b;font-weight:700;">(미선택)</span>') + '\n이유1: ' + orBlank(val("f_unfair1")) + '\n이유2: ' + orBlank(val("f_unfair2")) + '</div>'
+    + '<div class="preview-sec">■ 부당 조항 수정</div><div class="preview-txt">1. ' + orBlank(val("f_fix1")) + '\n2. ' + orBlank(val("f_fix2")) + '</div>'
+    + '<div class="preview-sec">■ 근로계약서의 필요성</div><div class="preview-txt">' + orBlank(val("f_essay1")) + '</div>'
+    + '<div class="preview-sec">■ 노동권 침해 해결 방안</div><div class="preview-txt">' + orBlank(val("f_essay2")) + '</div>'
+    + '</div>';
+  $("previewArea").innerHTML = html;
+}
+function buildBody(){
+  var checks = getCaseChecks();
+  var L = [];
+  L.push("◆[반] " + val("sel_cls"));
+  L.push("◆[비번반] " + AUTH_CLS);
+  L.push("◆[번호] " + val("sel_no"));
+  L.push("◆[사업장·사업주] " + val("f_employer"));
+  L.push("◆[업무내용] " + val("f_job"));
+  L.push("◆[근로개시일] " + val("f_startdate"));
+  L.push("◆[근로시간] " + val("f_tstart") + "~" + val("f_tend"));
+  L.push("◆[휴게시간] " + val("f_break"));
+  L.push("◆[시급] " + val("f_wage"));
+  L.push("◆[시급근거] " + val("f_wagereason"));
+  L.push("◆[지급일] " + val("f_payday"));
+  L.push("◆[지급방법] " + val("f_paymethod"));
+  L.push("◆[휴일휴가1] " + val("f_holiday1"));
+  L.push("◆[휴일휴가2] " + val("f_holiday2"));
+  L.push("◆[연소보호1] " + val("f_minor1"));
+  L.push("◆[연소보호2] " + val("f_minor2"));
+  L.push("◆[부당조항선택] " + checks.join(" / "));
+  L.push("◆[부당이유1] " + val("f_unfair1"));
+  L.push("◆[부당이유2] " + val("f_unfair2"));
+  L.push("◆[수정조항1] " + val("f_fix1"));
+  L.push("◆[수정조항2] " + val("f_fix2"));
+  L.push("◆[필요성서술] " + val("f_essay1"));
+  L.push("◆[해결방안서술] " + val("f_essay2"));
+  return L.join("\n");
+}
+
+/* ---- 구글폼 제출 (GitHub Pages판) ---- */
+var GFORM = { id: "__GFORM_ID__", e_cls: "__E_CLS__", e_no: "__E_NO__", e_name: "__E_NAME__", e_body: "__E_BODY__", sheet: "__SHEET_URL__" };
+function gformReady(){ return GFORM.id.indexOf("__") !== 0; }
+function submitViaGform(payload, done){
+  var fd = new FormData();
+  fd.append("entry." + GFORM.e_cls, payload.cls);
+  fd.append("entry." + GFORM.e_no, payload.sid);
+  fd.append("entry." + GFORM.e_name, payload.name);
+  fd.append("entry." + GFORM.e_body, payload.body + "\n◆[제출시각] " + payload.submittedAt + "\n◆[비번반] " + payload.authCls);
+  try {
+    fetch("https://docs.google.com/forms/d/e/" + GFORM.id + "/formResponse", { method:"POST", mode:"no-cors", body:fd })
+      .then(function(){ done(true); }).catch(function(){ done(false); });
+  } catch(e){ done(false); }
+}
+
+function submitForm(){
+  if (!val("sel_cls") || !val("sel_no") || !val("sname")){ showToast("학과·반, 번호, 이름이 비어 있어요 (첫 화면)"); return; }
+  var payload = { cls: val("sel_cls"), authCls: AUTH_CLS, sid: val("sel_no"), name: val("sname"), body: buildBody(), submittedAt: new Date().toISOString() };
+  var key = "submit:" + val("sel_cls").replace(/\s+/g, "") + ":" + val("sel_no");
+  var btn = $("btnSubmit");
+  btn.disabled = true; btn.textContent = "제출 중...";
+  function done(ok, resub){
+    btn.disabled = false; btn.textContent = "📮 제출하기";
+    if (ok) showToast("✅ 제출 완료! (여러 번 내면 마지막 제출이 채점 대상)");
+    else showToast("제출 실패 — [복사] 버튼으로 백업 후 선생님께 알려주세요");
+  }
+  if (gformReady()){
+    submitViaGform(payload, function(ok){
+      window.storage.set(key, JSON.stringify(payload), true).then(function(){}).catch(function(){});
+      done(ok, false);
+    });
+    return;
+  }
+  showToast("제출 설정 전이에요 — [복사] 버튼으로 백업해 주세요");
+  done(false, false);
+}
+function copyBody(){
+  var text = "[학과·반] " + val("sel_cls") + "\n[번호] " + val("sel_no") + "\n[이름] " + val("sname") + "\n" + buildBody();
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ showToast("복사 완료! 카톡 나에게 보내기 등으로 백업하세요."); });
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand("copy"); document.body.removeChild(ta);
+      showToast("복사 완료!");
+    }
+  } catch(e){ showToast("복사 실패 — 화면을 캡처해 백업하세요."); }
+}
+/* ---- SHA-256 (crypto.subtle 우선, 미지원 환경용 순수 JS 폴백) ---- */
+function sha256Hex(str, cb){
+  try {
+    if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest){
+      var buf = new TextEncoder().encode(str);
+      window.crypto.subtle.digest("SHA-256", buf).then(function(h){
+        var a = new Uint8Array(h), out = "", i;
+        for (i=0;i<a.length;i++){ out += (a[i]<16?"0":"") + a[i].toString(16); }
+        cb(out);
+      });
+      return;
+    }
+  } catch(e){}
+  cb(sha256Fallback(str));
+}
+function sha256Fallback(ascii){
+  function rr(v,c){ return (v>>>c)|(v<<(32-c)); }
+  var mathPow=Math.pow, maxWord=mathPow(2,32), result="", i, j;
+  var words=[], asciiBitLength;
+  var hash=[], k=[], primeCounter=0, isComposite={}, candidate;
+  ascii=unescape(encodeURIComponent(ascii));
+  asciiBitLength=ascii.length*8;
+  for(candidate=2; primeCounter<64; candidate++){
+    if(!isComposite[candidate]){
+      for(i=0;i<313;i+=candidate){ isComposite[i]=candidate; }
+      hash[primeCounter]=(mathPow(candidate,.5)*maxWord)|0;
+      k[primeCounter++]=(mathPow(candidate,1/3)*maxWord)|0;
+    }
+  }
+  ascii+="\x80";
+  while(ascii.length%64-56) ascii+="\x00";
+  for(i=0;i<ascii.length;i++){
+    j=ascii.charCodeAt(i);
+    words[i>>2]|=j<<((3-i)%4)*8;
+  }
+  words[words.length]=(asciiBitLength/maxWord)|0;
+  words[words.length]=asciiBitLength;
+  for(j=0;j<words.length;){
+    var w=words.slice(j,j+=16), oldHash=hash.slice(0), a2,b2,c2,i2;
+    for(i2=0;i2<64;i2++){
+      var w15=w[i2-15], w2=w[i2-2];
+      var a=hash[0], e=hash[4];
+      var temp1=hash[7]
+        +(rr(e,6)^rr(e,11)^rr(e,25))
+        +((e&hash[5])^((~e)&hash[6]))
+        +k[i2]
+        +(w[i2]=(i2<16)?w[i2]:(w[i2-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i2-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+      var temp2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(temp1+temp2)|0].concat(hash);
+      hash[4]=(hash[4]+temp1)|0;
+    }
+    for(i2=0;i2<8;i2++){ hash[i2]=(hash[i2]+oldHash[i2])|0; }
+  }
+  for(i=0;i<8;i++){
+    for(j=3;j+1;j--){
+      var b3=(hash[i]>>(j*8))&255;
+      result+=((b3<16)?0:"")+b3.toString(16);
+    }
+  }
+  return result;
+}
+
+function tryUnlock(){
+  var pw = $("lockPw").value.trim();
+  if (!pw){ $("lockErr").textContent = "비밀번호를 입력하세요"; return; }
+  sha256Hex(pw, function(hex){
+    if (hex === CONFIG.TEACHER_HASH){ TPW = pw; enterTeacherMode(); return; }
+    var i;
+    for (i=0;i<CONFIG.CLASSES.length;i++){
+      if (CONFIG.CLASSES[i].hash === hex){ unlock(CONFIG.CLASSES[i].cls); return; }
+    }
+    $("lockErr").textContent = "비밀번호가 맞지 않아요. 다시 확인하세요!";
+    $("lockPw").value = "";
+  });
+}
+function unlock(cls){
+  AUTH_CLS = cls;
+  $("lockOverlay").style.display = "none";
+  $("clsBadge").textContent = "· " + cls;
+  if ($("sel_cls") && !$("sel_cls").value){ $("sel_cls").value = cls; }
+  showToast(cls + " 입장 완료! 수행평가를 시작하세요.");
+}
+function initLock(){
+  if (PARENT_TPW && PARENT_TPW.indexOf("__") !== 0){ TPW = PARENT_TPW; enterTeacherMode(); return; }
+  if (PARENT_AUTH && PARENT_AUTH.indexOf("__") !== 0){ unlock(PARENT_AUTH); return; }
+  $("lockBtn").addEventListener("click", function(e){ e.preventDefault(); tryUnlock(); });
+  $("lockPw").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); tryUnlock(); } });
+}
+/* ================= 교사 채점 모드 ================= */
+var ROSTER_ENC = {
+  "스마트용접과 1반": { "1":"05a0a3c59c2ce14704", "2":"0a213a11e3b2bfe347", "3":"c201b53f7e6c787cf5", "4":"93014b3a4b942e7edc", "5":"2bc13e81965fc2e300", "6":"7715a67d389b33c217", "7":"631af74c999517565c", "8":"c8cf47604aca19ab2b", "9":"16cdf94edf3c495388", "10":"85aaaa3e94e1c710a8", "11":"32a9c331636c404f32", "12":"f7ae9d9f240160616f", "13":"bd0936a1fd7bfed300", "14":"aee383f9d4ab54046b", "15":"bb218ebb4796c7af24", "16":"d76fd83eec18fedd17", "17":"33cdc76f42bd3b1ff0", "18":"a819dc0d088a03426c", "19":"6af67d1b97a15fd16a", "20":"e3791ccbbc03974b7a", "21":"8bc09d06a33d184ca1" },
+  "스마트용접과 2반": { "1":"cb49ae135c6500bfe4", "2":"37f51955f12afeda1e", "3":"bd65296d1158055da2", "4":"3b06ec615406604916", "5":"58c45c905c93ddafc6", "6":"630a41d2aa33e62d38", "7":"188626db1abcbac650", "8":"b73ef7e4ac8b237e25", "9":"322fc60f3c1616f30f", "10":"065152e2370f97cde7", "11":"c5ff6e18f971c048a6", "12":"61f995cfd120176fa7", "13":"3279b46e35c7def7ff", "14":"e20858fa485aa82bad", "15":"ed9270dd7a4eadd6b1", "16":"ae0fe99d878f83528f", "17":"64117fa58d36f7446b", "18":"fc3dc6dbc37f2fb101", "19":"79dbc5fd88bfd03c26", "20":"b9a559f0c465385110" },
+  "융합기계과 1반": { "1":"dd3698091426503ce6", "2":"6395ce5ac14c10ae8f", "3":"00822c72c14a149b82", "4":"05b5a1d9a461ba265e", "5":"49e32bb5ccadd45383", "6":"d3b0f4810cc8e27973", "7":"bf748261c4e2639677", "8":"d1e836fd33933acfcf", "10":"6ac676956a4debdd5b", "11":"0fc3ce9f788bcb7fb9", "12":"87641e7e900554805f", "13":"2c5936cb8c3aea4a12", "14":"f7c548b23a41a91733", "15":"073842f9d3adf51c95", "16":"9282875c7806576bf6", "17":"eba43ff6642ae8bb28", "18":"a5235a55be6272be60", "19":"ba6df131c476608557", "20":"7daf3a286ccd92b7e7" },
+  "융합기계과 2반": { "1":"fba6089073bb992712dc", "2":"af60f2800b080edb83", "3":"b20c16e217cfbe733b", "4":"ffb9a7343e832cb7d2", "5":"86716c4688eb70133d", "6":"0886e490aa5f7904a3", "7":"ab131a25c5d960b961", "8":"433c325428761e3720", "9":"60baef38edca8f717e", "10":"c7959b33df85b24cca", "11":"04db6a35e7f6353c76", "12":"08229f4e07f8e45923", "13":"0ed868d4f604f9009bf2bdda", "14":"8866a271e0bede4724", "15":"7dab47a6c412ad4ea8", "16":"7c9a4cd76238adb17b", "17":"2b64af8c7376a5349e", "18":"9a27e65db50bdcaa63", "19":"6a528d2fd447132724", "20":"16d2ebaadb3fd1aa5e" },
+  "스마트금형과 1반": { "1":"eb50f5bb98836fd6a42ea8e01740663144e72d5a9c67f556", "2":"61da47b54e3c69aa14dfd8b056d7c9cb8e7ed820862733dd", "3":"4f169b331bfe3cead0", "4":"64f59d5b52f513f21e", "5":"caf64a9e722f5961e3", "6":"caff9046d16962165c", "7":"554707026b36f40d89", "8":"f906d30f75db38f39c", "9":"eb5444902c0e16e0e2", "10":"602db4a3c4e2776b09", "13":"c72c14501bee94f118", "14":"25769ef2bfceb11e0e", "15":"0e9498c04238de278b", "16":"1e99378deae67b07c0", "17":"b04e186ad032673c2c", "18":"1c6346dfdc6ad6d4e8", "19":"1b4112faf99396e704", "20":"fa96a451659a66e186" },
+  "스마트금형과 2반": { "1":"6b653718fc4539a98c0b879642e88e", "2":"b93b2e15ee613b7718", "3":"9a1f5a9c65ebc390af", "4":"7640267b93a9bed227", "5":"0b7ba1016ecb689544", "6":"c8737c06166fc7bbbd", "7":"6dd1655d1b4551af29", "8":"53a1d9f9782ace69db", "9":"cba18c7284006cb6ec", "10":"1575182a6350c0ed80", "11":"71e9cb78011bfc58aa", "12":"80a8e98473f9d068b0", "13":"494d159681197f91c7", "14":"30c5a6aa8441e059d3", "15":"d50562b7bcafdb90c7", "16":"d94299735a72b0c290", "17":"182957213865a66a65", "18":"9f81b1255b1228fa0e", "19":"d99a16503a48125f3a", "20":"8af9160ffc813a40c3" }
+};
+var ROSTER = {};
+var ROSTER_READY = false;
+function hexToBytes(hex){ var o=[],i; for(i=0;i<hex.length;i+=2){ o.push(parseInt(hex.substr(i,2),16)); } return o; }
+function bytesToUtf8(bytes){ var s="",i; for(i=0;i<bytes.length;i++){ s+="%"+(bytes[i]<16?"0":"")+bytes[i].toString(16); } try{ return decodeURIComponent(s); }catch(e){ return ""; } }
+function decryptRoster(cb){
+  var jobs = [], cls, no;
+  for (cls in ROSTER_ENC){ ROSTER[cls]={}; for (no in ROSTER_ENC[cls]){ jobs.push([cls,no]); } }
+  var i = -1;
+  function next(){
+    i++;
+    if (i >= jobs.length){ ROSTER_READY = true; cb(); return; }
+    var c = jobs[i][0], n = jobs[i][1];
+    sha256Hex(TPW + "|roster|" + c + "|" + n, function(keyHex){
+      var key = hexToBytes(keyHex), enc = hexToBytes(ROSTER_ENC[c][n]);
+      var out = [], k;
+      for (k=0;k<enc.length;k++){ out.push(enc[k] ^ key[k]); }
+      ROSTER[c][n] = bytesToUtf8(out);
+      next();
+    });
+  }
+  next();
+}
+function submittedSet(){
+  var set = {}, i;
+  for (i=0;i<T.students.length;i++){ set[T.students[i].cls + "|" + String(parseInt(T.students[i].sid,10))] = true; }
+  return set;
+}
+function missingOf(cls){
+  var out = [], sub = submittedSet(), no;
+  for (no in ROSTER[cls]){ if (!sub[cls + "|" + no]) out.push({ no:parseInt(no,10), name:ROSTER[cls][no] }); }
+  out.sort(function(a,b){ return a.no - b.no; });
+  return out;
+}
+function renderRoster(){
+  var el = $("rosterArea");
+  if (!el) return;
+  if (!ROSTER_READY){ el.innerHTML = '<span style="font-size:12px;color:#95a5a6;">명렬 불러오는 중...</span>'; return; }
+  var html = "", cls, sub = submittedSet();
+  if (!T.clsFilter){
+    html += '<div style="font-size:12.5px;font-weight:800;color:#1a5276;margin:4px 0 6px;">📋 반별 제출 현황 — 반 버튼을 누르면 미제출 명단이 이름으로 보입니다</div>';
+    for (cls in ROSTER){
+      var totalN = 0, subN = 0, no;
+      for (no in ROSTER[cls]){ totalN++; if (sub[cls + "|" + no]) subN++; }
+      var missN = totalN - subN;
+      html += '<span class="stu-chip" style="'+(missN? 'border-color:#c0392b;color:#c0392b;' : 'border-color:#1e8449;color:#1e8449;')+'">'+esc(cls)+' '+subN+'/'+totalN+(missN? ' · 미제출 '+missN+'명' : ' ✅')+'</span>';
+    }
+  } else {
+    cls = T.clsFilter;
+    if (!ROSTER[cls]){ el.innerHTML = ""; return; }
+    var miss = missingOf(cls), totalC = 0, noK;
+    for (noK in ROSTER[cls]) totalC++;
+    html += '<div style="font-size:12.5px;font-weight:800;color:#1a5276;margin:4px 0 6px;">📋 '+esc(cls)+' 제출 '+(totalC-miss.length)+'/'+totalC+'</div>';
+    var keys = [], no2;
+    for (no2 in ROSTER[cls]) keys.push(parseInt(no2,10));
+    keys.sort(function(a,b){ return a-b; });
+    var j;
+    for (j=0;j<keys.length;j++){
+      var ok = sub[cls + "|" + keys[j]];
+      html += '<span class="stu-chip" style="padding:5px 9px;font-size:12px;'+(ok? 'border-color:#1e8449;background:#e8f8f0;color:#1e8449;' : 'border-color:#c0392b;background:#fdecea;color:#c0392b;')+'">'+keys[j]+' '+esc(ROSTER[cls][keys[j]])+(ok? ' ✓' : ' ✗')+'</span>';
+    }
+    if (miss.length){
+      var names = miss.map(function(m){ return m.no + "번 " + m.name; }).join(", ");
+      html += '<div style="margin-top:8px;font-size:12.5px;font-weight:800;color:#c0392b;">❌ 미제출 '+miss.length+'명: '+esc(names)+'</div>'
+        + '<div style="margin-top:6px;"><button type="button" class="t-btn gray" id="btnMissCopy" style="font-size:12px;padding:7px 12px;">미제출 명단 복사</button></div>';
+    } else {
+      html += '<div style="margin-top:8px;font-size:12.5px;font-weight:800;color:#1e8449;">🎉 전원 제출 완료!</div>';
+    }
+  }
+  el.innerHTML = html;
+  var mc = $("btnMissCopy");
+  if (mc){
+    mc.addEventListener("click", function(e){
+      e.preventDefault();
+      var miss = missingOf(T.clsFilter);
+      var text = T.clsFilter + " 미제출 (" + miss.length + "명): " + miss.map(function(m){ return m.no + "번 " + m.name; }).join(", ");
+      try { navigator.clipboard.writeText(text).then(function(){ showToast("미제출 명단 복사 완료"); }); } catch(err){ showToast("복사 실패"); }
+    });
+  }
+}
+
+var MODE = "student";
+var T = { students: [], curIdx: -1, grades: {}, clsFilter: "" };
+var RUBRIC = [
+  { id:"e1", name:"① 계약 당사자와 근로 조건 (항목당 5점)", max:20, steps:[20,15,10,5,0],
+    fields:["사업장·사업주","업무내용","근로개시일","근로시간","휴게시간"],
+    auto:function(a){ var n=0; if(a["사업장·사업주"])n++; if(a["업무내용"])n++; if(a["근로개시일"])n++; if(a["근로시간"]&&a["휴게시간"])n++; return n*5; } },
+  { id:"e2", name:"② 임금 조건 작성 (항목당 5점)", max:20, steps:[20,15,10,5,0],
+    fields:["시급","시급근거","지급일","지급방법"],
+    auto:function(a){ var n=0; var w=parseInt(a["시급"],10); if(w&&w>=CONFIG.MIN_WAGE)n++; if(a["시급근거"])n++; if(a["지급일"])n++; if(a["지급방법"])n++; return n*5; } },
+  { id:"e3", name:"③ 휴일·휴가 조항 (조항당 5점)", max:10, steps:[10,5,0],
+    fields:["휴일휴가1","휴일휴가2"],
+    auto:function(a){ var n=(a["휴일휴가1"]?1:0)+(a["휴일휴가2"]?1:0); return n*5; } },
+  { id:"e4", name:"④ 연소근로자 보호 조항 (조항당 5점)", max:10, steps:[10,5,0],
+    fields:["연소보호1","연소보호2"],
+    auto:function(a){ var n=(a["연소보호1"]?1:0)+(a["연소보호2"]?1:0); return n*5; } },
+  { id:"e5", name:"⑤ 부당 조항 판별 (조항+이유, 세트 완성 시 인정)", max:10, steps:[10,5,0],
+    fields:["부당조항선택","부당이유1","부당이유2"],
+    auto:function(a){ var sel=(a["부당조항선택"]||"").split("/").filter(function(x){return x.trim();}).length;
+      var n=(a["부당이유1"]?1:0)+(a["부당이유2"]?1:0); if(sel>=2&&n>=2)return 10; if(sel>=1&&n>=1)return 5; return 0; } },
+  { id:"e6", name:"⑥ 부당 조항 수정 (조항당 5점)", max:10, steps:[10,5,0],
+    fields:["수정조항1","수정조항2"],
+    auto:function(a){ var n=(a["수정조항1"]?1:0)+(a["수정조항2"]?1:0); return n*5; } },
+  { id:"e7", name:"⑦ 근로계약서의 필요성 서술", max:10, steps:[10,5,0],
+    fields:["필요성서술"],
+    auto:function(a){ var t=a["필요성서술"]||""; if(!t)return 0; return (t.length>=20&&t.indexOf(" ")>=0)?10:5; } },
+  { id:"e8", name:"⑧ 노동권 침해 해결 방안 서술", max:10, steps:[10,5,0],
+    fields:["해결방안서술"],
+    auto:function(a){ var t=a["해결방안서술"]||""; if(!t)return 0; return (t.length>=20&&t.indexOf(" ")>=0)?10:5; } }
+];
+function parseBody(body){
+  var ans={}, re=/◆\[([^\]]+)\]\s*([\s\S]*?)(?=◆\[|$)/g, m;
+  while((m=re.exec(body))!==null){ ans[m[1].trim()]=m[2].trim(); }
+  return ans;
+}
+function enterTeacherMode(){
+  MODE = "teacher";
+  $("lockOverlay").style.display = "none";
+  $("app").style.display = "none";
+  $("teacherWrap").style.display = "block";
+  showToast("교사 모드 입장");
+  loadGrades(function(){ decryptRoster(function(){ reloadSubmissions(); }); });
+  bindTeacher();
+}
+function loadGrades(cb){
+  try {
+    window.storage.get("teacher_grades_v1").then(function(res){
+      if (res && res.value){ try { T.grades = JSON.parse(res.value); } catch(e){} }
+      cb();
+    }).catch(function(){ cb(); });
+  } catch(e){ cb(); }
+}
+function saveGrades(){
+  try { window.storage.set("teacher_grades_v1", JSON.stringify(T.grades)).catch(function(){}); } catch(e){}
+}
+function reloadSubmissions(){
+  $("loadInfo").textContent = " 불러오는 중...";
+  try {
+    window.storage.list("submit:", true).then(function(res){
+      var keys = (res && res.keys) ? res.keys : [];
+      T.students = [];
+      if (!keys.length){ $("loadInfo").textContent = " 제출 0건"; renderAll(); return; }
+      var remain = keys.length;
+      keys.forEach(function(k){
+        window.storage.get(k, true).then(function(r){
+          try {
+            var d = JSON.parse(r.value);
+            T.students.push({ key:k, cls:d.cls||"", authCls:d.authCls||"", sid:d.sid||"", name:d.name||"", at:d.submittedAt||"", ans:parseBody(d.body||"") });
+          } catch(e){}
+          remain--; if (remain===0) finishLoad();
+        }).catch(function(){ remain--; if (remain===0) finishLoad(); });
+      });
+    }).catch(function(){ $("loadInfo").textContent = " 불러오기 실패 — 다시 시도하세요"; });
+  } catch(e){ $("loadInfo").textContent = " 이 환경에서는 저장소를 사용할 수 없습니다"; }
+}
+function finishLoad(){
+  T.students.sort(function(a,b){ var c=(a.cls||"").localeCompare(b.cls||"","ko",{numeric:true}); if(c)return c; return (a.sid||"").localeCompare(b.sid||"","ko",{numeric:true}); });
+  $("loadInfo").textContent = " ✅ " + T.students.length + "명 제출";
+  renderAll();
+}
+function gkey(s){ return s.cls + "|" + s.sid; }
+function isGraded(s){ var g=T.grades[gkey(s)]||{}; var i; for(i=0;i<RUBRIC.length;i++){ if(g[RUBRIC[i].id]===undefined) return false; } return true; }
+function totalOf(s){ var g=T.grades[gkey(s)]||{}; var t=0,i; for(i=0;i<RUBRIC.length;i++){ var v=g[RUBRIC[i].id]; if(v!==undefined)t+=v; } return t; }
+function renderAll(){ renderClsFilter(); renderStudents(); renderRoster(); renderResultTable(); }
+function renderClsFilter(){
+  var set={}, list=[], i, rc;
+  for (rc in ROSTER_ENC){ set[rc]=1; list.push(rc); }
+  for(i=0;i<T.students.length;i++){ var c=T.students[i].cls; if(c&&!set[c]){set[c]=1; list.push(c);} }
+  var html='<button type="button" class="sb'+(T.clsFilter===""?" sel":"")+'" data-cf="">전체</button>';
+  for(i=0;i<list.length;i++){ html+='<button type="button" class="sb'+(T.clsFilter===list[i]?" sel":"")+'" data-cf="'+esc(list[i])+'">'+esc(list[i])+'</button>'; }
+  $("clsFilterRow").innerHTML = list.length ? html : "";
+  var bs=document.querySelectorAll("[data-cf]"), j;
+  for(j=0;j<bs.length;j++){ bs[j].addEventListener("click", function(e){ e.preventDefault(); T.clsFilter=this.getAttribute("data-cf"); renderAll(); }); }
+}
+function renderStudents(){
+  var html="", i, done=0;
+  for(i=0;i<T.students.length;i++){
+    var s=T.students[i];
+    if(isGraded(s)) done++;
+    if(T.clsFilter && s.cls!==T.clsFilter) continue;
+    var cls="stu-chip"+(isGraded(s)?" done":"")+(i===T.curIdx?" cur":"");
+    var mismatch=(s.authCls&&s.authCls!==s.cls)?' ⚠':'';
+    html+='<button type="button" class="'+cls+'" data-i="'+i+'">'+esc(s.cls)+' '+esc(s.sid)+'번 '+esc(s.name)+mismatch+(isGraded(s)?' · '+totalOf(s):'')+'</button>';
+  }
+  $("stuList").innerHTML = html || '<span style="font-size:13px;color:#95a5a6;">아직 제출이 없습니다.</span>';
+  $("progressPill").textContent = "채점 완료 " + done + " / " + T.students.length;
+  var chips=document.querySelectorAll(".stu-chip"), j;
+  for(j=0;j<chips.length;j++){ chips[j].addEventListener("click", function(e){ e.preventDefault(); selectStudent(parseInt(this.getAttribute("data-i"),10)); }); }
+}
+function showAns(v){ return v ? esc(v) : '<span class="empty">(미작성)</span>'; }
+function selectStudent(i){
+  T.curIdx=i;
+  var s=T.students[i];
+  $("gradeCard").style.display="block";
+  $("seteukCard").style.display="block";
+  $("gradeTitle").textContent="채점 — "+s.cls+" "+s.sid+"번 "+s.name+((s.authCls&&s.authCls!==s.cls)?" (⚠ 입장 비번: "+s.authCls+")":"");
+  $("totalName").textContent=s.cls+" "+s.sid+" "+s.name;
+  var g=T.grades[gkey(s)]||{};
+  var html="", k;
+  for(k=0;k<RUBRIC.length;k++){
+    var r=RUBRIC[k], autoScore=r.auto(s.ans), cur=g[r.id];
+    var ansHtml="", f;
+    for(f=0;f<r.fields.length;f++){ ansHtml+="<b>"+r.fields[f]+":</b> "+showAns(s.ans[r.fields[f]])+"\n"; }
+    var btns="", si;
+    for(si=0;si<r.steps.length;si++){
+      var v=r.steps[si];
+      btns+='<button type="button" class="sb'+(cur===v?" sel":"")+(cur===undefined&&v===autoScore?" auto":"")+'" data-r="'+r.id+'" data-v="'+v+'">'+v+'</button>';
+    }
+    html+='<div class="t-item"><div class="t-item-head"><span class="t-title">'+r.name+' <span class="max">/ '+r.max+'점'+(cur===undefined?' · 제안 '+autoScore+'점':'')+'</span></span><div>'+btns+'</div></div><div class="t-ans">'+ansHtml.trim()+'</div></div>';
+  }
+  $("items").innerHTML=html;
+  var bs=document.querySelectorAll("[data-r]"), j;
+  for(j=0;j<bs.length;j++){
+    bs[j].addEventListener("click", function(e){
+      e.preventDefault();
+      var s2=T.students[T.curIdx], key=gkey(s2);
+      if(!T.grades[key]) T.grades[key]={};
+      T.grades[key][this.getAttribute("data-r")]=parseInt(this.getAttribute("data-v"),10);
+      saveGrades(); selectStudent(T.curIdx); renderStudents(); renderResultTable();
+    });
+  }
+  $("seteukText").value=(T.grades[gkey(s)]&&T.grades[gkey(s)]._seteuk)||"";
+  updateByte();
+  $("totalScore").textContent=totalOf(s);
+  renderStudents();
+}
+function firstSentence(t, maxLen){
+  if(!t)return "";
+  t=t.replace(/\s+/g," ").trim();
+  var dot=t.indexOf(". ");
+  var cut=(t.indexOf(".")>=0)?t.substring(0,(dot>=0?dot:t.indexOf("."))+1):t;
+  if(cut.length>maxLen)cut=cut.substring(0,maxLen);
+  return cut.replace(/[.。]$/,"");
+}
+function genSeteuk(){
+  if(T.curIdx<0)return;
+  var s=T.students[T.curIdx], a=s.ans;
+  var job=(a["업무내용"]||"아르바이트").replace(/[0-9]/g,"").trim();
+  var unfairSel=(a["부당조항선택"]||"").split("/").map(function(x){return x.trim();}).filter(function(x){return x;});
+  var unfairTxt=unfairSel.length?unfairSel.map(function(x){return x.replace(/\(.*\)/,"");}).join("과 "):"최저임금 미달 조항";
+  var wage=parseInt(a["시급"],10);
+  var wageOk=wage&&wage>=CONFIG.MIN_WAGE;
+  var reason=firstSentence(a["필요성서술"],60);
+  var solve=firstSentence(a["해결방안서술"],60);
+  var t="청소년 노동권 수행평가에서 웹 기반 도구를 활용해 자신이 희망하는 "+job+" 업무를 가정한 근로계약서를 직접 작성함. "
+    +"계약 당사자, 업무 내용, 근로 시간과 휴게 시간 등 필수 기재 사항을 빠짐없이 구성하고"
+    +(wageOk?", 시급을 최저임금 이상으로 책정하며 그 근거를 논리적으로 제시함. ":"하고 임금 조건을 구체적으로 명시함. ")
+    +"주휴일과 연차 유급 휴가, 연소근로자의 근로 시간 제한과 야간 근로 금지 등 보호 조항을 법적 근거와 함께 계약서에 반영하는 치밀함을 보임. "
+    +"제시된 청소년 아르바이트 사례를 분석하여 "+unfairTxt+" 등 부당한 조항을 정확히 판별하고, 근로기준법에 맞게 수정한 대안 조항을 작성하는 과정에서 법을 실생활에 적용하는 능력이 돋보임. "
+    +(reason?"근로계약서가 노동권 보장에 필요한 이유를 '"+reason+"'라고 서술하며 제도의 의미를 자기 언어로 정리함. ":"")
+    +(solve?"노동권 침해 시 '"+solve+"' 등 구체적인 구제 절차를 제시하여 배운 내용을 실천적 태도로 연결함.":"노동권 침해 상황에서 활용할 수 있는 구제 기관과 절차를 제시하여 배운 내용을 실천적 태도로 연결함.");
+  $("seteukText").value=t;
+  var key=gkey(s); if(!T.grades[key])T.grades[key]={};
+  T.grades[key]._seteuk=t; saveGrades(); updateByte();
+  showToast("초안 생성 완료 — 반드시 검토 후 사용하세요");
+}
+function byteLen(t){ var b=0,i; for(i=0;i<t.length;i++){ b += (t.charCodeAt(i)>127)?3:1; } return b; }
+function updateByte(){
+  var t=$("seteukText").value, b=byteLen(t);
+  var el=$("byteCount");
+  el.textContent=b+" bytes (NEIS 한글 3byte 기준 · 권장 700~900)";
+  el.className="byte-count "+((b>=700&&b<=900)?"ok":"warn");
+}
+function renderResultTable(){
+  var html="<tr><th>반</th><th>번호</th><th>이름</th><th>제출시각</th>";
+  var k; for(k=0;k<RUBRIC.length;k++){ html+="<th>"+RUBRIC[k].name.substring(0,1)+"</th>"; }
+  html+="<th>총점</th></tr>";
+  var i;
+  for(i=0;i<T.students.length;i++){
+    var s=T.students[i], g=T.grades[gkey(s)]||{};
+    html+="<tr><td>"+esc(s.cls)+"</td><td>"+esc(s.sid)+"</td><td>"+esc(s.name)+"</td><td>"+esc((s.at||"").substring(5,16).replace("T"," "))+"</td>";
+    for(k=0;k<RUBRIC.length;k++){ var v=g[RUBRIC[k].id]; html+="<td>"+(v===undefined?"-":v)+"</td>"; }
+    html+="<td><b>"+(isGraded(s)?totalOf(s):"-")+"</b></td></tr>";
+  }
+  $("resultTable").innerHTML=html;
+}
+function buildCsv(){
+  var lines=["반,번호,이름,제출시각,①계약조건(20),②임금(20),③휴일휴가(10),④연소보호(10),⑤부당판별(10),⑥부당수정(10),⑦필요성(10),⑧해결방안(10),총점"];
+  var i,k;
+  for(i=0;i<T.students.length;i++){
+    var s=T.students[i], g=T.grades[gkey(s)]||{};
+    var row=[s.cls,s.sid,s.name,(s.at||"").substring(0,16)];
+    for(k=0;k<RUBRIC.length;k++){ var v=g[RUBRIC[k].id]; row.push(v===undefined?"":v); }
+    row.push(isGraded(s)?totalOf(s):"");
+    lines.push(row.join(","));
+  }
+  return lines.join("\n");
+}
+
+/* ---- 수업 진행 모드 ---- */
+var PWD_ENC = { "스마트용접과 1반":"0a2d9602082c811c9d1024f0a5", "스마트용접과 2반":"1a095f3c50b01cd55c88d4b1b8", "융합기계과 1반":"2e7f4dc5dcf244b43e5687055c", "융합기계과 2반":"e42d72100ae65a0883647447e9", "스마트금형과 1반":"31b57b184decf8567911cd73ee", "스마트금형과 2반":"c163d75a8f85de046fa3354e1f" };
+var TEACH = { on:false, timer:null, url:"" };
+function decDispPw(cls, cb){
+  var enc = PWD_ENC[cls];
+  if (!enc){ cb(""); return; }
+  sha256Hex(TPW + "|pwdisp|" + cls, function(keyHex){
+    var key = hexToBytes(keyHex), c = hexToBytes(enc), out = [], i;
+    for (i=0;i<c.length;i++){ out.push(c[i] ^ key[i]); }
+    cb(bytesToUtf8(out));
+  });
+}
+function enterTeachMode(){
+  TEACH.on = true;
+  $("teacherWrap").style.display = "none";
+  $("app").style.display = "block";
+  $("teachBar").style.display = "block";
+  document.body.className = "teach";
+  gotoStep(1);
+  try {
+    window.storage.get("teach_setup").then(function(res){
+      var d = res && res.value ? JSON.parse(res.value) : {};
+      if (d.url){ TEACH.url = d.url; drawTeachQr(); } else { $("urlSet").style.display = "block"; }
+      if (d.cls){ $("teachCls").value = d.cls; }
+      teachClsChanged();
+    }).catch(function(){ $("urlSet").style.display = "block"; teachClsChanged(); });
+  } catch(e){ teachClsChanged(); }
+  if (TEACH.timer) clearInterval(TEACH.timer);
+  TEACH.timer = setInterval(updateTeachLive, 20000);
+}
+function exitTeachMode(){
+  TEACH.on = false;
+  if (TEACH.timer){ clearInterval(TEACH.timer); TEACH.timer = null; }
+  document.body.className = "";
+  $("teachBar").style.display = "none";
+  $("app").style.display = "none";
+  $("teacherWrap").style.display = "block";
+  reloadSubmissions();
+}
+function saveTeachSetup(){
+  try { window.storage.set("teach_setup", JSON.stringify({ url:TEACH.url, cls:$("teachCls").value })).catch(function(){}); } catch(e){}
+}
+function drawTeachQr(){
+  var area = $("teachQr");
+  area.innerHTML = "";
+  if (!TEACH.url){ return; }
+  try {
+    if (typeof QRCode !== "undefined"){
+      new QRCode(area, { text:TEACH.url, width:150, height:150, correctLevel:QRCode.CorrectLevel.M });
+      return;
+    }
+  } catch(e){}
+  area.innerHTML = '<div style="font-size:10px;word-break:break-all;color:#1f2937;">' + esc(TEACH.url) + '</div>';
+}
+function teachClsChanged(){
+  var cls = $("teachCls").value;
+  $("teachPw").textContent = "…";
+  decDispPw(cls, function(pw){ $("teachPw").textContent = pw || "-"; });
+  saveTeachSetup();
+  updateTeachLive();
+}
+function updateTeachLive(){
+  if (!TEACH.on) return;
+  if (true){
+    $("teachLive").innerHTML = GFORM.sheet.indexOf("__") !== 0 ? '<a href="' + GFORM.sheet + '" target="_blank" style="color:#a7f3d0;">📊 응답 시트에서 제출 확인</a>' : "제출은 응답 시트에서 확인";
+    $("teachMiss").textContent = "";
+    return;
+  }
+  var cls = $("teachCls").value;
+  var prefix = "submit:" + cls.replace(/\s+/g, "") + ":";
+  try {
+    window.storage.list(prefix, true).then(function(res){
+      var keys = (res && res.keys) ? res.keys : [];
+      var subs = {}, i;
+      for (i=0;i<keys.length;i++){
+        var parts = keys[i].split(":");
+        subs[String(parseInt(parts[2],10))] = true;
+      }
+      var totalN = 0, subN = 0, missArr = [], no;
+      if (ROSTER_READY && ROSTER[cls]){
+        for (no in ROSTER[cls]){
+          totalN++;
+          if (subs[no]) subN++;
+          else missArr.push(no + " " + ROSTER[cls][no]);
+        }
+        $("teachLive").textContent = "✅ 제출 " + subN + " / " + totalN;
+        $("teachMiss").textContent = missArr.length ? ("미제출: " + missArr.join(", ")) : "🎉 전원 제출!";
+      } else {
+        $("teachLive").textContent = "✅ 제출 " + keys.length + "명";
+        $("teachMiss").textContent = "";
+      }
+    }).catch(function(){ $("teachLive").textContent = "제출 확인 실패"; });
+  } catch(e){ $("teachLive").textContent = "저장소 사용 불가"; }
+}
+function bindTeach(){
+  $("btnTeach").addEventListener("click", function(e){ e.preventDefault(); enterTeachMode(); });
+  $("btnTeachExit").addEventListener("click", function(e){ e.preventDefault(); exitTeachMode(); });
+  $("teachCls").addEventListener("change", teachClsChanged);
+  $("btnUrlSave").addEventListener("click", function(e){
+    e.preventDefault();
+    var u = $("urlInput").value.trim();
+    if (u.indexOf("http") !== 0){ showToast("주소 전체(https://...)를 붙여넣어 주세요"); return; }
+    TEACH.url = u;
+    $("urlSet").style.display = "none";
+    drawTeachQr();
+    saveTeachSetup();
+    showToast("주소 저장 완료 — 다음부터 자동으로 QR이 뜹니다");
+  });
+  function bindMin(boxId, btnId){
+    var box = $(boxId), btn = $(btnId);
+    btn.addEventListener("click", function(e){
+      e.preventDefault(); e.stopPropagation();
+      var min = box.className.indexOf("min") >= 0;
+      box.className = box.className.replace(" min", "") + (min ? "" : " min");
+      btn.textContent = min ? "─" : "＋";
+    });
+    box.addEventListener("click", function(){
+      if (box.className.indexOf("min") >= 0){
+        box.className = box.className.replace(" min", "");
+        btn.textContent = "─";
+      }
+    });
+  }
+  bindMin("tbQr", "qrMin");
+  bindMin("tbPw", "pwMin");
+}
+
+function bindTeacher(){
+  $("btnReload").addEventListener("click", function(e){ e.preventDefault(); reloadSubmissions(); });
+  bindTeach();
+  $("btnSeteuk").addEventListener("click", function(e){ e.preventDefault(); genSeteuk(); });
+  $("btnSeteukCopy").addEventListener("click", function(e){
+    e.preventDefault();
+    var t=$("seteukText").value;
+    if(!t){ showToast("복사할 내용이 없습니다"); return; }
+    try{ navigator.clipboard.writeText(t).then(function(){ showToast("복사 완료"); }); }catch(err){ showToast("복사 실패"); }
+  });
+  $("seteukText").addEventListener("input", function(){
+    if(T.curIdx>=0){ var key=gkey(T.students[T.curIdx]); if(!T.grades[key])T.grades[key]={}; T.grades[key]._seteuk=this.value; saveGrades(); }
+    updateByte();
+  });
+  $("btnCsv").addEventListener("click", function(e){
+    e.preventDefault();
+    try {
+      var blob=new Blob(["\uFEFF"+buildCsv()],{type:"text/csv;charset=utf-8"});
+      var a=document.createElement("a");
+      a.href=URL.createObjectURL(blob); a.download="labor_contract_scores.csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch(err){ $("csvOut").style.display="block"; $("csvOut").value=buildCsv(); showToast("다운로드가 막힌 환경 — 아래 CSV를 복사하세요"); }
+  });
+  $("btnCsvCopy").addEventListener("click", function(e){
+    e.preventDefault();
+    $("csvOut").style.display="block"; $("csvOut").value=buildCsv();
+    try{ navigator.clipboard.writeText(buildCsv()).then(function(){ showToast("CSV 복사 완료 — 엑셀에 붙여넣으세요"); }); }catch(err){ showToast("아래 상자에서 직접 복사하세요"); }
+  });
+}
+
+
+function init(){
+  var i;
+  // 번호 1~25 옵션
+  var noSel = $("sel_no");
+  for (i=1;i<=25;i++){ var op=document.createElement("option"); op.value=String(i); op.textContent=i+"번"; noSel.appendChild(op); }
+  var navBtns = document.querySelectorAll("[data-go]");
+  for (i=0;i<navBtns.length;i++){
+    navBtns[i].addEventListener("click", function(e){
+      e.preventDefault();
+      var to = parseInt(this.getAttribute("data-go"), 10);
+      if (to > curStep && !validateStep(curStep)) return;
+      gotoStep(to);
+    });
+  }
+  for (i=0;i<FIELDS.length;i++){
+    var el = $(FIELDS[i]);
+    if (el){ el.addEventListener("input", saveAll); el.addEventListener("change", saveAll); }
+  }
+  $("f_wage").addEventListener("input", checkWage);
+  var boxes = document.querySelectorAll("#caseChecks input");
+  for (i=0;i<boxes.length;i++){
+    boxes[i].addEventListener("change", function(){
+      var sel = getCaseChecks();
+      if (sel.length > 2){ this.checked = false; showToast("2개만 선택할 수 있어요"); return; }
+      this.parentNode.className = this.checked ? "check-item sel" : "check-item";
+      saveAll();
+    });
+  }
+  // 법조문 카드 토글
+  var laws = document.querySelectorAll(".law-toggle");
+  for (i=0;i<laws.length;i++){
+    laws[i].addEventListener("click", function(e){
+      e.preventDefault();
+      var card = this.parentNode;
+      card.className = (card.className.indexOf("open")>=0) ? "law-card" : "law-card open";
+    });
+  }
+  // 임금이란? 말풍선
+  $("wageInfoBtn").addEventListener("click", function(e){
+    e.preventDefault();
+    var b = $("wageBubble");
+    b.className = (b.className.indexOf("show")>=0) ? "bubble" : "bubble show";
+  });
+  $("btnSubmit").addEventListener("click", function(e){ e.preventDefault(); submitForm(); });
+  $("btnCopy").addEventListener("click", function(e){ e.preventDefault(); copyBody(); });
+  loadAll();
+  initLock();
+}
+init();
+</script>
+</body>
+</html>
