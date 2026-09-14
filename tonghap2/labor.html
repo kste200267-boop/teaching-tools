@@ -647,7 +647,7 @@ function buildBody(){
 }
 
 /* ---- 구글폼 제출 (GitHub Pages판) ---- */
-var GFORM = { id: "1FAIpQLSd7ILnwKU0CwCOEWG0p2zIrpqBrejB1n56dY1Wkiu-LgRDZ2Q", e_cls: "371829430", e_no: "997620148", e_name: "461148888", e_body: "2062644262", sheet: "__SHEET_URL__", sheetcsv: "__SHEET_CSV__" };
+var GFORM = { id: "1FAIpQLSd7ILnwKU0CwCOEWG0p2zIrpqBrejB1n56dY1Wkiu-LgRDZ2Q", e_cls: "371829430", e_no: "997620148", e_name: "461148888", e_body: "2062644262", sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYZdPCUUyykuFZTePQh-5PY9gN2kXwkyUICi6VNqcWBXs59tRlmdKDpR1BMcMtGEMfFvEqzQTgzBYq/pubhtml", sheetcsv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYZdPCUUyykuFZTePQh-5PY9gN2kXwkyUICi6VNqcWBXs59tRlmdKDpR1BMcMtGEMfFvEqzQTgzBYq/pub?gid=1191792696&single=true&output=csv" };
 function gformReady(){ return GFORM.id.indexOf("__") !== 0; }
 function submitViaGform(payload, done){
   var fd = new FormData();
