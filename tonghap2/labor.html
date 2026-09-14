@@ -121,6 +121,20 @@ table.result td { border:1px solid #e5e8ec; padding:6px 5px; text-align:center; 
 .t-btn.gold { background:#f4d03f; color:#6e2c00; }
 .t-btn.gray { background:#eaecee; color:#5d6d7e; }
 @media (max-width:480px){ .lc-body{padding:14px 14px 8px;} h2{font-size:17px;} }
+
+.ox-wrap { background:#f8f9fa; border-radius:10px; padding:9px 12px; margin-top:8px; }
+.ox-q { font-size:12.5px; font-weight:700; color:#2c3e50; margin-bottom:6px; }
+.ox-q:before { content:"🤔 생각해 보기 — "; color:#8e44ad; }
+.ox-btn { border:1.5px solid #d5dbdb; background:#fff; border-radius:10px; padding:7px 18px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-right:8px; }
+.ox-btn:disabled { opacity:.55; }
+.ox-fb { display:none; margin-top:7px; font-size:12.5px; font-weight:700; border-radius:8px; padding:7px 10px; }
+.ox-fb.good { background:#e8f8f0; color:#1e8449; }
+.ox-fb.bad { background:#fdecea; color:#c0392b; }
+.fig { background:#fff; border:1px solid #e5e8e8; border-radius:10px; padding:8px; margin:8px 0; }
+.fig svg { display:block; width:100%; height:auto; }
+.fig-cap { font-size:11px; color:#7f8c8d; text-align:center; margin-top:3px; }
+.think { background:#f4ecf7; border-left:3px solid #8e44ad; border-radius:0 8px 8px 0; padding:8px 12px; font-size:12.5px; margin:8px 0; }
+.think b { color:#6c3483; }
 </style>
 <style>
 .law-card { border:1.5px solid #aed6f1; border-radius:12px; margin:10px 0; overflow:hidden; }
@@ -199,8 +213,8 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="step active" data-step="0">
       <div class="start-hero"><div class="emoji">📋</div></div>
       <h2>내가 사장님과 쓰는 첫 근로계약서</h2>
-      <p class="desc">현장실습을 나가거나 알바·취업을 시작하면 <b>가장 먼저 쓰게 되는 서류</b>가 근로계약서입니다. 오늘은 근로기준법을 직접 읽고, 법을 근거로 나의 근로계약서를 완성해요. 작성 내용은 자동 저장됩니다.</p>
-      <div class="eval-box"><b>📌 평가 안내 (총 100점)</b> — 아래 표의 요소가 그대로 채점 기준입니다. 모든 항목은 <b>항목당 5점</b>으로 배점과 1:1이에요.</div>
+      <p class="desc">현장실습·알바·취업에서 <b>가장 먼저 만나는 서류</b>가 근로계약서입니다. 오늘은 근로기준법 원문을 직접 읽고 → 잘못된 계약서를 잡아내고 → 법을 근거로 나의 계약서를 완성합니다. 예시 답은 없어요 — <b>법 조문이 여러분의 답안 근거</b>입니다. 작성 내용은 자동 저장됩니다.</p>
+      <div class="eval-box"><b>📌 평가 안내 (총 100점)</b> — 아래 표의 요소가 그대로 채점 기준입니다. 모든 항목은 <b>항목당 5점</b>.</div>
       <table class="rubric-table">
         <tr><th>평가 요소</th><th>배점</th></tr>
         <tr><td>① 계약 당사자와 근로 조건 (당사자·업무·개시일·근로시간, 항목당 5점)</td><td>20점</td></tr>
@@ -209,7 +223,7 @@ body.teach .lc-wrap { box-shadow:none; }
         <tr><td>④ 연소근로자 보호 조항 (조항당 5점)</td><td>10점</td></tr>
         <tr><td>⑤ 부당 조항 판별 (조항+이유 세트당 5점)</td><td>10점</td></tr>
         <tr><td>⑥ 부당 조항 수정 (조항당 5점)</td><td>10점</td></tr>
-        <tr><td>⑦ 근로계약서의 필요성 서술</td><td>10점</td></tr>
+        <tr><td>⑦ 근로계약서의 필요성 서술 (마지막 성찰)</td><td>10점</td></tr>
         <tr><td>⑧ 노동권 침해 해결 방안 서술</td><td>10점</td></tr>
       </table>
       <div class="grid2">
@@ -227,147 +241,117 @@ body.teach .lc-wrap { box-shadow:none; }
       <div class="btn-row"><button type="button" class="btn btn-next" data-go="1">시작하기 →</button></div>
     </div>
 
-    <!-- STEP 1: 근로기준법 배우기 -->
+    <!-- STEP 1: 근로기준법 배우기 (OX 자가점검 포함) -->
     <div class="step" data-step="1">
       <span class="badge">STEP 1 / 10</span><span class="badge pt">📚 배우기</span>
       <h2>근로기준법, 원문으로 만나기</h2>
-      <div class="learn-hero">법은 어렵지 않아요. <b>일하는 사람을 지키기 위해 나라가 정한 최소한의 약속</b>입니다. 아래 조문을 직접 읽어보세요 — 이 법들이 뒤에서 여러분이 계약서를 쓰는 <b>근거</b>가 됩니다.</div>
+      <div class="learn-hero">법은 <b>일하는 사람을 지키려고 나라가 정한 최소한의 약속</b>입니다. 조문을 직접 읽고, 아래 O/X로 제대로 이해했는지 스스로 점검하세요 — 이 조문들이 오늘 여러분이 쓰는 <b>모든 답안의 근거</b>가 됩니다. (O/X는 점수와 무관!)</div>
 
       <div class="law-card open"><button type="button" class="law-toggle">📖 제17조 (근로조건의 명시)</button>
         <div class="law-body">
           <div class="law-quote">"사용자는 근로계약을 체결할 때에 근로자에게 임금, 소정근로시간, 제55조에 따른 휴일, 제60조에 따른 연차 유급휴가 등의 사항을 명시하여야 한다. … 서면으로 명시하고 근로자에게 교부하여야 한다."</div>
-          <div class="law-easy"><b>쉽게 말하면</b> — 얼마 받는지, 몇 시간 일하는지, 언제 쉬는지를 <b>종이(계약서)에 적어서 나에게 줘야</b> 한다는 뜻. 말로만 하는 약속은 안 돼요!</div>
+          <div class="law-easy"><b>풀이</b> — 얼마 받고, 몇 시간 일하고, 언제 쉬는지를 <b>종이에 적어 나에게 줘야</b> 합니다. "명시"는 분명히 적는 것, "교부"는 건네주는 것. 둘 다 사용자의 <b>의무</b>예요.</div>
+          <div class="ox-wrap" data-a="X" data-w="제17조는 서면 명시·교부를 의무로 정했어요. 말로만 한 약속은 나중에 증명할 수 없습니다.">
+            <div class="ox-q">사장님과 말로 확실히 약속했다면, 계약서는 굳이 안 써도 된다?</div>
+            <button type="button" class="ox-btn" data-v="O">⭕ 맞다</button><button type="button" class="ox-btn" data-v="X">❌ 아니다</button>
+            <div class="ox-fb"></div>
+          </div>
         </div>
       </div>
+
       <div class="law-card open"><button type="button" class="law-toggle">📖 제43조 (임금 지급) + 최저임금법 제6조</button>
         <div class="law-body">
           <div class="law-quote">"임금은 통화(通貨)로 직접 근로자에게 그 전액을 지급하여야 한다. … 매월 1회 이상 일정한 날짜를 정하여 지급하여야 한다." / "최저임금액에 미치지 못하는 임금을 정한 부분은 무효로 한다."</div>
-          <div class="law-easy"><b>쉽게 말하면</b> — 임금은 ①돈으로 ②본인에게 ③전액을 ④정해진 날짜에! 상품권 지급, 부모님 계좌 입금, 일부만 주기 전부 위법. 그리고 최저임금은 <b>매년 새로 정해져요</b> — 올해 얼마인지는 뒤에서 직접 확인해 봅시다.</div>
+          <div class="law-easy"><b>풀이</b> — 임금 지급 4원칙: <b>①돈으로(통화) ②본인에게(직접) ③빼지 말고(전액) ④정한 날짜에(정기)</b>. 그리고 최저임금은 매년 새로 정해져요 — 올해 금액은 뒤에서 직접 검색해 확인합니다.</div>
+          <div class="ox-wrap" data-a="X" data-w="'통화 지급' 원칙 위반! 상품권·물건으로 주는 임금은 위법입니다.">
+            <div class="ox-q">월급 대신 같은 값어치의 편의점 상품권으로 받는 것도 괜찮다?</div>
+            <button type="button" class="ox-btn" data-v="O">⭕ 맞다</button><button type="button" class="ox-btn" data-v="X">❌ 아니다</button>
+            <div class="ox-fb"></div>
+          </div>
         </div>
       </div>
+
       <div class="law-card open"><button type="button" class="law-toggle">📖 제54조·제55조·제60조 (휴게·휴일·연차)</button>
         <div class="law-body">
-          <div class="law-quote">"근로시간이 4시간인 경우에는 30분 이상, 8시간인 경우에는 1시간 이상의 휴게시간을 근로시간 도중에 주어야 한다." (제54조) / "1주에 평균 1회 이상의 유급휴일을 보장하여야 한다." (제55조) / "1년간 80퍼센트 이상 출근한 근로자에게 15일의 유급휴가를 주어야 한다." (제60조)</div>
-          <div class="law-easy"><b>쉽게 말하면</b> — 4시간 일하면 30분은 쉬어야 하고, 일주일 개근하면 <b>일 안 하고도 하루치 돈을 받는 날(주휴일)</b>이 생기고, 1년 잘 다니면 유급 휴가가 생겨요.</div>
+          <div class="law-quote">"근로시간이 4시간인 경우에는 30분 이상, 8시간인 경우에는 1시간 이상의 휴게시간을 근로시간 도중에 주어야 한다." (제54조) / "사용자는 근로자에게 1주에 평균 1회 이상의 유급휴일을 보장하여야 한다." (제55조) / "1년간 80퍼센트 이상 출근한 근로자에게 15일의 유급휴가를 주어야 한다." (제60조)</div>
+          <div class="fig">
+            <svg viewBox="0 0 520 96" xmlns="http://www.w3.org/2000/svg">
+              <text x="6" y="16" font-size="12" font-weight="700" fill="#2c3e50">제54조 휴게 — 일하는 "도중에" 쉬기</text>
+              <rect x="6" y="26" width="240" height="18" rx="4" fill="#aed6f1"/>
+              <rect x="246" y="26" width="30" height="18" rx="4" fill="#f7dc6f"/>
+              <text x="100" y="39" font-size="11" fill="#1a5276">근무 4시간</text>
+              <text x="248" y="39" font-size="10" fill="#7d6608">30분</text>
+              <rect x="6" y="56" width="400" height="18" rx="4" fill="#aed6f1"/>
+              <rect x="406" y="56" width="60" height="18" rx="4" fill="#f7dc6f"/>
+              <text x="180" y="69" font-size="11" fill="#1a5276">근무 8시간</text>
+              <text x="416" y="69" font-size="10" fill="#7d6608">1시간</text>
+              <text x="6" y="92" font-size="10.5" fill="#7f8c8d">노란 칸 = 최소 휴게 시간 (이보다 적으면 위법)</text>
+            </svg>
+          </div>
+          <div class="fig">
+            <svg viewBox="0 0 520 74" xmlns="http://www.w3.org/2000/svg">
+              <text x="6" y="16" font-size="12" font-weight="700" fill="#2c3e50">제55조 주휴일 — 개근하면 "일 안 하는 유급 날"이 +1</text>
+              <g font-size="11" text-anchor="middle">
+                <rect x="6" y="26" width="62" height="30" rx="6" fill="#a9dfbf"/><text x="37" y="45">월 ✓</text>
+                <rect x="74" y="26" width="62" height="30" rx="6" fill="#a9dfbf"/><text x="105" y="45">화 ✓</text>
+                <rect x="142" y="26" width="62" height="30" rx="6" fill="#a9dfbf"/><text x="173" y="45">수 ✓</text>
+                <rect x="210" y="26" width="62" height="30" rx="6" fill="#a9dfbf"/><text x="241" y="45">목 ✓</text>
+                <rect x="278" y="26" width="62" height="30" rx="6" fill="#a9dfbf"/><text x="309" y="45">금 ✓</text>
+                <rect x="352" y="26" width="80" height="30" rx="6" fill="#f7dc6f" stroke="#b9770e" stroke-width="1.5"/><text x="392" y="45" font-weight="700">토 💰유급</text>
+              </g>
+              <text x="6" y="70" font-size="10.5" fill="#7f8c8d">1주 개근 → 출근 안 해도 하루치 임금(주휴수당)을 받는 휴일 발생 (주 15시간 이상 근무 시)</text>
+            </svg>
+          </div>
+          <div class="ox-wrap" data-a="X" data-w="4시간 근무엔 30분 '이상'이 최소예요. 15분은 제54조 위반입니다.">
+            <div class="ox-q">4시간 일할 때 휴게 15분이면 법적으로 충분하다?</div>
+            <button type="button" class="ox-btn" data-v="O">⭕ 맞다</button><button type="button" class="ox-btn" data-v="X">❌ 아니다</button>
+            <div class="ox-fb"></div>
+          </div>
         </div>
       </div>
-      <div class="law-card open"><button type="button" class="law-toggle">📖 제64조~제70조 (연소근로자 보호)</button>
+
+      <div class="law-card open"><button type="button" class="law-toggle">📖 제64조~제70조 (연소근로자 보호 — 바로 여러분!)</button>
         <div class="law-body">
-          <div class="law-quote">"15세 이상 18세 미만인 사람의 근로시간은 1일에 7시간, 1주에 35시간을 초과하지 못한다." (제69조) / "사용자는 18세 미만자를 오후 10시부터 오전 6시까지의 시간 및 휴일에 근로시키지 못한다." (제70조) / "18세 미만인 사람에 대하여는 연령을 증명하는 증명서와 친권자 또는 후견인의 동의서를 사업장에 갖추어 두어야 한다." (제66조)</div>
-          <div class="law-easy"><b>쉽게 말하면</b> — 여러분(18세 미만)은 하루 7시간까지만, 밤 10시~아침 6시엔 일 못 시켜요. 부모님 동의서도 꼭 필요합니다. <b>나이가 어릴수록 법이 더 강하게 지켜줘요.</b></div>
+          <div class="law-quote">"15세 이상 18세 미만인 사람의 근로시간은 1일에 7시간, 1주에 35시간을 초과하지 못한다." (제69조) / "사용자는 18세 미만자를 오후 10시부터 오전 6시까지의 시간 및 휴일에 근로시키지 못한다." (제70조) / "18세 미만인 사람에 대하여는 연령을 증명하는 증명서와 친권자 또는 후견인의 동의서를 사업장에 갖추어 두어야 한다." (제66조) / "친권자나 후견인은 미성년자의 근로계약을 대리할 수 없다." (제67조)</div>
+          <div class="fig">
+            <svg viewBox="0 0 520 78" xmlns="http://www.w3.org/2000/svg">
+              <text x="6" y="16" font-size="12" font-weight="700" fill="#2c3e50">제70조 — 18세 미만 야간근로 금지 시간대</text>
+              <rect x="6" y="26" width="508" height="22" rx="5" fill="#eef2f1"/>
+              <rect x="6" y="26" width="127" height="22" rx="5" fill="#f1948a"/>
+              <rect x="429" y="26" width="85" height="22" rx="5" fill="#f1948a"/>
+              <g font-size="10" fill="#5d6d7e"><text x="6" y="62">0시</text><text x="120" y="62">6시</text><text x="253" y="62">12시</text><text x="380" y="62">18시</text><text x="424" y="62">22시</text><text x="496" y="62">24시</text></g>
+              <text x="40" y="41" font-size="10.5" fill="#78281f" font-weight="700">금지</text>
+              <text x="455" y="41" font-size="10.5" fill="#78281f" font-weight="700">금지</text>
+              <text x="6" y="76" font-size="10.5" fill="#7f8c8d">빨간 구간(밤 10시~아침 6시)엔 여러분을 일 시킬 수 없어요 · 하루 7시간 초과도 금지(제69조)</text>
+            </svg>
+          </div>
+          <div class="ox-wrap" data-a="X" data-w="제70조: 18세 미만은 오후 10시부터 금지. 밤 11시 근무는 위법입니다. 나이가 어릴수록 법이 더 강하게 지켜줘요.">
+            <div class="ox-q">17세도 본인이 원하면 밤 11시까지 일할 수 있다?</div>
+            <button type="button" class="ox-btn" data-v="O">⭕ 맞다</button><button type="button" class="ox-btn" data-v="X">❌ 아니다</button>
+            <div class="ox-fb"></div>
+          </div>
         </div>
       </div>
+
       <div class="law-card open"><button type="button" class="law-toggle">📖 제15조 (이 법을 위반한 근로계약)</button>
         <div class="law-body">
           <div class="law-quote">"이 법에서 정하는 기준에 미치지 못하는 근로조건을 정한 근로계약은 그 부분에 한정하여 무효로 한다."</div>
-          <div class="law-easy"><b>쉽게 말하면</b> — 법보다 나쁜 조건으로 계약서에 사인했어도 <b>그 부분은 처음부터 없던 것</b>이 돼요. "네가 동의했잖아"는 통하지 않습니다!</div>
+          <div class="law-easy"><b>풀이</b> — 법보다 나쁜 조건에 사인했어도 <b>그 부분은 처음부터 없던 것</b>. "네가 동의했잖아"는 법 앞에서 통하지 않습니다. 이 조문이 오늘의 최종 무기예요.</div>
+          <div class="ox-wrap" data-a="X" data-w="제15조: 위반 부분은 내가 동의했어도 무효! 동의 여부와 상관없이 법이 최소선을 지켜줍니다.">
+            <div class="ox-q">최저임금보다 낮은 시급에 내가 직접 사인했다면, 그 약속은 지켜야 한다?</div>
+            <button type="button" class="ox-btn" data-v="O">⭕ 맞다</button><button type="button" class="ox-btn" data-v="X">❌ 아니다</button>
+            <div class="ox-fb"></div>
+          </div>
         </div>
       </div>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="0">←</button><button type="button" class="btn btn-next" data-go="2">다 읽었어요 →</button></div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="0">←</button><button type="button" class="btn btn-next" data-go="2">배운 법으로 탐정 되기 →</button></div>
     </div>
 
-    <!-- STEP 2: ⑦ 필요성 서술 -->
+    <!-- STEP 2: ⑤ 부당 판별 (도입 훅) -->
     <div class="step" data-step="2">
-      <span class="badge">STEP 2 / 10</span><span class="badge pt">평가 요소 ⑦ · 10점</span>
-      <h2>왜 근로계약서를 써야 할까?</h2>
-      <p class="desc">방금 읽은 법 조문들을 떠올려 보세요. 근로계약서는 왜 청소년의 노동권을 지켜줄까요? <b>완성된 문장</b>으로 서술하세요. (서술 10점 / 단어 나열 5점)</p>
-      <textarea id="f_essay1" style="min-height:130px" placeholder="예: 근로기준법 제17조에 따라 근로 조건을 서면으로 남기면, 나중에 사장님이 약속과 다르게 행동할 때 증거가 되기 때문에..."></textarea>
-      <div class="hint">💡 제17조(서면 명시), 제15조(위반 계약 무효)를 근거로 쓰면 더 좋아요.</div>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="1">←</button><button type="button" class="btn btn-next" data-go="3">다음 →</button></div>
-    </div>
-
-    <!-- STEP 3: ① 계약 조건 -->
-    <div class="step" data-step="3">
-      <span class="badge">STEP 3 / 10</span><span class="badge pt">평가 요소 ① · 20점</span>
-      <h2>계약 당사자와 근로 조건</h2>
-      <p class="desc">이제 진짜로 써 봅시다. 어디서, 무슨 일을, 언제부터, 몇 시간 일할지 — 제17조가 요구하는 그 내용이에요.</p>
-      <label>① 사업장(가게) 이름과 사업주 이름 <span class="req">*</span> <span class="pts">5점</span></label>
-      <input type="text" id="f_employer" placeholder="예: 든든분식 · 사장 김든든">
-      <label>② 내가 맡을 업무 내용 <span class="req">*</span> <span class="pts">5점</span></label>
-      <input type="text" id="f_job" placeholder="예: 홀 서빙 및 테이블 정리">
-      <label>③ 근로 개시일 <span class="req">*</span> <span class="pts">5점</span></label>
-      <input type="date" id="f_startdate">
-      <label>④ 근로 시간과 휴게 시간 <span class="req">*</span> <span class="pts">5점 (모두 작성해야 인정)</span></label>
-      <div class="row2">
-        <div><input type="time" id="f_tstart" value="16:00"></div>
-        <div style="flex:0 0 aupx; align-self:center;">~</div>
-        <div><input type="time" id="f_tend" value="20:00"></div>
-      </div>
-      <input type="text" id="f_break" placeholder="휴게 시간 (예: 18:00~18:30, 30분)" style="margin-top:8px;">
-      <div class="hint">💡 제54조 다시 보기 — 4시간 일하면 휴게는 최소 몇 분이어야 할까요?</div>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="2">←</button><button type="button" class="btn btn-next" data-go="4">다음 →</button></div>
-    </div>
-
-    <!-- STEP 4: ② 임금 -->
-    <div class="step" data-step="4">
-      <span class="badge">STEP 4 / 10</span><span class="badge pt">평가 요소 ② · 20점</span>
-      <h2>임금 조건</h2>
-      <p class="desc">내 노동의 가격을 정할 시간!</p>
-      <button type="button" class="bubble-btn" id="wageInfoBtn">💬 임금이란?</button>
-      <div class="bubble" id="wageBubble">
-        임금은 일한 대가로 받는 돈이에요. 제43조 기억나죠? <b>돈으로 · 본인에게 · 전액 · 정해진 날짜에!</b><br><br>
-        그리고 나라가 정한 <b>최저임금</b>보다 적게 줄 수는 없어요. 최저임금은 매년 바뀌는데…<br>
-        🔍 <b>포털에 "2026 최저임금"을 검색해서 올해 시급이 얼마인지 직접 확인해 보세요.</b> 그 금액 이상으로 나의 시급을 정하면 됩니다.
-      </div>
-      <label>⑤ 나의 시급 (원) <span class="req">*</span> <span class="pts">5점</span></label>
-      <input type="number" id="f_wage" inputmode="numeric" placeholder="검색해서 확인한 최저임금 이상으로!">
-      <div class="wage-check" id="wageCheck"></div>
-      <label>⑥ 시급을 이렇게 정한 근거 <span class="req">*</span> <span class="pts">5점</span></label>
-      <textarea id="f_wagereason" placeholder="예: 2026년 최저임금이 시급 ○○○○○원이라는 것을 확인했고, 주말 저녁 시간대라서 그보다 조금 높게 정했다."></textarea>
-      <div class="row2">
-        <div><label>⑦ 임금 지급일 <span class="req">*</span> <span class="pts">5점</span></label><input type="text" id="f_payday" placeholder="예: 매월 10일"></div>
-        <div><label>⑧ 지급 방법 <span class="req">*</span> <span class="pts">5점</span></label><input type="text" id="f_paymethod" placeholder="예: 본인 명의 계좌이체"></div>
-      </div>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="3">←</button><button type="button" class="btn btn-next" data-go="5">다음 →</button></div>
-    </div>
-
-    <!-- STEP 5: ③ 휴일·휴가 -->
-    <div class="step" data-step="5">
-      <span class="badge">STEP 5 / 10</span><span class="badge pt">평가 요소 ③ · 10점</span>
-      <h2>휴일·휴가 조항</h2>
-      <p class="desc">아래 조문을 <b>직접 읽고</b>, 법조항을 근거로 내 계약서의 휴일·휴가 조항을 쓰세요. "근로기준법 제○조에 의하면 ~" 형식으로! (조항당 5점)</p>
-      <div class="law-card"><button type="button" class="law-toggle">📖 제55조 (휴일) 다시 보기</button>
-        <div class="law-body"><div class="law-quote">"사용자는 근로자에게 1주에 평균 1회 이상의 유급휴일을 보장하여야 한다."</div>
-        <div class="law-easy"><b>해석</b> — 1주 소정 근로일을 개근하면 유급 주휴일(주휴수당)이 생겨요.</div></div>
-      </div>
-      <div class="law-card"><button type="button" class="law-toggle">📖 제60조 (연차 유급휴가) 다시 보기</button>
-        <div class="law-body"><div class="law-quote">"사용자는 1년간 80퍼센트 이상 출근한 근로자에게 15일의 유급휴가를 주어야 한다."</div>
-        <div class="law-easy"><b>해석</b> — 1년 성실히 다니면 돈 받으면서 쉬는 휴가가 생깁니다.</div></div>
-      </div>
-      <label>휴일·휴가 조항 1 <span class="req">*</span></label>
-      <textarea id="f_holiday1" placeholder="예: 근로기준법 제55조에 의하면 1주에 평균 1회 이상의 유급휴일을 보장해야 하므로, 근로자가 1주 개근 시 유급 주휴일을 부여한다."></textarea>
-      <label>휴일·휴가 조항 2 <span class="req">*</span></label>
-      <textarea id="f_holiday2" placeholder="예: 근로기준법 제60조에 의하면 연차 유급휴가를 주어야 하므로, 연차 유급 휴가는 법에서 정하는 바에 따라 부여한다."></textarea>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="4">←</button><button type="button" class="btn btn-next" data-go="6">다음 →</button></div>
-    </div>
-
-    <!-- STEP 6: ④ 연소보호 -->
-    <div class="step" data-step="6">
-      <span class="badge">STEP 6 / 10</span><span class="badge pt">평가 요소 ④ · 10점</span>
-      <h2>연소근로자 보호 조항</h2>
-      <p class="desc">나(18세 미만)를 지키는 조문들입니다. 원문을 읽고, 법조항을 근거로 내 계약서에 넣을 보호 조항을 쓰세요. (조항당 5점)</p>
-      <div class="law-card"><button type="button" class="law-toggle">📖 제69조 (근로시간) 원문 보기</button>
-        <div class="law-body"><div class="law-quote">"15세 이상 18세 미만인 사람의 근로시간은 1일에 7시간, 1주에 35시간을 초과하지 못한다. 다만, 당사자 사이의 합의에 따라 1일에 1시간, 1주에 5시간을 한도로 연장할 수 있다."</div></div>
-      </div>
-      <div class="law-card"><button type="button" class="law-toggle">📖 제70조 (야간근로와 휴일근로의 제한) 원문 보기</button>
-        <div class="law-body"><div class="law-quote">"사용자는 18세 미만자를 오후 10시부터 오전 6시까지의 시간 및 휴일에 근로시키지 못한다."</div></div>
-      </div>
-      <div class="law-card"><button type="button" class="law-toggle">📖 제66조·제67조 (연소자 증명서·근로계약) 원문 보기</button>
-        <div class="law-body"><div class="law-quote">"18세 미만인 사람에 대하여는 그 연령을 증명하는 가족관계기록사항에 관한 증명서와 친권자 또는 후견인의 동의서를 사업장에 갖추어 두어야 한다." (제66조) / "친권자나 후견인은 미성년자의 근로계약을 대리할 수 없다." (제67조)</div></div>
-      </div>
-      <label>보호 조항 1 <span class="req">*</span></label>
-      <textarea id="f_minor1" placeholder="예: 근로기준법 제69조에 의하면 연소근로자의 근로시간은 1일 7시간을 초과할 수 없으므로, 근로시간은 1일 7시간, 1주 35시간을 넘지 않는다."></textarea>
-      <label>보호 조항 2 <span class="req">*</span></label>
-      <textarea id="f_minor2" placeholder="예: 근로기준법 제70조에 의하면 18세 미만자에게 야간근로를 시킬 수 없으므로, 오후 10시부터 오전 6시까지 근로하지 않는다."></textarea>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="5">←</button><button type="button" class="btn btn-next" data-go="7">다음 →</button></div>
-    </div>
-
-    <!-- STEP 7: ⑤ 부당 판별 -->
-    <div class="step" data-step="7">
-      <span class="badge">STEP 7 / 10</span><span class="badge pt">평가 요소 ⑤ · 10점</span>
-      <h2>부당 조항 판별</h2>
-      <p class="desc">배운 법을 무기로 써 봅시다. 아래는 편의점 알바를 시작한 고1 지훈이가 받은 계약서예요. <b>부당한 조항 2개</b>를 고르고, <b>법조항을 근거로</b> 이유를 쓰세요. (조항+이유가 한 세트, 세트당 5점)</p>
-      <div class="info-card"><b>🧭 판별 무기 정리</b><ul><li>최저임금법 제6조 — 최저임금 미만 약정은 무효</li><li>제54조 — 4시간에 30분 이상 휴게</li><li>제69조·제70조 — 연소자 1일 7시간, 야간 금지</li><li>제43조 — 임금은 돈으로·본인에게·전액</li><li>제20조 — 지각 등에 대한 위약금·손해배상 예정 금지</li></ul></div>
+      <span class="badge">STEP 2 / 10</span><span class="badge pt">평가 요소 ⑤ · 10점</span>
+      <h2>🔍 이 계약서, 어디가 잘못됐을까?</h2>
+      <p class="desc">방금 배운 법이 여러분의 무기입니다. 편의점 알바를 시작한 고1 지훈이가 받은 계약서에서 <b>부당한 조항 2개</b>를 찾아내고, <b>몇 조 위반인지</b> 법조항을 근거로 쓰세요. (조항+이유 한 세트, 세트당 5점 — 이유 없이 고르기만 하면 인정 안 돼요!)</p>
       <div class="case-doc">
         <h3>근 로 계 약 서</h3>
         <p style="margin-bottom:8px;">사업주 ○○편의점 대표 박○○(이하 "갑")와 근로자 김지훈(17세, 이하 "을")은 다음과 같이 계약한다.</p>
@@ -379,6 +363,7 @@ body.teach .lc-wrap { box-shadow:none; }
           <li>근무 중 발생한 물품 파손·분실은 을이 전액 배상하며 임금에서 우선 공제한다.</li>
         </ol>
       </div>
+      <div class="think"><b>생각 도우미</b> — 각 조항을 STEP 1의 조문 카드와 하나씩 대조해 보세요. 시급은 어느 법과? 새벽 2시 근무는 몇 조와? 상품권은 몇 조의 어떤 원칙과 부딪히나요? (뒤로 가서 다시 읽어도 저장돼 있어요)</div>
       <label>부당하다고 생각하는 조항 2개를 선택하세요 <span class="req">*</span></label>
       <div id="caseChecks">
         <label class="check-item"><input type="checkbox" value="1조(시급 9,000원)"> <span>1조 — 시급 9,000원</span></label>
@@ -387,31 +372,118 @@ body.teach .lc-wrap { box-shadow:none; }
         <label class="check-item"><input type="checkbox" value="4조(지각 벌금 공제)"> <span>4조 — 지각 벌금 5만 원 공제</span></label>
         <label class="check-item"><input type="checkbox" value="5조(파손 전액 배상 공제)"> <span>5조 — 파손·분실 전액 배상 공제</span></label>
       </div>
-      <label>부당한 이유 1 (법조항 근거로!) <span class="req">*</span></label>
-      <textarea id="f_unfair1" placeholder="예: 1조는 최저임금법 제6조에 의하면 최저임금에 미치지 못하는 임금 약정은 무효이므로 부당하다."></textarea>
-      <label>부당한 이유 2 (법조항 근거로!) <span class="req">*</span></label>
-      <textarea id="f_unfair2" placeholder="예: 2조는 근로기준법 제69조·제70조에 의하면 연소근로자는 1일 7시간을 초과할 수 없고 야간근로가 금지되므로 위법이다."></textarea>
+      <label>부당한 이유 1 — 법조항을 근거로 <span class="req">*</span></label>
+      <textarea id="f_unfair1" placeholder="○조는 (근로기준법/최저임금법) 제○조에 의하면 ~이므로 부당하다."></textarea>
+      <label>부당한 이유 2 — 법조항을 근거로 <span class="req">*</span></label>
+      <textarea id="f_unfair2" placeholder="○조는 근로기준법 제○조에 의하면 ~이므로 부당하다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="1">←</button><button type="button" class="btn btn-next" data-go="3">바로잡으러 →</button></div>
+    </div>
+
+    <!-- STEP 3: ⑥ 수정 -->
+    <div class="step" data-step="3">
+      <span class="badge">STEP 3 / 10</span><span class="badge pt">평가 요소 ⑥ · 10점</span>
+      <h2>부당 조항 바로잡기</h2>
+      <p class="desc">찾아낸 조항 2개를 <b>법 기준을 충족하는 올바른 계약 문장</b>으로 다시 쓰세요. (조항당 5점)</p>
+      <div class="think"><b>생각 도우미</b> — 그 조문이 정한 <b>최소 기준</b>이 무엇이었죠? 수정 문장에는 그 기준이 숫자나 조건으로 드러나야 합니다. (예: 시급이라면 '얼마 이상'인지, 휴게라면 '몇 분'인지)</div>
+      <label>수정 조항 1 <span class="req">*</span></label>
+      <textarea id="f_fix1" placeholder="○조 수정 → "></textarea>
+      <label>수정 조항 2 <span class="req">*</span></label>
+      <textarea id="f_fix2" placeholder="○조 수정 → "></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="2">←</button><button type="button" class="btn btn-next" data-go="4">이제 내 계약서 쓰기 →</button></div>
+    </div>
+
+    <!-- STEP 4: ① 계약 조건 -->
+    <div class="step" data-step="4">
+      <span class="badge">STEP 4 / 10</span><span class="badge pt">평가 요소 ① · 20점</span>
+      <h2>나의 계약 — 당사자와 근로 조건</h2>
+      <p class="desc">남의 계약서를 고쳤으니, 이제 <b>내 계약서</b>를 처음부터 올바르게 씁니다. 내가 일해 보고 싶은 곳을 자유롭게 상상하세요 — 단, 제17조가 요구하는 항목은 빠짐없이!</p>
+      <label>① 사업장(가게) 이름과 사업주 이름 <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="text" id="f_employer" placeholder="사업장 이름 · 사업주 이름">
+      <label>② 내가 맡을 업무 내용 <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="text" id="f_job" placeholder="구체적으로 어떤 일을 하는지">
+      <label>③ 근로 개시일 <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="date" id="f_startdate">
+      <label>④ 근로 시간과 휴게 시간 <span class="req">*</span> <span class="pts">5점 (모두 작성해야 인정)</span></label>
+      <div class="row2">
+        <div><input type="time" id="f_tstart" value="16:00"></div>
+        <div style="flex:0 0 auto; align-self:center;">~</div>
+        <div><input type="time" id="f_tend" value="20:00"></div>
+      </div>
+      <input type="text" id="f_break" placeholder="휴게 시간 (언제부터 언제까지, 몇 분)" style="margin-top:8px;">
+      <div class="think"><b>생각 도우미</b> — 내 근무 시간을 정했다면: ⑴ 제54조 기준으로 휴게가 최소 몇 분이어야 하나? ⑵ 나는 18세 미만인데 제69·70조에 걸리지는 않나? 두 조문을 다시 열어 확인하고 쓰세요.</div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="3">←</button><button type="button" class="btn btn-next" data-go="5">다음 →</button></div>
+    </div>
+
+    <!-- STEP 5: ② 임금 -->
+    <div class="step" data-step="5">
+      <span class="badge">STEP 5 / 10</span><span class="badge pt">평가 요소 ② · 20점</span>
+      <h2>나의 계약 — 임금 조건</h2>
+      <p class="desc">내 노동의 가격을 정할 시간.</p>
+      <button type="button" class="bubble-btn" id="wageInfoBtn">💬 임금이란?</button>
+      <div class="bubble" id="wageBubble">
+        임금은 일한 대가로 받는 돈. 제43조의 4원칙 기억하죠? <b>돈으로 · 본인에게 · 전액 · 정해진 날짜에!</b><br><br>
+        그리고 나라가 정한 <b>최저임금</b> 밑으로는 못 정해요. 최저임금은 매년 바뀌는데…<br>
+        🔍 <b>포털에 "2026 최저임금"을 검색해서 올해 시급을 직접 확인하세요.</b> 그 금액 이상으로 나의 시급을 정하면 됩니다.
+      </div>
+      <label>⑤ 나의 시급 (원) <span class="req">*</span> <span class="pts">5점</span></label>
+      <input type="number" id="f_wage" inputmode="numeric" placeholder="검색해서 확인한 최저임금 이상으로!">
+      <div class="wage-check" id="wageCheck"></div>
+      <label>⑥ 시급을 이렇게 정한 근거 <span class="req">*</span> <span class="pts">5점</span></label>
+      <textarea id="f_wagereason" placeholder="⑴ 내가 검색해 확인한 2026년 최저임금 금액 → ⑵ 내 시급을 그렇게 정한 까닭. 두 가지가 모두 드러나게."></textarea>
+      <div class="row2">
+        <div><label>⑦ 임금 지급일 <span class="req">*</span> <span class="pts">5점</span></label><input type="text" id="f_payday" placeholder="제43조: 매월 1회 이상, 정한 날짜"></div>
+        <div><label>⑧ 지급 방법 <span class="req">*</span> <span class="pts">5점</span></label><input type="text" id="f_paymethod" placeholder="4원칙에 맞는 방법으로"></div>
+      </div>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="4">←</button><button type="button" class="btn btn-next" data-go="6">다음 →</button></div>
+    </div>
+
+    <!-- STEP 6: ③ 휴일·휴가 -->
+    <div class="step" data-step="6">
+      <span class="badge">STEP 6 / 10</span><span class="badge pt">평가 요소 ③ · 10점</span>
+      <h2>나의 계약 — 휴일·휴가 조항</h2>
+      <p class="desc">아래 조문을 <b>직접 다시 읽고</b>, 법조항을 근거로 내 계약서의 휴일·휴가 조항 2개를 쓰세요. "근로기준법 제○조에 의하면 ~하므로, ~한다" 형식으로! (조항당 5점)</p>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제55조 (휴일) 다시 보기</button>
+        <div class="law-body"><div class="law-quote">"사용자는 근로자에게 1주에 평균 1회 이상의 유급휴일을 보장하여야 한다."</div></div>
+      </div>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제60조 (연차 유급휴가) 다시 보기</button>
+        <div class="law-body"><div class="law-quote">"사용자는 1년간 80퍼센트 이상 출근한 근로자에게 15일의 유급휴가를 주어야 한다."</div></div>
+      </div>
+      <div class="think"><b>생각 도우미</b> — 조항 1: 매주 생기는 쉬는 날은 <b>어떤 조건</b>일 때, <b>무엇이 보장</b>되나요? 조항 2: 1년을 성실히 다니면 무엇이 생기나요? 두 조문에서 찾아 내 계약 문장으로 옮기세요.</div>
+      <label>휴일·휴가 조항 1 <span class="req">*</span></label>
+      <textarea id="f_holiday1" placeholder="근로기준법 제○조에 의하면 ~하므로, 이 계약에서는 ~한다."></textarea>
+      <label>휴일·휴가 조항 2 <span class="req">*</span></label>
+      <textarea id="f_holiday2" placeholder="근로기준법 제○조에 의하면 ~하므로, 이 계약에서는 ~한다."></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="5">←</button><button type="button" class="btn btn-next" data-go="7">다음 →</button></div>
+    </div>
+
+    <!-- STEP 7: ④ 연소보호 -->
+    <div class="step" data-step="7">
+      <span class="badge">STEP 7 / 10</span><span class="badge pt">평가 요소 ④ · 10점</span>
+      <h2>나의 계약 — 연소근로자 보호 조항</h2>
+      <p class="desc">나(18세 미만)를 지키는 조문에서 <b>내 계약서에 꼭 넣을 보호 조항 2개</b>를 골라 법조항 인용 형식으로 쓰세요. (조항당 5점)</p>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제69조 (근로시간) 원문 보기</button>
+        <div class="law-body"><div class="law-quote">"15세 이상 18세 미만인 사람의 근로시간은 1일에 7시간, 1주에 35시간을 초과하지 못한다. 다만, 당사자 사이의 합의에 따라 1일에 1시간, 1주에 5시간을 한도로 연장할 수 있다."</div></div>
+      </div>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제70조 (야간근로와 휴일근로의 제한) 원문 보기</button>
+        <div class="law-body"><div class="law-quote">"사용자는 18세 미만자를 오후 10시부터 오전 6시까지의 시간 및 휴일에 근로시키지 못한다."</div></div>
+      </div>
+      <div class="law-card"><button type="button" class="law-toggle">📖 제66조·제67조 (연소자 증명서·근로계약) 원문 보기</button>
+        <div class="law-body"><div class="law-quote">"18세 미만인 사람에 대하여는 그 연령을 증명하는 가족관계기록사항에 관한 증명서와 친권자 또는 후견인의 동의서를 사업장에 갖추어 두어야 한다." (제66조) / "친권자나 후견인은 미성년자의 근로계약을 대리할 수 없다." (제67조)</div></div>
+      </div>
+      <div class="think"><b>생각 도우미</b> — 하루 최대 몇 시간? 몇 시부터 몇 시 사이는 금지? 사업장에 갖춰야 할 서류는? 세 조문 중 <b>내 근무 계획과 직접 관련된 것</b>부터 고르세요.</div>
+      <label>보호 조항 1 <span class="req">*</span></label>
+      <textarea id="f_minor1" placeholder="근로기준법 제○조에 의하면 ~하므로, ~한다."></textarea>
+      <label>보호 조항 2 <span class="req">*</span></label>
+      <textarea id="f_minor2" placeholder="근로기준법 제○조에 의하면 ~하므로, ~한다."></textarea>
       <div class="btn-row"><button type="button" class="btn btn-prev" data-go="6">←</button><button type="button" class="btn btn-next" data-go="8">다음 →</button></div>
     </div>
 
-    <!-- STEP 8: ⑥ 수정 -->
+    <!-- STEP 8: 대처 배우기 + ⑧ 서술 -->
     <div class="step" data-step="8">
-      <span class="badge">STEP 8 / 10</span><span class="badge pt">평가 요소 ⑥ · 10점</span>
-      <h2>부당 조항 바로잡기</h2>
-      <p class="desc">앞에서 고른 부당 조항 2개를 근로기준법에 맞는 <b>올바른 조항 문장</b>으로 고쳐 쓰세요. (조항당 5점)</p>
-      <label>수정 조항 1 <span class="req">*</span></label>
-      <textarea id="f_fix1" placeholder="예: 1조 수정 → 을의 시급은 2026년 최저임금 이상인 ○○,○○○원으로 한다."></textarea>
-      <label>수정 조항 2 <span class="req">*</span></label>
-      <textarea id="f_fix2" placeholder="예: 2조 수정 → 근무시간은 17:00~21:00(1일 4시간)으로 하고, 근로기준법 제54조에 따라 30분의 휴게 시간을 준다."></textarea>
-      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="7">←</button><button type="button" class="btn btn-next" data-go="9">다음 →</button></div>
-    </div>
-
-    <!-- STEP 9: 대처 배우기 + ⑧ 서술 -->
-    <div class="step" data-step="9">
-      <span class="badge">STEP 9 / 10</span><span class="badge pt">평가 요소 ⑧ · 10점</span>
+      <span class="badge">STEP 8 / 10</span><span class="badge pt">평가 요소 ⑧ · 10점</span>
       <h2>부당한 일을 당했다면?</h2>
-      <p class="desc">먼저 <b>실제로 어떻게 대처하는지</b> 배우고, 나의 대처 계획을 서술하세요.</p>
-      <div class="help-card"><b>🚨 노동권 침해 대처 순서 — 이것만 기억하세요</b>
+      <p class="desc">계약서를 잘 써도 침해는 일어날 수 있어요. <b>유형마다 찾아갈 곳이 다르다</b>는 게 오늘의 마지막 무기입니다.</p>
+      <div class="help-card"><b>🚨 노동권 침해 대처 — 순서와 기관</b>
         <ol>
           <li><b>증거 모으기</b> — 근로계약서, 출퇴근 기록, 급여 내역, 대화 캡처</li>
           <li><b>사업주에게 먼저 요구</b> — 계약서와 법을 근거로 시정 요청</li>
@@ -423,8 +495,19 @@ body.teach .lc-wrap { box-shadow:none; }
           <li>혼자 해결하려 하지 말고 <b>반드시 어른(부모님·선생님)에게 알리기</b></li>
         </ol>
       </div>
-      <label>⑧ 내가 일하다 부당한 일을 당하면 어떻게 대처할지, <b>침해 유형에 맞는 기관</b>까지 넣어 절차대로 서술하세요 <span class="req">*</span></label>
-      <textarea id="f_essay2" style="min-height:130px" placeholder="예: 먼저 근로계약서와 급여 내역 등 증거를 모으고, 사업주에게 시정을 요구한다. 해결되지 않으면 1350에 상담한 뒤, 임금 문제는 고용노동부에 진정하고 부당해고라면 3개월 이내에 노동위원회에 구제신청을 한다. 이 과정을 부모님과 선생님께 알리고 함께 진행한다."></textarea>
+      <div class="think"><b>생각 도우미</b> — 지훈이 계약서에서 내가 찾아낸 그 침해라면, 어느 기관으로 가야 할까요? 나의 서술에는 ⑴순서 ⑵유형에 맞는 기관이 모두 들어가야 합니다.</div>
+      <label>⑧ 내가 일하다 부당한 일을 당하면 어떻게 대처할지, <b>절차 순서대로 + 유형에 맞는 기관을 넣어</b> 나의 말로 서술하세요 <span class="req">*</span></label>
+      <textarea id="f_essay2" style="min-height:130px" placeholder="먼저 ~하고, 다음으로 ~한다. 만약 (침해 유형)이라면 (기관)에 ~한다. 이 과정에서 ~"></textarea>
+      <div class="btn-row"><button type="button" class="btn btn-prev" data-go="7">←</button><button type="button" class="btn btn-next" data-go="9">마지막 질문 →</button></div>
+    </div>
+
+    <!-- STEP 9: ⑦ 필요성 (마지막 성찰) -->
+    <div class="step" data-step="9">
+      <span class="badge">STEP 9 / 10</span><span class="badge pt">평가 요소 ⑦ · 10점</span>
+      <h2>🪞 처음의 질문, 마지막에 답하기</h2>
+      <p class="desc">잘못된 계약서를 잡아냈고, 나의 계약서를 법에 맞게 완성했고, 대처법까지 배웠습니다. 이제 답할 수 있어요 — <b>근로계약서는 왜 청소년의 노동권을 지켜줄까요?</b> 오늘 직접 겪은 과정과 <b>배운 법 조항을 최소 1개 근거로</b> 들어, 완성된 문장으로 서술하세요. (서술 10점 / 단어 나열 5점)</p>
+      <div class="think"><b>생각 도우미</b> — 만약 지훈이에게 계약서가 아예 없었다면 무엇이 달라졌을까요? 서면(제17조)은 왜 힘이 세고, 법 위반 조항(제15조)은 왜 무효가 될까요? 오늘 여러분이 계약서를 '고칠 수 있었던' 이유를 떠올려 보세요.</p></div>
+      <textarea id="f_essay1" style="min-height:130px" placeholder="근로계약서는 ~기 때문에 청소년의 노동권을 지켜준다. 특히 근로기준법 제○조는 ~"></textarea>
       <div class="btn-row"><button type="button" class="btn btn-prev" data-go="8">←</button><button type="button" class="btn btn-next" data-go="10">완성본 확인 →</button></div>
     </div>
 
@@ -436,7 +519,7 @@ body.teach .lc-wrap { box-shadow:none; }
       <div id="previewArea"></div>
       <div class="btn-row"><button type="button" class="btn btn-submit" id="btnSubmit">📮 제출하기</button></div>
       <div class="btn-row"><button type="button" class="btn btn-copy" id="btnCopy">📋 제출 내용 복사 (백업)</button></div>
-      <div class="hint" style="margin-top:8px;">제출하면 이 페이지의 저장소에 바로 기록됩니다. 여러 번 제출하면 <b>마지막 제출</b>이 채점 대상이에요.</div>
+      <div class="hint" style="margin-top:8px;">제출하면 선생님의 수합함(구글폼)으로 바로 전송됩니다. 여러 번 제출하면 <b>마지막 제출</b>이 채점 대상이에요.</div>
       <div class="btn-row"><button type="button" class="btn btn-prev" data-go="9">← 수정하기</button></div>
     </div>
 
@@ -1305,6 +1388,23 @@ function init(){
       e.preventDefault();
       var card = this.parentNode;
       card.className = (card.className.indexOf("open")>=0) ? "law-card" : "law-card open";
+    });
+  }
+  // OX 자가 점검
+  var oxs = document.querySelectorAll(".ox-btn");
+  for (i=0;i<oxs.length;i++){
+    oxs[i].addEventListener("click", function(e){
+      e.preventDefault();
+      var wrap = this.parentNode;
+      var fb = wrap.querySelector(".ox-fb");
+      var correct = wrap.getAttribute("data-a");
+      var pick = this.getAttribute("data-v");
+      fb.style.display = "block";
+      fb.className = "ox-fb " + (pick === correct ? "good" : "bad");
+      fb.textContent = (pick === correct ? "⭕ 정답! " : "❌ 다시 생각! ") + wrap.getAttribute("data-w");
+      var btns = wrap.querySelectorAll(".ox-btn");
+      var k;
+      for (k=0;k<btns.length;k++){ btns[k].disabled = true; }
     });
   }
   // 임금이란? 말풍선
