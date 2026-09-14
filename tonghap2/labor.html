@@ -647,14 +647,14 @@ function buildBody(){
 }
 
 /* ---- 구글폼 제출 (GitHub Pages판) ---- */
-var GFORM = { id: "1FAIpQLSd7ILnwKU0CwCOEWG0p2zIrpqBrejB1n56dY1Wkiu-LgRDZ2Q", e_cls: "371829430", e_no: "997620148", e_name: "461148888", e_body: "2062644262", sheet: "__SHEET_URL__" };
+var GFORM = { id: "1FAIpQLSd7ILnwKU0CwCOEWG0p2zIrpqBrejB1n56dY1Wkiu-LgRDZ2Q", e_cls: "371829430", e_no: "997620148", e_name: "461148888", e_body: "2062644262", sheet: "__SHEET_URL__", sheetcsv: "__SHEET_CSV__" };
 function gformReady(){ return GFORM.id.indexOf("__") !== 0; }
 function submitViaGform(payload, done){
   var fd = new FormData();
   fd.append("entry." + GFORM.e_cls, payload.cls);
   fd.append("entry." + GFORM.e_no, payload.sid);
   fd.append("entry." + GFORM.e_name, payload.name);
-  fd.append("entry." + GFORM.e_body, payload.body + "\n◆[제출시각] " + payload.submittedAt + "\n◆[비번반] " + payload.authCls);
+  fd.append("entry." + GFORM.e_body, payload.body + "\n◆[제출시각] " + payload.submittedAt + "\n◆[비번반] " + payload.authCls + "\n◆[수행] " + TOOL_TAG);
   try {
     fetch("https://docs.google.com/forms/d/e/" + GFORM.id + "/formResponse", { method:"POST", mode:"no-cors", body:fd })
       .then(function(){ done(true); }).catch(function(){ done(false); });
@@ -1082,7 +1082,8 @@ function buildCsv(){
 
 /* ---- 수업 진행 모드 ---- */
 var PWD_ENC = { "스마트용접과 1반":"0a2d9602082c811c9d1024f0a5", "스마트용접과 2반":"1a095f3c50b01cd55c88d4b1b8", "융합기계과 1반":"2e7f4dc5dcf244b43e5687055c", "융합기계과 2반":"e42d72100ae65a0883647447e9", "스마트금형과 1반":"31b57b184decf8567911cd73ee", "스마트금형과 2반":"c163d75a8f85de046fa3354e1f" };
-var TEACH = { on:false, timer:null, url:"" };
+var TEACH = { on:false, timer:null, url:"https://kste200267-boop.github.io/teaching-tools/tonghap2/" };
+var TOOL_TAG = "근로계약서";
 function decDispPw(cls, cb){
   var enc = PWD_ENC[cls];
   if (!enc){ cb(""); return; }
@@ -1099,13 +1100,13 @@ function enterTeachMode(){
   $("teachBar").style.display = "block";
   document.body.className = "teach";
   gotoStep(1);
+  drawTeachQr();
   try {
     window.storage.get("teach_setup").then(function(res){
       var d = res && res.value ? JSON.parse(res.value) : {};
-      if (d.url){ TEACH.url = d.url; drawTeachQr(); } else { $("urlSet").style.display = "block"; }
       if (d.cls){ $("teachCls").value = d.cls; }
       teachClsChanged();
-    }).catch(function(){ $("urlSet").style.display = "block"; teachClsChanged(); });
+    }).catch(function(){ teachClsChanged(); });
   } catch(e){ teachClsChanged(); }
   if (TEACH.timer) clearInterval(TEACH.timer);
   TEACH.timer = setInterval(updateTeachLive, 20000);
@@ -1141,38 +1142,69 @@ function teachClsChanged(){
   saveTeachSetup();
   updateTeachLive();
 }
+function parseCSV(t){
+  var rows = [], row = [], cur = "", q = false, i, c;
+  for (i=0;i<t.length;i++){
+    c = t[i];
+    if (q){
+      if (c === '"'){ if (t[i+1] === '"'){ cur += '"'; i++; } else { q = false; } }
+      else { cur += c; }
+    } else {
+      if (c === '"'){ q = true; }
+      else if (c === ','){ row.push(cur); cur = ""; }
+      else if (c === '\n'){ row.push(cur); rows.push(row); row = []; cur = ""; }
+      else if (c === '\r'){ }
+      else { cur += c; }
+    }
+  }
+  if (cur !== "" || row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+function rowIsThisTool(body){
+  if (!body) return false;
+  if (body.indexOf("◆[수행] " + TOOL_TAG) >= 0) return true;
+  if (body.indexOf("◆[수행]") >= 0) return false;
+  var isLife = body.indexOf("청소년기특징") >= 0 || body.indexOf("최종자산") >= 0;
+  return TOOL_TAG === "생애주기" ? isLife : !isLife;
+}
 function updateTeachLive(){
   if (!TEACH.on) return;
-  if (true){
-    $("teachLive").innerHTML = GFORM.sheet.indexOf("__") !== 0 ? '<a href="' + GFORM.sheet + '" target="_blank" style="color:#a7f3d0;">📊 응답 시트에서 제출 확인</a>' : "제출은 응답 시트에서 확인";
+  var cls = $("teachCls").value;
+  if (GFORM.sheetcsv.indexOf("__") === 0){
+    $("teachLive").textContent = "제출 확인: 폼 응답 탭에서 (실시간 연결은 시트 게시 링크 필요)";
     $("teachMiss").textContent = "";
     return;
   }
-  var cls = $("teachCls").value;
-  var prefix = "submit:" + cls.replace(/\s+/g, "") + ":";
   try {
-    window.storage.list(prefix, true).then(function(res){
-      var keys = (res && res.keys) ? res.keys : [];
-      var subs = {}, i;
-      for (i=0;i<keys.length;i++){
-        var parts = keys[i].split(":");
-        subs[String(parseInt(parts[2],10))] = true;
-      }
-      var totalN = 0, subN = 0, missArr = [], no;
-      if (ROSTER_READY && ROSTER[cls]){
-        for (no in ROSTER[cls]){
-          totalN++;
-          if (subs[no]) subN++;
-          else missArr.push(no + " " + ROSTER[cls][no]);
+    fetch(GFORM.sheetcsv + (GFORM.sheetcsv.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ return r.text(); })
+      .then(function(text){
+        var rows = parseCSV(text), subs = {}, i;
+        for (i=1;i<rows.length;i++){
+          var r = rows[i];
+          if (!r || r.length < 5) continue;
+          if (String(r[1]).replace(/\s+/g,"") !== cls.replace(/\s+/g,"")) continue;
+          if (!rowIsThisTool(String(r[4]))) continue;
+          var no = String(parseInt(r[2],10));
+          if (no !== "NaN") subs[no] = true;
         }
-        $("teachLive").textContent = "✅ 제출 " + subN + " / " + totalN;
-        $("teachMiss").textContent = missArr.length ? ("미제출: " + missArr.join(", ")) : "🎉 전원 제출!";
-      } else {
-        $("teachLive").textContent = "✅ 제출 " + keys.length + "명";
-        $("teachMiss").textContent = "";
-      }
-    }).catch(function(){ $("teachLive").textContent = "제출 확인 실패"; });
-  } catch(e){ $("teachLive").textContent = "저장소 사용 불가"; }
+        var totalN = 0, subN = 0, missArr = [], no2;
+        if (ROSTER_READY && ROSTER[cls]){
+          for (no2 in ROSTER[cls]){
+            totalN++;
+            if (subs[no2]) subN++;
+            else missArr.push(no2 + " " + ROSTER[cls][no2]);
+          }
+          $("teachLive").textContent = "✅ 제출 " + subN + " / " + totalN;
+          $("teachMiss").textContent = missArr.length ? ("미제출: " + missArr.join(", ")) : "🎉 전원 제출!";
+        } else {
+          var cnt = 0, k; for (k in subs) cnt++;
+          $("teachLive").textContent = "✅ 제출 " + cnt + "명";
+          $("teachMiss").textContent = "";
+        }
+      })
+      .catch(function(){ $("teachLive").textContent = "시트 연결 실패 — 폼 응답 탭에서 확인"; $("teachMiss").textContent = ""; });
+  } catch(e){ $("teachLive").textContent = "제출 확인 불가"; }
 }
 function bindTeach(){
   $("btnTeach").addEventListener("click", function(e){ e.preventDefault(); enterTeachMode(); });
