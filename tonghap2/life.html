@@ -153,7 +153,13 @@ body.teach .lc-wrap { box-shadow:none; }
 .tb-pw .tb-pwv { font-size:30px; font-weight:900; color:#fbbf24; letter-spacing:2px; margin-top:5px; line-height:1.15; }
 .tb-pw .tb-live { font-size:12.5px; color:#a7f3d0; margin-top:6px; font-weight:700; }
 .tb-pw .tb-miss { font-size:11px; color:#fca5a5; margin-top:3px; max-width:230px; word-break:keep-all; }
-.tb-min { position:absolute; top:2px; right:6px; background:none; border:none; font-weight:900; cursor:pointer; font-size:15px; color:#94a3b8; font-family:inherit; padding:2px 4px; }
+.tb-min { position:absolute; top:4px; right:6px; background:#eef2f1; border:1.5px solid #cbd5e1; border-radius:8px; font-weight:900; cursor:pointer; font-size:15px; color:#334155; font-family:inherit; padding:2px 9px; }
+.tb-pw .tb-min { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.3); color:#e2e8f0; }
+.tb-nav { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:300; display:flex; align-items:center; gap:10px; background:rgba(15,23,42,.88); border-radius:26px; padding:8px 14px; }
+.tb-nav button { background:#2563eb; color:#fff; border:none; border-radius:18px; padding:10px 22px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
+.tb-nav button:disabled { opacity:.35; }
+.tb-nav .tn-step { color:#e2e8f0; font-size:13px; font-weight:800; min-width:76px; text-align:center; }
+
 .tb-qr { position:fixed; }
 .tb-qr .tb-mini-label { display:none; }
 .tb-qr.min { width:auto; padding:7px 30px 7px 12px; cursor:pointer; }
@@ -162,7 +168,7 @@ body.teach .lc-wrap { box-shadow:none; }
 .tb-pw.min { min-width:0; padding:7px 30px 7px 12px; cursor:pointer; }
 .tb-pw.min select, .tb-pw.min .tb-pwv, .tb-pw.min .tb-miss { display:none; }
 .tb-pw.min .tb-live { margin-top:0; }
-.tb-exit { position:fixed; bottom:12px; left:10px; z-index:300; background:#7f1d1d; color:#fff; border:none; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+.tb-exit { position:fixed; bottom:14px; left:10px; z-index:300; background:#7f1d1d; color:#fff; border:none; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 </style>
 </head>
 <body>
@@ -316,6 +322,7 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="tb-live" id="teachLive">제출 현황 준비 중</div>
     <div class="tb-miss" id="teachMiss"></div>
   </div>
+  <div class="tb-nav"><button type="button" id="tnPrev">◀ 이전</button><span class="tn-step" id="tnStep"></span><button type="button" id="tnNext">다음 ▶</button></div>
   <button type="button" class="tb-exit" id="btnTeachExit">⏹ 수업 종료 → 채점 화면</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -580,6 +587,14 @@ function loadAll(){
     }).catch(function(){});
   } catch(e){}
 }
+function updateTeachNav(){
+  if (typeof TEACH === "undefined" || !TEACH.on) return;
+  var st = $("tnStep"), p = $("tnPrev"), nx = $("tnNext");
+  if (!st) return;
+  st.textContent = "STEP " + curStep + " / " + 3;
+  p.disabled = (curStep <= 0);
+  nx.disabled = (curStep >= 3);
+}
 function gotoStep(n){
   var steps = document.querySelectorAll(".step"), i;
   for (i=0;i<steps.length;i++){ steps[i].className = "step"; }
@@ -588,6 +603,7 @@ function gotoStep(n){
   curStep = n;
   $("chartDock").style.display = (n >= 1) ? "block" : "none";
   window.scrollTo(0,0);
+  updateTeachNav();
   if (n === 2){ renderSettle(); drawChart(); }
   if (n === 3) renderPreview();
   saveAll();
@@ -1109,6 +1125,7 @@ function enterTeachMode(){
   $("teachBar").style.display = "block";
   document.body.className = "teach";
   gotoStep(1);
+  updateTeachNav();
   drawTeachQr();
   try {
     window.storage.get("teach_setup").then(function(res){
@@ -1246,6 +1263,15 @@ function bindTeach(){
   }
   bindMin("tbQr", "qrMin");
   bindMin("tbPw", "pwMin");
+  $("tnPrev").addEventListener("click", function(e){ e.preventDefault(); if (curStep > 0) gotoStep(curStep - 1); });
+  $("tnNext").addEventListener("click", function(e){ e.preventDefault(); if (curStep < 3) gotoStep(curStep + 1); });
+  document.addEventListener("keydown", function(e){
+    if (!TEACH.on) return;
+    var tag = (e.target && e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.key === "ArrowRight" || e.key === "PageDown"){ e.preventDefault(); if (curStep < 3) gotoStep(curStep + 1); }
+    if (e.key === "ArrowLeft" || e.key === "PageUp"){ e.preventDefault(); if (curStep > 0) gotoStep(curStep - 1); }
+  });
 }
 
 function bindTeacher(){
