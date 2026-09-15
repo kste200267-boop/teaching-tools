@@ -175,7 +175,13 @@ body.teach .lc-wrap { box-shadow:none; }
 .tb-pw .tb-pwv { font-size:30px; font-weight:900; color:#fbbf24; letter-spacing:2px; margin-top:5px; line-height:1.15; }
 .tb-pw .tb-live { font-size:12.5px; color:#a7f3d0; margin-top:6px; font-weight:700; }
 .tb-pw .tb-miss { font-size:11px; color:#fca5a5; margin-top:3px; max-width:230px; word-break:keep-all; }
-.tb-min { position:absolute; top:2px; right:6px; background:none; border:none; font-weight:900; cursor:pointer; font-size:15px; color:#94a3b8; font-family:inherit; padding:2px 4px; }
+.tb-min { position:absolute; top:4px; right:6px; background:#eef2f1; border:1.5px solid #cbd5e1; border-radius:8px; font-weight:900; cursor:pointer; font-size:15px; color:#334155; font-family:inherit; padding:2px 9px; }
+.tb-pw .tb-min { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.3); color:#e2e8f0; }
+.tb-nav { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:300; display:flex; align-items:center; gap:10px; background:rgba(15,23,42,.88); border-radius:26px; padding:8px 14px; }
+.tb-nav button { background:#2563eb; color:#fff; border:none; border-radius:18px; padding:10px 22px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
+.tb-nav button:disabled { opacity:.35; }
+.tb-nav .tn-step { color:#e2e8f0; font-size:13px; font-weight:800; min-width:76px; text-align:center; }
+
 .tb-qr { position:fixed; }
 .tb-qr .tb-mini-label { display:none; }
 .tb-qr.min { width:auto; padding:7px 30px 7px 12px; cursor:pointer; }
@@ -184,7 +190,7 @@ body.teach .lc-wrap { box-shadow:none; }
 .tb-pw.min { min-width:0; padding:7px 30px 7px 12px; cursor:pointer; }
 .tb-pw.min select, .tb-pw.min .tb-pwv, .tb-pw.min .tb-miss { display:none; }
 .tb-pw.min .tb-live { margin-top:0; }
-.tb-exit { position:fixed; bottom:12px; left:10px; z-index:300; background:#7f1d1d; color:#fff; border:none; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+.tb-exit { position:fixed; bottom:14px; left:10px; z-index:300; background:#7f1d1d; color:#fff; border:none; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 </style>
 </head>
 <body>
@@ -213,6 +219,17 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="step active" data-step="0">
       <div class="start-hero"><div class="emoji">📋</div></div>
       <h2>내가 사장님과 쓰는 첫 근로계약서</h2>
+      <div class="fig"><svg viewBox="0 0 520 110" xmlns="http://www.w3.org/2000/svg">
+<rect x="195" y="14" width="130" height="86" rx="6" fill="#fff" stroke="#2c3e50" stroke-width="2"/>
+<text x="260" y="34" font-size="12" text-anchor="middle" font-weight="700" fill="#2c3e50">근로계약서</text>
+<line x1="210" y1="46" x2="310" y2="46" stroke="#d5dbdb" stroke-width="2"/><line x1="210" y1="58" x2="310" y2="58" stroke="#d5dbdb" stroke-width="2"/><line x1="210" y1="70" x2="290" y2="70" stroke="#d5dbdb" stroke-width="2"/>
+<text x="214" y="90" font-size="10" fill="#1a5276">서명: ______</text>
+<circle cx="90" cy="42" r="16" fill="#f5cba7"/><rect x="74" y="60" width="32" height="34" rx="8" fill="#2874a6"/>
+<text x="90" y="108" font-size="11" text-anchor="middle" fill="#5d6d7e">나 (근로자)</text>
+<circle cx="430" cy="42" r="16" fill="#f5cba7"/><rect x="414" y="60" width="32" height="34" rx="8" fill="#616a6b"/>
+<text x="430" y="108" font-size="11" text-anchor="middle" fill="#5d6d7e">사장님 (사용자)</text>
+<path d="M120 76 h60" stroke="#1e8449" stroke-width="2.5" marker-end="none"/><path d="M340 76 h60" stroke="#1e8449" stroke-width="2.5"/>
+</svg><div class="fig-cap">근로계약서 = 나와 사용자가 근로 조건을 서면으로 약속하는 문서 (제17조)</div></div>
       <p class="desc">현장실습·알바·취업에서 <b>가장 먼저 만나는 서류</b>가 근로계약서입니다. 오늘은 근로기준법 원문을 직접 읽고 → 잘못된 계약서를 잡아내고 → 법을 근거로 나의 계약서를 완성합니다. 예시 답은 없어요 — <b>법 조문이 여러분의 답안 근거</b>입니다. 작성 내용은 자동 저장됩니다.</p>
       <div class="eval-box"><b>📌 평가 안내 (총 100점)</b> — 아래 표의 요소가 그대로 채점 기준입니다. 모든 항목은 <b>항목당 5점</b>.</div>
       <table class="rubric-table">
@@ -351,6 +368,17 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="step" data-step="2">
       <span class="badge">STEP 2 / 10</span><span class="badge pt">평가 요소 ⑤ · 10점</span>
       <h2>🔍 이 계약서, 어디가 잘못됐을까?</h2>
+      <div class="fig"><svg viewBox="0 0 520 96" xmlns="http://www.w3.org/2000/svg">
+<rect x="60" y="10" width="150" height="80" rx="6" fill="#fff" stroke="#2c3e50" stroke-width="2"/>
+<line x1="74" y1="30" x2="196" y2="30" stroke="#d5dbdb" stroke-width="2"/>
+<line x1="74" y1="46" x2="196" y2="46" stroke="#e74c3c" stroke-width="2.5"/><text x="202" y="50" font-size="14" fill="#e74c3c" font-weight="900">✗</text>
+<line x1="74" y1="62" x2="196" y2="62" stroke="#d5dbdb" stroke-width="2"/>
+<line x1="74" y1="78" x2="180" y2="78" stroke="#e74c3c" stroke-width="2.5"/><text x="186" y="82" font-size="14" fill="#e74c3c" font-weight="900">✗</text>
+<circle cx="300" cy="46" r="26" fill="none" stroke="#1a5276" stroke-width="5"/><line x1="319" y1="65" x2="345" y2="91" stroke="#1a5276" stroke-width="7" stroke-linecap="round"/>
+<text x="300" y="52" font-size="16" text-anchor="middle">📖</text>
+<text x="420" y="42" font-size="12" fill="#2c3e50" font-weight="700">조문과 대조하며</text>
+<text x="420" y="60" font-size="12" fill="#c0392b" font-weight="700">위반을 찾아라!</text>
+</svg><div class="fig-cap">탐정의 도구는 감이 아니라 법조문 — 조항 하나하나를 STEP 1 카드와 대조</div></div>
       <p class="desc">방금 배운 법이 여러분의 무기입니다. 편의점 알바를 시작한 고1 지훈이가 받은 계약서에서 <b>부당한 조항 2개</b>를 찾아내고, <b>몇 조 위반인지</b> 법조항을 근거로 쓰세요. (조항+이유 한 세트, 세트당 5점 — 이유 없이 고르기만 하면 인정 안 돼요!)</p>
       <div class="case-doc">
         <h3>근 로 계 약 서</h3>
@@ -428,6 +456,15 @@ body.teach .lc-wrap { box-shadow:none; }
       <label>⑤ 나의 시급 (원) <span class="req">*</span> <span class="pts">5점</span></label>
       <input type="number" id="f_wage" inputmode="numeric" placeholder="검색해서 확인한 최저임금 이상으로!">
       <div class="wage-check" id="wageCheck"></div>
+      <div class="fig"><svg viewBox="0 0 520 92" xmlns="http://www.w3.org/2000/svg">
+<g text-anchor="middle">
+<rect x="16" y="12" width="110" height="56" rx="10" fill="#e8f8f0"/><text x="71" y="36" font-size="18">💵</text><text x="71" y="58" font-size="11" font-weight="800" fill="#1e8449">돈으로 (통화)</text>
+<rect x="146" y="12" width="110" height="56" rx="10" fill="#e8f8f0"/><text x="201" y="36" font-size="18">🙋</text><text x="201" y="58" font-size="11" font-weight="800" fill="#1e8449">나에게 (직접)</text>
+<rect x="276" y="12" width="110" height="56" rx="10" fill="#e8f8f0"/><text x="331" y="36" font-size="18">💯</text><text x="331" y="58" font-size="11" font-weight="800" fill="#1e8449">전부 (전액)</text>
+<rect x="406" y="12" width="110" height="56" rx="10" fill="#e8f8f0"/><text x="461" y="36" font-size="18">📅</text><text x="461" y="58" font-size="11" font-weight="800" fill="#1e8449">제날짜에 (정기)</text>
+</g>
+<text x="260" y="86" font-size="11" text-anchor="middle" fill="#7f8c8d">제43조 임금 지급 4원칙 — 지급일·방법이 이 넷과 부딪히면 탈락!</text>
+</svg></div>
       <label>⑥ 시급을 이렇게 정한 근거 <span class="req">*</span> <span class="pts">5점</span></label>
       <textarea id="f_wagereason" placeholder="⑴ 내가 검색해 확인한 2026년 최저임금 금액 → ⑵ 내 시급을 그렇게 정한 까닭. 두 가지가 모두 드러나게."></textarea>
       <div class="row2">
@@ -482,6 +519,15 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="step" data-step="8">
       <span class="badge">STEP 8 / 10</span><span class="badge pt">평가 요소 ⑧ · 10점</span>
       <h2>부당한 일을 당했다면?</h2>
+      <div class="fig"><svg viewBox="0 0 520 118" xmlns="http://www.w3.org/2000/svg">
+<rect x="185" y="8" width="150" height="30" rx="8" fill="#fdecea" stroke="#e74c3c"/><text x="260" y="28" font-size="12" text-anchor="middle" font-weight="800" fill="#c0392b">노동권 침해 발생!</text>
+<path d="M225 38 L110 62" stroke="#7f8c8d" stroke-width="2"/><path d="M260 38 L260 62" stroke="#7f8c8d" stroke-width="2"/><path d="M295 38 L410 62" stroke="#7f8c8d" stroke-width="2"/>
+<g text-anchor="middle">
+<rect x="20" y="62" width="180" height="48" rx="8" fill="#eaf2f8" stroke="#2874a6"/><text x="110" y="80" font-size="11" font-weight="800" fill="#1a5276">임금체불·최저임금 위반</text><text x="110" y="98" font-size="11.5" font-weight="800" fill="#c0392b">→ 고용노동부 진정</text>
+<rect x="215" y="62" width="130" height="48" rx="8" fill="#eaf2f8" stroke="#2874a6"/><text x="280" y="80" font-size="11" font-weight="800" fill="#1a5276">부당해고 (3개월!)</text><text x="280" y="98" font-size="11.5" font-weight="800" fill="#c0392b">→ 노동위원회</text>
+<rect x="360" y="62" width="145" height="48" rx="8" fill="#eaf2f8" stroke="#2874a6"/><text x="432" y="80" font-size="11" font-weight="800" fill="#1a5276">부당노동행위</text><text x="432" y="98" font-size="11.5" font-weight="800" fill="#c0392b">→ 노동위원회</text>
+</g>
+</svg><div class="fig-cap">침해 유형이 다르면 찾아갈 곳도 다르다 — 서술에 "유형 + 기관"이 함께!</div></div>
       <p class="desc">계약서를 잘 써도 침해는 일어날 수 있어요. <b>유형마다 찾아갈 곳이 다르다</b>는 게 오늘의 마지막 무기입니다.</p>
       <div class="help-card"><b>🚨 노동권 침해 대처 — 순서와 기관</b>
         <ol>
@@ -505,6 +551,14 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="step" data-step="9">
       <span class="badge">STEP 9 / 10</span><span class="badge pt">평가 요소 ⑦ · 10점</span>
       <h2>🪞 처음의 질문, 마지막에 답하기</h2>
+      <div class="fig"><svg viewBox="0 0 520 96" xmlns="http://www.w3.org/2000/svg">
+<line x1="260" y1="16" x2="260" y2="66" stroke="#2c3e50" stroke-width="4"/><line x1="160" y1="26" x2="360" y2="26" stroke="#2c3e50" stroke-width="4"/>
+<path d="M160 26 l-24 30 h48 z" fill="#f7dc6f" stroke="#b9770e"/><path d="M360 26 l-24 30 h48 z" fill="#f7dc6f" stroke="#b9770e"/>
+<rect x="230" y="66" width="60" height="10" rx="3" fill="#2c3e50"/>
+<text x="160" y="46" font-size="12" text-anchor="middle" font-weight="800" fill="#6e2c00">근로자</text>
+<text x="360" y="46" font-size="12" text-anchor="middle" font-weight="800" fill="#6e2c00">사용자</text>
+<text x="260" y="92" font-size="11.5" text-anchor="middle" fill="#7f8c8d">계약서와 법이 있어야 기울어진 관계가 수평이 된다 — 왜일까?</text>
+</svg></div>
       <p class="desc">잘못된 계약서를 잡아냈고, 나의 계약서를 법에 맞게 완성했고, 대처법까지 배웠습니다. 이제 답할 수 있어요 — <b>근로계약서는 왜 청소년의 노동권을 지켜줄까요?</b> 오늘 직접 겪은 과정과 <b>배운 법 조항을 최소 1개 근거로</b> 들어, 완성된 문장으로 서술하세요. (서술 10점 / 단어 나열 5점)</p>
       <div class="think"><b>생각 도우미</b> — 만약 지훈이에게 계약서가 아예 없었다면 무엇이 달라졌을까요? 서면(제17조)은 왜 힘이 세고, 법 위반 조항(제15조)은 왜 무효가 될까요? 오늘 여러분이 계약서를 '고칠 수 있었던' 이유를 떠올려 보세요.</p></div>
       <textarea id="f_essay1" style="min-height:130px" placeholder="근로계약서는 ~기 때문에 청소년의 노동권을 지켜준다. 특히 근로기준법 제○조는 ~"></textarea>
@@ -572,6 +626,7 @@ body.teach .lc-wrap { box-shadow:none; }
     <div class="tb-live" id="teachLive">제출 현황 준비 중</div>
     <div class="tb-miss" id="teachMiss"></div>
   </div>
+  <div class="tb-nav"><button type="button" id="tnPrev">◀ 이전</button><span class="tn-step" id="tnStep"></span><button type="button" id="tnNext">다음 ▶</button></div>
   <button type="button" class="tb-exit" id="btnTeachExit">⏹ 수업 종료 → 채점 화면</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -644,6 +699,14 @@ function getCaseChecks(){
   for (i=0;i<boxes.length;i++){ if (boxes[i].checked) out.push(boxes[i].value); }
   return out;
 }
+function updateTeachNav(){
+  if (typeof TEACH === "undefined" || !TEACH.on) return;
+  var st = $("tnStep"), p = $("tnPrev"), nx = $("tnNext");
+  if (!st) return;
+  st.textContent = "STEP " + curStep + " / " + 10;
+  p.disabled = (curStep <= 0);
+  nx.disabled = (curStep >= 10);
+}
 function gotoStep(n){
   var steps = document.querySelectorAll(".step"), i;
   for (i=0;i<steps.length;i++){ steps[i].className = "step"; }
@@ -652,6 +715,7 @@ function gotoStep(n){
   curStep = n;
   $("pbar").style.width = Math.round(n/TOTAL_STEPS*100) + "%";
   window.scrollTo(0,0);
+  updateTeachNav();
   if (n === 10) renderPreview();
   saveAll();
 }
@@ -1195,6 +1259,7 @@ function enterTeachMode(){
   $("teachBar").style.display = "block";
   document.body.className = "teach";
   gotoStep(1);
+  updateTeachNav();
   drawTeachQr();
   try {
     window.storage.get("teach_setup").then(function(res){
@@ -1332,6 +1397,15 @@ function bindTeach(){
   }
   bindMin("tbQr", "qrMin");
   bindMin("tbPw", "pwMin");
+  $("tnPrev").addEventListener("click", function(e){ e.preventDefault(); if (curStep > 0) gotoStep(curStep - 1); });
+  $("tnNext").addEventListener("click", function(e){ e.preventDefault(); if (curStep < 10) gotoStep(curStep + 1); });
+  document.addEventListener("keydown", function(e){
+    if (!TEACH.on) return;
+    var tag = (e.target && e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.key === "ArrowRight" || e.key === "PageDown"){ e.preventDefault(); if (curStep < 10) gotoStep(curStep + 1); }
+    if (e.key === "ArrowLeft" || e.key === "PageUp"){ e.preventDefault(); if (curStep > 0) gotoStep(curStep - 1); }
+  });
 }
 
 function bindTeacher(){
