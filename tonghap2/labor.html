@@ -683,6 +683,7 @@ function loadAll(){
       if (!res || !res.value) return;
       var data = JSON.parse(res.value), i;
       for (i=0;i<FIELDS.length;i++){ var el=$(FIELDS[i]); if(el && data[FIELDS[i]]!==undefined) el.value=data[FIELDS[i]]; }
+      if (AUTH_CLS && $("sel_cls")){ $("sel_cls").value = AUTH_CLS; }
       if (data._checks){
         var boxes = document.querySelectorAll("#caseChecks input");
         for (i=0;i<boxes.length;i++){
@@ -725,10 +726,25 @@ function verifyIdentity(cb){
   if (!cls || !no || !nm){ showToast("학과·반, 번호, 이름을 모두 선택·입력해 주세요"); cb(false); return; }
   var key = cls + "|" + no;
   if (!NAME_HASH[key]){ showToast("명렬에 없는 번호예요 — 반과 번호를 다시 확인하세요"); cb(false); return; }
+  if (AUTH_CLS && cls !== AUTH_CLS){ showToast("입장한 비밀번호는 [" + AUTH_CLS + "] 것이에요 — 우리 반 비밀번호로 다시 들어오세요!"); cb(false); return; }
   var normName = nm.replace(/\s+/g, "").toUpperCase();
   sha256Hex(cls + "|" + no + "|" + normName, function(hex){
-    if (hex === NAME_HASH[key]){ cb(true); }
-    else { showToast("이름이 명렬과 달라요 — 우리 반·내 번호·내 이름(공백 없이)이 맞는지 확인!"); cb(false); }
+    if (hex === NAME_HASH[key]){ cb(true); return; }
+    var CLS_LIST = ["스마트용접과 1반","스마트용접과 2반","융합기계과 1반","융합기계과 2반","스마트금형과 1반","스마트금형과 2반"];
+    var i = -1;
+    function next(){
+      i++;
+      if (i >= CLS_LIST.length){ showToast("이름이 명렬과 달라요 — 내 번호·내 이름(공백 없이)이 맞는지 확인!"); cb(false); return; }
+      var c2 = CLS_LIST[i];
+      if (c2 === cls || !NAME_HASH[c2 + "|" + no]){ next(); return; }
+      sha256Hex(c2 + "|" + no + "|" + normName, function(h2){
+        if (h2 === NAME_HASH[c2 + "|" + no]){
+          showToast("📢 " + nm + " 학생은 [" + c2 + "] 명렬에 있어요! 지금 비밀번호는 [" + cls + "] 거예요 — 우리 반 비밀번호로 다시 입장하세요.");
+          cb(false);
+        } else { next(); }
+      });
+    }
+    next();
   });
 }
 function validateStep(n){
@@ -933,7 +949,7 @@ function unlock(cls){
   AUTH_CLS = cls;
   $("lockOverlay").style.display = "none";
   $("clsBadge").textContent = "· " + cls;
-  if ($("sel_cls") && !$("sel_cls").value){ $("sel_cls").value = cls; }
+  if ($("sel_cls")){ $("sel_cls").value = cls; $("sel_cls").disabled = true; }
   showToast(cls + " 입장 완료! 수행평가를 시작하세요.");
 }
 function initLock(){
