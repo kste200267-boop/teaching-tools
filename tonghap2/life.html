@@ -186,6 +186,15 @@ button{touch-action:manipulation}button:focus-visible,summary:focus-visible{outl
 @media(max-width:820px){.main-grid{display:block}.main-grid .chart-dock{position:relative}.lc-header{padding:20px}.lc-header h1{font-size:23px}.lc-body{padding:20px}.concept-grid{grid-template-columns:1fr}.concept{display:flex;gap:10px;align-items:center}.concept strong{font-size:19px}.chart-dock{padding:16px}.chart-dock svg,.main-grid .chart-dock svg{min-width:510px}#allMoney{grid-template-columns:1fr}h2{font-size:23px}.lesson-modes{flex-direction:column}.stage-tab{font-size:15px}.chart-note{font-size:14px}}
 @media print{.lock-overlay,#teachBar,.btn-row,.lesson-modes{display:none!important}.lc-wrap{max-width:none}.chart-dock{position:static!important}.main-grid{display:block}}
 </style>
+
+<style id="session-style">
+/* The control occupies its own header area above the QR, including its quiet zone. */
+.tb-qr{padding:48px 12px 12px;width:202px}.tb-qr #teachQr{padding:6px;background:#fff}.tb-qr #teachQr img,.tb-qr #teachQr canvas{max-width:100%;height:auto}.tb-min{top:7px;right:8px;min-height:32px;padding:4px 10px;font-size:14px}.tb-qr.min{padding:12px 83px 12px 12px;min-height:50px}.tb-pw{padding-top:48px}.tb-pw.min{padding:12px 83px 12px 12px;min-height:50px}.tb-pw .tb-miss{max-height:54px;overflow:auto}.tb-qr .tb-cap{font-size:14px}
+#sessionControl,#sessionBoard{display:none}body.teach #teachBar{display:grid!important;grid-template-columns:202px minmax(0,1fr) 240px;gap:16px;position:relative;top:0;width:min(1440px,100%);margin:auto;padding:12px;background:#edf2f5;align-items:start}body.teach .tb-qr,body.teach .tb-pw{position:relative;top:auto;left:auto;right:auto;width:100%;min-width:0}body.teach .tb-qr{grid-column:1;grid-row:1}body.teach .tb-pw{grid-column:3;grid-row:1}body.teach #sessionControl{display:block;grid-column:2;grid-row:1;padding:12px 0}body.teach .lc-wrap{max-width:1416px;margin:0 auto 75px}body.teach.session-board #sessionBoard{display:block}body.teach.session-board #lessonLayout{display:none}body.teach.session-board .lc-header{display:none}
+.session-phases{display:flex;gap:6px;flex-wrap:wrap}.session-phases button{flex:1;white-space:nowrap;font:inherit;font-size:15px;font-weight:700;border:1px solid #7a939e;border-radius:8px;background:white;padding:9px 5px;cursor:pointer}.session-phases button.active{background:#143f37;color:white}.clock-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}.session-clock{font-size:44px;font-weight:850;font-variant-numeric:tabular-nums;color:#143f37;line-height:1.1}.session-clock.over{color:#b63b25}.session-actions{display:flex;gap:6px;flex-wrap:wrap}.session-actions button{font:inherit;font-size:14px;min-height:36px;padding:6px 10px;border:1px solid #a2b6be;background:white;border-radius:8px;cursor:pointer}.session-status{font-size:14px;min-height:22px;color:#41596a}.session-board-content{padding:38px 54px;min-height:430px;color:#153b35}.session-board-content h2{font-size:40px;line-height:1.35;margin:12px 0 22px}.session-board-content p{font-size:27px;line-height:1.65;margin:12px 0}.session-board-content .board-kicker{font-size:19px;color:#596d75}.session-board-content .board-number{font-size:76px;line-height:1.3;font-weight:850;color:#146b53}.session-board-content .board-small{font-size:20px}.session-board-content .board-steps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.session-board-content .board-task{background:#f0f5f2;border-radius:12px;padding:20px;font-size:23px}.session-board-content .board-task strong{display:block;margin-bottom:10px}.board-switch{display:flex;gap:10px;flex-wrap:wrap}.board-switch button{font:inherit;font-size:18px;min-height:44px;border:1px solid #9ab1a9;border-radius:8px;background:#fff;padding:8px 16px;cursor:pointer}.board-response{color:#aa492b}.session-board-content table{width:100%;font-size:25px;border-collapse:collapse}.session-board-content td,.session-board-content th{padding:15px;border-bottom:1px solid #bbcfc6;text-align:left}.speech-box{padding:18px;background:#f0f5f2;border-left:4px solid #146b53;margin:16px 0}.speech-box h3{font-size:21px}.speech-box p{font-size:18px;line-height:1.7;margin:8px 0}.tb-nav{display:none!important}body.teach .tb-exit{font-size:14px}.session-board-content .read-prompt{white-space:pre-line}.session-toolbar{display:flex;justify-content:space-between;margin:18px 0}.session-toolbar .minor-btn{font-size:16px}body.teach .lc-save{display:none}
+@media(max-width:1000px){body.teach #teachBar{grid-template-columns:190px 1fr;gap:10px}body.teach .tb-qr{grid-column:1;grid-row:1}body.teach .tb-pw{grid-column:1;grid-row:2}body.teach #sessionControl{grid-column:2;grid-row:1 / 3}.session-board-content{padding:26px}.session-board-content h2{font-size:31px}.session-board-content p{font-size:23px}.session-board-content .board-number{font-size:55px}}
+@media(max-width:600px){body.teach #teachBar{grid-template-columns:1fr 1fr}body.teach .tb-qr{grid-column:1;grid-row:2}body.teach .tb-pw{grid-column:2;grid-row:2}body.teach #sessionControl{grid-column:1 / 3;grid-row:1}.session-board-content .board-steps{grid-template-columns:1fr}.session-board-content table{font-size:17px}.session-board-content td,.session-board-content th{padding:8px}.session-board-content .board-number{font-size:40px}.session-board-content h2{font-size:27px}}
+</style>
 </head>
 <body>
 <div class="lock-overlay" id="lockOverlay">
@@ -319,7 +328,7 @@ button{touch-action:manipulation}button:focus-visible,summary:focus-visible{outl
 
 <div id="teachBar">
   <div class="tb-qr" id="tbQr">
-    <button type="button" class="tb-min" id="qrMin">─</button><span class="tb-mini-label">📱 QR</span>
+    <button type="button" class="tb-min" id="qrMin" aria-label="QR 코드 최소화" aria-expanded="true">접기</button><span class="tb-mini-label">📱 QR</span>
     <div id="teachQr"></div>
     <div class="tb-cap">📱 QR 찍고 접속!</div>
     <div class="tb-url-set" id="urlSet" style="display:none;">
@@ -328,7 +337,7 @@ button{touch-action:manipulation}button:focus-visible,summary:focus-visible{outl
     </div>
   </div>
   <div class="tb-pw" id="tbPw">
-    <button type="button" class="tb-min" id="pwMin">─</button>
+    <button type="button" class="tb-min" id="pwMin" aria-label="학급 안내 최소화" aria-expanded="true">접기</button>
     <select id="teachCls">
       <option>스마트용접과 1반</option><option>스마트용접과 2반</option>
       <option>융합기계과 1반</option><option>융합기계과 2반</option>
@@ -1100,7 +1109,7 @@ function buildCsv(){
 
 /* ---- 수업 진행 모드 ---- */
 var PWD_ENC = { "스마트용접과 1반":"3ccd4fcd11051b52061a1140c7", "스마트용접과 2반":"318a0d654cb52cb08ab2b8308f", "융합기계과 1반":"77fd82989083b37b62b9", "융합기계과 2반":"602fb0f6a3dab3960713", "스마트금형과 1반":"9261be3a54a53b7126d4", "스마트금형과 2반":"85502858848cff" };
-var TEACH = { on:false, timer:null, url:"https://kste200267-boop.github.io/teaching-tools/tonghap2/" };
+var TEACH = { on:false, timer:null, url:"https://kste200267-boop.github.io/teaching-tools/tonghap2/life.html" };
 var TOOL_TAG = "생애주기";
 function decDispPw(cls, cb){
   var enc = PWD_ENC[cls];
@@ -1152,7 +1161,8 @@ function drawTeachQr(){
       return;
     }
   } catch(e){}
-  area.innerHTML = '<div style="font-size:10px;word-break:break-all;color:#1f2937;">' + esc(TEACH.url) + '</div>';
+  if(TEACH.url === "https://kste200267-boop.github.io/teaching-tools/tonghap2/life.html"){area.innerHTML='<img src="data:image/png;base64,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" alt="학생 활동 사이트 QR 코드" width="172" height="172">';return;}
+  area.innerHTML = '<div style="font-size:14px;word-break:break-all;color:#1f2937;">' + esc(TEACH.url) + '</div>';
 }
 function teachClsChanged(){
   var cls = $("teachCls").value;
@@ -1245,12 +1255,14 @@ function bindTeach(){
       e.preventDefault(); e.stopPropagation();
       var min = box.className.indexOf("min") >= 0;
       box.className = box.className.replace(" min", "") + (min ? "" : " min");
-      btn.textContent = min ? "─" : "＋";
+      btn.textContent = min ? "접기" : "펼치기";
+      btn.setAttribute("aria-expanded",min?"true":"false");
     });
     box.addEventListener("click", function(){
       if (box.className.indexOf("min") >= 0){
         box.className = box.className.replace(" min", "");
-        btn.textContent = "─";
+        btn.textContent = "접기";
+        btn.setAttribute("aria-expanded","true");
       }
     });
   }
@@ -1364,7 +1376,7 @@ function initLessonLayer(){
  var start=document.querySelector('[data-step="0"]');
  start.querySelector('.desc').textContent='내가 번 돈과 쓰는 돈을 비교하고, 취업 후의 돈 관리 계획을 세워 봅시다. 실제 집안 소득 대신 가상의 금액을 쓰세요.';
  start.querySelector('.eval-box').classList.add('assessment-only');start.querySelector('.rubric-table').classList.add('assessment-only');
- var intro=document.createElement('section');intro.className='learn-card';intro.innerHTML='<h3>오늘 할 일 · 설명과 함께 50분</h3><div class="lesson-route"><span><b>0–8분</b> 개념 배우기</span><span><b>8–13분</b> 예시 함께 풀기</span><span><b>13–25분</b> 네 시기 숫자 넣기</span><span><b>25–37분</b> 청년기 계획</span><span><b>37–45분</b> 변화·실천</span><span><b>45–50분</b> 확인·저장</span></div><div class="concept-grid"><div class="concept"><span class="icon">↓</span><div><strong>수입</strong>내게 들어오는 돈<br>월급·용돈·연금</div></div><div class="concept"><span class="icon">↑</span><div><strong>지출</strong>내가 쓰는 돈<br>식비·교통비·월세</div></div><div class="concept"><span class="icon">＝</span><div><strong>남는 돈</strong>수입 − 지출<br>부족하면 적자</div></div></div><h3 style="margin-top:20px">함께 해 보기</h3><p>가상의 취업자: 월 수입 240만원, 월 지출 180만원</p><div class="practice-equation">240 − 180 = ?</div><div class="practice-options"><button type="button" class="minor-btn" data-answer="yes">60만원 남아요</button><button type="button" class="minor-btn" data-answer="no">60만원 부족해요</button><button type="button" class="minor-btn" data-answer="no">420만원 남아요</button></div><div id="practiceFeedback" class="practice-feedback" aria-live="polite"></div>'+helpBox('안전성·수익성·유동성이 뭐예요?','<b>안전성</b>: 원래 넣은 돈을 잃을 위험이 작은가?<br><b>수익성</b>: 이자나 이익을 얼마나 기대할 수 있는가?<br><b>유동성</b>: 필요할 때 현금으로 얼마나 쉽게 바꿀 수 있는가?<br>큰 수익을 기대하는 투자에는 손실 위험도 있어요. 곧 쓸 돈은 쉽게 꺼낼 수 있는지 살펴봐요.')+'</section>';
+ var intro=document.createElement('section');intro.className='learn-card';intro.innerHTML='<h3>오늘 할 일 · 설명과 함께 50분</h3><div class="lesson-route"><span><b>0–5분</b> 도입</span><span><b>5–15분</b> 개념 배우기</span><span><b>15–25분</b> 네 시기 숫자 넣기</span><span><b>25–37분</b> 청년기 계획</span><span><b>37–45분</b> 마무리·짝 발표</span><span><b>45–50분</b> 발표·정리</span></div><div class="concept-grid"><div class="concept"><span class="icon">↓</span><div><strong>수입</strong>내게 들어오는 돈<br>월급·용돈·연금</div></div><div class="concept"><span class="icon">↑</span><div><strong>지출</strong>내가 쓰는 돈<br>식비·교통비·월세</div></div><div class="concept"><span class="icon">＝</span><div><strong>남는 돈</strong>수입 − 지출<br>부족하면 적자</div></div></div><h3 style="margin-top:20px">함께 해 보기</h3><p>가상의 취업자: 월 수입 240만원, 월 지출 180만원</p><div class="practice-equation">240 − 180 = ?</div><div class="practice-options"><button type="button" class="minor-btn" data-answer="yes">60만원 남아요</button><button type="button" class="minor-btn" data-answer="no">60만원 부족해요</button><button type="button" class="minor-btn" data-answer="no">420만원 남아요</button></div><div id="practiceFeedback" class="practice-feedback" aria-live="polite"></div>'+helpBox('안전성·수익성·유동성이 뭐예요?','<b>안전성</b>: 원래 넣은 돈을 잃을 위험이 작은가?<br><b>수익성</b>: 이자나 이익을 얼마나 기대할 수 있는가?<br><b>유동성</b>: 필요할 때 현금으로 얼마나 쉽게 바꿀 수 있는가?<br>큰 수익을 기대하는 투자에는 손실 위험도 있어요. 곧 쓸 돈은 쉽게 꺼낼 수 있는지 살펴봐요.')+'</section>';
  start.insertBefore(intro,start.querySelector('.grid2'));
  intro.querySelectorAll('[data-answer]').forEach(function(b){b.onclick=function(){$('practiceFeedback').textContent=b.dataset.answer==='yes'?'맞아요! 60만원이 남는 흑자예요. 이 돈으로 저축이나 투자를 계획할 수 있어요.':'수입에서 지출을 빼 보세요. 240 − 180 = 60, 쓰고도 돈이 남아요.';};});
  var stage=document.querySelector('[data-step="1"]');stage.querySelector('.badge.pt').classList.add('assessment-only');stage.querySelector('h2').id='stageHeading';stage.querySelector('.desc').id='stageDesc';
@@ -1436,8 +1448,41 @@ var oldSubmitForm=submitForm;submitForm=function(){
 var oldEnterTeachMode=enterTeachMode;enterTeachMode=function(){oldEnterTeachMode();setLessonMode(LESSON_MODE);};
 var oldCopyBody=copyBody;copyBody=function(){if(LESSON_MODE==='assessment'){oldCopyBody();return;}var txt=$('previewArea').innerText;if(!navigator.clipboard){showToast('학습 결과 파일 저장을 이용하세요.');return;}navigator.clipboard.writeText(txt).then(function(){showToast('학습 결과 복사 완료');}).catch(function(){showToast('복사할 수 없어요. 학습 결과 파일 저장을 이용하세요.');});};
 
+
+var SESSION_PHASES=[{name:'도입',minutes:5},{name:'개념',minutes:10},{name:'학생 활동',minutes:30},{name:'발표·정리',minutes:5}];
+var SESSION={phase:0,remaining:300,running:false,end:0,timer:null,topic:0,board:true};
+function clockSeconds(){return SESSION.running?Math.max(0,Math.ceil((SESSION.end-Date.now())/1000)):SESSION.remaining;}
+function updateSessionClock(){var sec=clockSeconds();if(SESSION.running&&sec===0){SESSION.running=false;SESSION.remaining=0;$('sessionStatus').textContent='시간이 끝났어요. 상황에 맞게 다음 단계로 이동하세요.';}$('sessionClock').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');$('sessionClock').classList.toggle('over',sec===0);$('sessionRun').textContent=SESSION.running?'잠시 멈춤':'타이머 시작';}
+function sessionPhase(n){SESSION.phase=n;SESSION.running=false;SESSION.remaining=SESSION_PHASES[n].minutes*60;SESSION.topic=0;$('sessionStatus').textContent='준비되면 타이머를 시작하세요. 단계는 직접 바꿀 수 있어요.';document.querySelectorAll('[data-phase]').forEach(function(b){b.classList.toggle('active',+b.dataset.phase===n);b.setAttribute('aria-pressed',+b.dataset.phase===n);});showSessionBoard(true);renderSessionBoard();updateSessionClock();}
+function showSessionBoard(on){SESSION.board=on;document.body.classList.toggle('session-board',on&&TEACH.on);$('sessionToggle').textContent=on?'학생 화면 시범':'수업 안내 화면';if(!on){gotoStep(SESSION.phase<2?0:SESSION.phase===2?1:3);}}
+function renderSessionBoard(){
+ var p=SESSION.phase,h='<div class="session-board-content"><div class="board-kicker">'+SESSION_PHASES[p].name+' '+SESSION_PHASES[p].minutes+'분 · 전체 50분</div>';
+ if(p===0){h+='<h2>첫 월급, 다 써도 될까요?</h2><p>가상의 취업자: 월급 240만원 / 한 달 지출 180만원</p><div class="board-number">240 − 180 = ?</div><p>남은 돈으로 무엇을 준비하고 싶나요?</p><button type="button" class="minor-btn" id="revealMoney">계산 결과 보기</button><p id="moneyAnswer" class="board-response" hidden>60만원이 남아요. 목표를 정해 모을 수 있어요.</p><p class="board-small">오늘의 목표: 그래프를 읽고, 돈 관리 방법을 이유와 함께 설명하기</p>';}
+ if(p===1){h+='<div class="board-switch"><button type="button" data-topic="0">수입·지출</button><button type="button" data-topic="1">곡선 읽기</button><button type="button" data-topic="2">금융 상품</button></div>';
+ if(SESSION.topic===0)h+='<h2>수입에서 지출을 빼요</h2><table><tr><th>수입</th><td>내게 들어오는 돈: 월급·용돈·연금</td></tr><tr><th>지출</th><td>내가 쓰는 돈: 식비·교통비·주거비</td></tr><tr><th>흑자 / 적자</th><td>돈이 남음 / 돈이 부족함</td></tr></table><p class="board-small">입력 단위는 만원. 250만원은 250으로 입력해요.</p>';
+ if(SESSION.topic===1)h+='<h2>수입선이 위에 있으면 흑자예요</h2><table><tr><th>가상 시기</th><th>수입</th><th>지출</th><th>한 달 차이</th></tr><tr><td>청년기</td><td>240만원</td><td>180만원</td><td>+60만원</td></tr><tr><td>노년기</td><td>130만원</td><td>170만원</td><td>−40만원</td></tr></table><p>노년기에 부족한 돈은 어떻게 준비할까요?</p><p class="board-small">미리 모은 돈을 쓰는 계획도 가능해요. 숫자는 가상의 예시예요.</p>';
+ if(SESSION.topic===2)h+='<h2>돈을 언제 쓸지 먼저 생각해요</h2><table><tr><th>안전성</th><td>넣은 돈을 잃을 위험이 작은가?</td></tr><tr><th>수익성</th><td>이자나 이익을 얼마나 기대할 수 있나?</td></tr><tr><th>유동성</th><td>필요할 때 현금으로 쉽게 바꿀 수 있나?</td></tr></table><p class="board-small">곧 쓸 돈: 인출 조건과 손실 위험 확인<br>주식: 수익을 기대할 수 있지만 원금 손실도 가능</p>';}
+ if(p===2)h+='<h2>내 돈 곡선과 청년기 계획</h2><div class="board-steps"><div class="board-task"><strong>첫 10분 · 숫자 8칸</strong>네 시기의 수입·지출 입력<br>부족한 시기 찾아보기</div><div class="board-task"><strong>다음 12분 · 청년기 5문장</strong>특징, 목표, 분석, 투자, 정리<br>한 문장이면 충분해요</div><div class="board-task"><strong>다음 5분 · 마무리 2문장</strong>환경 변화와 나의 실천<br>학습 결과 파일 저장</div><div class="board-task"><strong>마지막 3분 · 짝 발표</strong>서로 30초씩 설명<br>숫자와 선택 이유 말하기</div></div><p class="board-small">막히면 ⓘ 설명을 열어 보세요. 실제 집안 소득 대신 가상의 금액을 써요.</p>';
+ if(p===3)h+='<h2>나의 돈 관리 계획, 30초 발표</h2><p class="read-prompt">“청년기 수입은 ___만원, 지출은 ___만원입니다.\n한 달에 ___만원이 남거나 부족합니다.\n나는 ___을 선택했습니다. ___ 때문입니다.”</p><p class="board-response">친구의 선택에는 어떤 금융 원칙이 들어 있나요?</p><p class="board-small">2~3명 발표 후, 오늘부터 할 수 있는 행동 한 가지 말하기<br>나가기 확인: 수입 200만원 − 지출 230만원 = 30만원 적자</p>';
+ h+='</div>';$('sessionBoard').innerHTML=h;var b=$('revealMoney');if(b)b.onclick=function(){$('moneyAnswer').hidden=false;};document.querySelectorAll('[data-topic]').forEach(function(b){b.onclick=function(){SESSION.topic=+b.dataset.topic;renderSessionBoard();};});
+}
+function initSessionMode(){
+ document.body.insertBefore($('teachBar'),$('app'));
+ var controls=document.createElement('div');controls.id='sessionControl';controls.innerHTML='<div class="session-phases">'+SESSION_PHASES.map(function(p,i){return '<button type="button" data-phase="'+i+'">'+p.name+' '+p.minutes+'분</button>';}).join('')+'</div><div class="clock-row"><span class="session-clock" id="sessionClock" role="timer" aria-label="현재 단계 남은 시간">05:00</span><div class="session-actions"><button type="button" id="sessionRun">타이머 시작</button><button type="button" id="sessionReset">시간 초기화</button><button type="button" id="sessionToggle">학생 화면 시범</button><button type="button" id="sessionNext">다음 단계</button></div></div><div class="session-status" id="sessionStatus"></div><div class="session-status">수업 안내는 교사용 화면에서만 바뀝니다. 학생 화면은 학생이 직접 진행해요.</div>';
+ $('teachBar').append(controls);var board=document.createElement('section');board.id='sessionBoard';$('app').insertBefore(board,$('lessonLayout'));
+ document.querySelectorAll('[data-phase]').forEach(function(b){b.onclick=function(){sessionPhase(+b.dataset.phase);};});
+ $('sessionRun').onclick=function(){if(SESSION.running){SESSION.remaining=clockSeconds();SESSION.running=false;}else if(SESSION.remaining>0){SESSION.end=Date.now()+SESSION.remaining*1000;SESSION.running=true;}updateSessionClock();};
+ $('sessionReset').onclick=function(){SESSION.running=false;SESSION.remaining=SESSION_PHASES[SESSION.phase].minutes*60;$('sessionStatus').textContent='현재 단계 시간을 초기화했어요.';updateSessionClock();};$('sessionToggle').onclick=function(){showSessionBoard(!SESSION.board);};$('sessionNext').onclick=function(){sessionPhase(Math.min(3,SESSION.phase+1));};
+ var speech=document.createElement('section');speech.id='studentSpeech';speech.className='speech-box lesson-only';speech.innerHTML='<h3>짝에게 30초 발표 준비</h3><p>“청년기 수입은 ___만원, 지출은 ___만원입니다.<br>한 달에 ___만원이 남거나 부족합니다.<br>나는 ___을 선택했습니다. ___ 때문입니다.”</p><p class="field-hint">한 명씩 30초 말해요. 듣는 친구는 숫자와 선택 이유가 있는지 확인해요.</p>';$('previewArea').after(speech);
+ sessionPhase(0);document.body.classList.remove('session-board');
+}
+var enterTeachBeforeSession=enterTeachMode;enterTeachMode=function(){enterTeachBeforeSession();setLessonMode('lesson');sessionPhase(0);if(SESSION.timer)clearInterval(SESSION.timer);SESSION.timer=setInterval(updateSessionClock,250);};
+var exitTeachBeforeSession=exitTeachMode;exitTeachMode=function(){SESSION.remaining=clockSeconds();SESSION.running=false;if(SESSION.timer){clearInterval(SESSION.timer);SESSION.timer=null;}document.body.classList.remove('session-board');exitTeachBeforeSession();};
+var liveBeforeSession=updateTeachLive;updateTeachLive=function(){if(TEACH.on&&LESSON_MODE==='lesson'){$('teachLive').textContent='학습 결과: 학생 기기에 저장';$('teachMiss').textContent='완료 여부는 학생 화면으로 확인해요.';return;}liveBeforeSession();};
+
 init();
 initLessonLayer();
+initSessionMode();
 updateMoneyUI();
 </script>
 </body>
