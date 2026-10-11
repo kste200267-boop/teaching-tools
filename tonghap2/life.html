@@ -2,14 +2,14 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
 (function(){
   if (window.storage) return;
   function K(key, shared){ return (shared ? "S:" : "P:") + key; }
   window.storage = {
     get: function(key, shared){ return new Promise(function(res){ var v = null; try { v = localStorage.getItem(K(key, shared)); } catch(e){} res(v === null ? null : { key:key, value:v, shared:!!shared }); }); },
-    set: function(key, value, shared){ return new Promise(function(res){ try { localStorage.setItem(K(key, shared), value); res({ key:key, value:value, shared:!!shared }); } catch(e){ res(null); } }); },
+    set: function(key, value, shared){ return new Promise(function(res, reject){ try { localStorage.setItem(K(key, shared), value); res({ key:key, value:value, shared:!!shared }); } catch(e){ reject(e); } }); },
     "delete": function(key, shared){ return new Promise(function(res){ try { localStorage.removeItem(K(key, shared)); } catch(e){} res({ key:key, deleted:true }); }); },
     list: function(prefix, shared){ return new Promise(function(res){ var keys = [], i, p = K(prefix || "", shared); try { for (i=0;i<localStorage.length;i++){ var k = localStorage.key(i); if (k.indexOf(p) === 0) keys.push(k.slice(2)); } } catch(e){} res({ keys:keys, prefix:prefix, shared:!!shared }); }); }
   };
@@ -170,6 +170,22 @@ body.teach .lc-wrap { box-shadow:none; }
 .tb-pw.min .tb-live { margin-top:0; }
 .tb-exit { position:fixed; bottom:14px; left:10px; z-index:300; background:#7f1d1d; color:#fff; border:none; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 </style>
+
+<style id="lesson-style">
+:root{--ink:#172c3c;--muted:#455b6c;--blue:#1261b8;--red:#bd3e2b}
+body{color:var(--ink);font-size:17px;background:#edf2f5}
+.lc-wrap{max-width:1160px;border-radius:0 0 24px 24px;padding-bottom:48px}
+.lc-header{padding:24px 28px;background:#123e37}.lc-header h1{font-size:27px;line-height:1.4}.lc-header .sub,.lc-save{font-size:14px;opacity:1}
+.lc-body{padding:26px;min-width:0}h2{font-size:26px}.desc{font-size:17px;color:var(--muted)}label{font-size:18px;margin-top:20px}
+.hint,.badge,.eval-box,.rubric-table,.rubric-table th,label .pts{font-size:14px;color:#4b5260}.badge{color:#145a32}
+input[type=text],input[type=number],textarea,select{font-size:18px;line-height:1.55;border-color:#91a2ac;padding:12px}textarea{min-height:94px}
+button{touch-action:manipulation}button:focus-visible,summary:focus-visible{outline:3px solid #b45309;outline-offset:3px}.btn{min-height:50px;font-size:18px}.stage-tab{font-size:17px;min-height:66px}
+.chart-dock{position:relative;background:#f8fbfd;color:var(--ink);padding:20px;border-bottom:1px solid #dce5ea;min-width:0}.chart-scroll{overflow-x:auto}.chart-dock svg{min-width:510px;width:100%}.chart-cap{font-size:14px;color:var(--ink);display:block}.chart-cap .legend{display:block;margin-bottom:8px}.chart-heading{font-size:21px;font-weight:850}.chart-note{font-size:14px;color:var(--muted);margin:8px 0}.legend .dot{width:12px;height:12px}.chart-table{width:100%;font-size:14px;border-collapse:collapse}.chart-table td,.chart-table th{padding:7px 3px;border-bottom:1px solid #dce5ea;text-align:right}.chart-table th:first-child,.chart-table td:first-child{text-align:left}
+.lesson-modes{display:flex;gap:8px;margin:12px 0}.mode-btn,.help-btn,.minor-btn{font:inherit;cursor:pointer;border:1px solid #9aafb7;border-radius:10px;padding:10px 13px;background:white;color:#173c43;min-height:44px}.mode-btn{flex:1;font-weight:bold}.mode-btn.active{background:#145a45;color:white;border-color:#145a45}.mode-note{padding:12px 16px;background:#edf6ef;border-left:4px solid #237554;font-size:16px;margin-bottom:18px}.lesson-route{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.lesson-route span{background:#f0f4f7;border-radius:8px;padding:8px 12px;font-size:14px}.lesson-route b{color:#145a45}.learn-card{border:1px solid #cbd8df;border-radius:15px;padding:18px;margin:14px 0;background:#fff}.learn-card h3{font-size:20px;margin-bottom:8px}.concept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.concept{padding:16px;background:#f1f6f8;border-radius:12px;font-size:16px}.concept strong{display:block;font-size:21px;margin:5px 0}.concept .icon{font-size:29px}.practice-equation{font-size:26px;font-weight:850;color:#145a45;margin:12px 0}.practice-options{display:flex;flex-wrap:wrap;gap:8px}.practice-feedback{min-height:28px;margin-top:8px;font-weight:bold}
+.help{border:1px solid #c4d4dd;border-radius:10px;padding:10px 13px;margin:8px 0;background:#f3f8fb;font-size:16px}.help summary{cursor:pointer;font-weight:bold;color:#174b6a;min-height:28px}.help p{margin-top:8px}.stage-context{padding:15px;border-radius:12px;background:#edf6f1;font-size:17px}.field-hint{font-size:15px;color:#4c606b;margin:6px 0}.stage-progress{font-size:15px;font-weight:700;margin:12px 0;color:#245547}.money-panel .mp-title{font-size:18px}.money-row .mr label{font-size:16px}.money-row input{font-size:25px}.bar-line{font-size:15px}.verdict{font-size:16px}.ai-out{font-size:17px}.ai-head{gap:10px;flex-wrap:wrap}.ai-head b{font-size:17px!important}.ai-btn{font-size:16px;min-height:44px}.settle-card,.settle-card b{font-size:16px}.settle-card .amt{font-size:22px}.preview-doc,.pv-stage h4,.preview-doc h3{font-size:17px}.pv-stage{padding:16px}.final-box{font-size:17px}.final-box .big{font-size:28px}.stage-jump{display:flex;gap:8px;justify-content:space-between;margin:16px 0}body.lesson-mode label .pts{display:none}.lesson-only{display:none}body.lesson-mode .lesson-only{display:block}body.lesson-mode .assessment-only{display:none!important}#allMoney{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}#allMoney .money-panel{margin:0}#allMoney .bar-wrap{display:none}.main-grid{display:grid;grid-template-columns:minmax(0, .9fr) minmax(0,1.3fr);align-items:start}.main-grid .chart-dock{position:sticky;top:0}.main-grid .chart-dock svg{min-width:450px}body.teach .lc-wrap{max-width:1100px;margin-top:210px}body.teach label{font-size:21px}.lock-box h2{font-size:24px}.lock-box p{font-size:17px}.lock-box{max-width:460px}.toast{font-size:17px;max-width:90vw;white-space:normal}
+@media(max-width:820px){.main-grid{display:block}.main-grid .chart-dock{position:relative}.lc-header{padding:20px}.lc-header h1{font-size:23px}.lc-body{padding:20px}.concept-grid{grid-template-columns:1fr}.concept{display:flex;gap:10px;align-items:center}.concept strong{font-size:19px}.chart-dock{padding:16px}.chart-dock svg,.main-grid .chart-dock svg{min-width:510px}#allMoney{grid-template-columns:1fr}h2{font-size:23px}.lesson-modes{flex-direction:column}.stage-tab{font-size:15px}.chart-note{font-size:14px}}
+@media print{.lock-overlay,#teachBar,.btn-row,.lesson-modes{display:none!important}.lc-wrap{max-width:none}.chart-dock{position:static!important}.main-grid{display:block}}
+</style>
 </head>
 <body>
 <div class="lock-overlay" id="lockOverlay">
@@ -194,7 +210,7 @@ body.teach .lc-wrap { box-shadow:none; }
     <svg id="lifeChart" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="chart-cap">
       <span class="legend"><span class="dot" style="background:#2ecc71;"></span>월 수입 <span class="dot" style="background:#e74c3c;"></span>월 지출 <span class="dot" style="background:#f7dc6f;"></span>모은 돈</span>
-      <span id="finalCap">80세에 남는 돈: -</span>
+      <span id="finalCap">80세 누적 잔액(단순 계산): -</span>
     </div>
   </div>
 
@@ -237,7 +253,7 @@ body.teach .lc-wrap { box-shadow:none; }
       <div class="stage-tabs" id="stageTabs"></div>
       <div id="stagePanels"></div>
       <div class="ai-box">
-        <div class="ai-head"><b style="font-size:13px;">🤖 AI 코치에게 물어보기</b><button type="button" class="ai-btn" id="aiStageBtn">이 시기 현실적일까?</button></div>
+        <div class="ai-head"><b style="font-size:13px;">🧮 내 숫자 점검하기</b><button type="button" class="ai-btn" id="aiStageBtn">계산 도움말 보기</button></div>
         <div class="ai-out" id="aiStageOut"></div>
       </div>
       <div class="btn-row"><button type="button" class="btn btn-prev" data-go="0">←</button><button type="button" class="btn btn-next" data-go="2">다음 →</button></div>
@@ -250,7 +266,7 @@ body.teach .lc-wrap { box-shadow:none; }
       <div id="settleArea"></div>
       <div id="finalArea"></div>
       <div class="ai-box">
-        <div class="ai-head"><b style="font-size:13px;">🤖 AI 코치 종합 진단</b><button type="button" class="ai-btn" id="aiTotalBtn">전체 설계 피드백</button></div>
+        <div class="ai-head"><b style="font-size:13px;">🧮 전체 돈 흐름 점검</b><button type="button" class="ai-btn" id="aiTotalBtn">부족한 시기 찾기</button></div>
         <div class="ai-out" id="aiTotalOut"></div>
       </div>
       <label>④ 경제적·사회적 환경의 변화(금리, 물가, 고령화 등)는 나의 금융 의사 결정에 어떤 영향을 줄까요? <span class="req">*</span> <span class="pts">요인 5점 + 영향 5점</span></label>
@@ -268,7 +284,7 @@ body.teach .lc-wrap { box-shadow:none; }
       <div id="previewArea"></div>
       <div class="btn-row"><button type="button" class="btn btn-submit" id="btnSubmit">📮 제출하기</button></div>
       <div class="btn-row"><button type="button" class="btn btn-copy" id="btnCopy">📋 제출 내용 복사 (백업)</button></div>
-      <div class="hint" style="margin-top:8px;">제출하면 이 페이지의 저장소에 바로 기록됩니다. 여러 번 제출하면 <b>마지막 제출</b>이 채점 대상이에요.</div>
+      <div class="hint" style="margin-top:8px;">전체 수행평가는 연결된 구글폼으로 전송합니다. 전송 뒤 선생님 화면에서 접수 여부를 확인하세요. 학습 모드 결과는 파일로 저장합니다.</div>
       <div class="btn-row"><button type="button" class="btn btn-prev" data-go="2">← 수정하기</button></div>
     </div>
 
@@ -345,7 +361,7 @@ var PARENT_AUTH = "__PAUTH__";
 var PARENT_TPW = "__PTPW__";
 var STORE_KEY = "lf_artifact_tonghap2_v1";
 var STAGES = [
-  { key:"p1", name:"청소년기", emoji:"🧑‍🎓", years:5,  color:"#3498db", range:"~19세" },
+  { key:"p1", name:"청소년기", emoji:"🧑‍🎓", years:5,  color:"#3498db", range:"15~19세" },
   { key:"p2", name:"청년기",   emoji:"🧑‍💼", years:20, color:"#1e8449", range:"20~39세" },
   { key:"p3", name:"중장년기", emoji:"👨‍👩‍👧", years:20, color:"#b9770e", range:"40~59세" },
   { key:"p4", name:"노년기",   emoji:"👴", years:20, color:"#7d3c98", range:"60~79세" }
@@ -496,7 +512,7 @@ function drawChart(){
   for (i=0;i<n;i++){ s += '<circle cx="'+xs[i]+'" cy="'+y2(d.cums[i])+'" r="3" fill="#f7dc6f"/>'; }
   $("lifeChart").innerHTML = s;
   var f = d.final;
-  $("finalCap").textContent = "80세에 남는 돈: " + fmt(f) + "만원" + (f<0 ? " ⚠️" : "");
+  $("finalCap").textContent = "80세 누적 잔액(단순 계산): " + fmt(f) + "만원" + (f<0 ? " ⚠️" : "");
 }
 function fmt(v){ return (Math.round(v)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 /* ---- 결산 카드 ---- */
@@ -512,51 +528,12 @@ function renderSettle(){
   html += '</div>';
   $("settleArea").innerHTML = html;
   var f = d.final;
-  $("finalArea").innerHTML = '<div class="final-box '+(f>=0?'plus':'minus')+'">🏁 이대로 살면 80세에 남는 돈<span class="big">'+fmt(f)+'만원'+(f<0?' — 곡선을 다시 설계해 볼까요?':'')+'</span></div>';
+  $("finalArea").innerHTML = '<div class="final-box '+(f>=0?'plus':'minus')+'">🏁 입력한 가정으로 계산한 80세 누적 잔액<span class="big">'+fmt(f)+'만원'+(f<0?' — 곡선을 다시 설계해 볼까요?':'')+'</span></div>';
 }
 /* ---- AI 코치 ---- */
 function stageSummary(i){
   var st = STAGES[i], k = st.key;
   return st.name+"(기간 "+st.years+"년): 월수입 "+num("f_"+k+"_in")+"만원, 월지출 "+num("f_"+k+"_out")+"만원, 특징:"+($("f_"+k+"_feat").value||"미작성")+", 재무목표:"+($("f_"+k+"_goal").value||"미작성")+", 투자:"+($("f_"+k+"_inv").value||"미작성");
-}
-function askAI(prompt, outEl, btn){
-  var old = btn.textContent;
-  btn.disabled = true; btn.textContent = "생각 중...";
-  outEl.style.display = "block";
-  outEl.textContent = "🤖 AI 코치가 내 설계를 읽고 있어요...";
-  try {
-    fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }] })
-    }).then(function(r){ return r.json(); }).then(function(data){
-      btn.disabled = false; btn.textContent = old;
-      var txt = "";
-      if (data && data.content){
-        var i;
-        for (i=0;i<data.content.length;i++){ if (data.content[i].type==="text") txt += data.content[i].text; }
-      }
-      outEl.textContent = txt || "응답을 받지 못했어요. 잠시 후 다시 시도해 주세요.";
-    }).catch(function(){
-      btn.disabled = false; btn.textContent = old;
-      outEl.textContent = "연결 실패 — 인터넷을 확인하고 다시 시도해 주세요.";
-    });
-  } catch(e){
-    btn.disabled = false; btn.textContent = old;
-    outEl.textContent = "이 환경에서는 AI 코치를 사용할 수 없어요. 작성은 그대로 진행하면 됩니다!";
-  }
-}
-var AI_RULES = "당신은 한국 특성화고 1학년의 생애주기 금융 설계를 돕는 따뜻한 코치입니다. 규칙: (1) 구체적인 금액을 대신 정해주지 말 것 — 스스로 다시 생각하도록 질문으로 유도 (2) 점수나 채점 언급 금지 (3) 한국의 현실(최저임금 수준 소득, 물가, 국민연금 등)에 비추어 현실적인지 짚어주기 (4) 잘한 점 1개 + 다시 생각할 점 1~2개, 5문장 이내, 반말 아닌 존댓말.";
-function aiStage(){
-  askAI(AI_RULES + "\n\n학생의 " + STAGES[curStage].name + " 설계입니다. 현실적인지 피드백해 주세요:\n" + stageSummary(curStage), $("aiStageOut"), $("aiStageBtn"));
-}
-function aiTotal(){
-  var s = AI_RULES + "\n\n학생의 생애주기 전체 설계입니다. 80세까지의 흐름이 현실적인지, 시기 간 연결이 자연스러운지 종합 피드백해 주세요:\n";
-  var i;
-  for (i=0;i<STAGES.length;i++){ s += stageSummary(i) + "\n"; }
-  s += "80세에 남는 돈(단순 누적): " + fmt(chartData().final) + "만원";
-  askAI(s, $("aiTotalOut"), $("aiTotalBtn"));
 }
 /* ---- 저장/불러오기 (window.storage) ---- */
 var saveTimer = null;
@@ -649,7 +626,7 @@ function orBlank(s){ return s ? esc(s) : '<span style="color:#c0392b;font-weight
 function renderPreview(){
   var d = chartData();
   var html = '<div class="preview-doc"><h3>나의 생애주기 금융 설계도</h3>'
-    + '<div class="pv-row" style="text-align:center;margin-bottom:8px;">' + orBlank(val("sname")) + ' (' + orBlank(val("sel_cls")) + ' ' + orBlank(val("sel_no")) + '번) · 80세에 남는 돈 <b>' + fmt(d.final) + '만원</b></div>';
+    + '<div class="pv-row" style="text-align:center;margin-bottom:8px;">' + orBlank(val("sname")) + ' (' + orBlank(val("sel_cls")) + ' ' + orBlank(val("sel_no")) + '번) · 80세 누적 잔액(단순 계산) <b>' + fmt(d.final) + '만원</b></div>';
   var i;
   for (i=0;i<STAGES.length;i++){
     var st = STAGES[i], k = st.key;
@@ -712,7 +689,7 @@ function submitForm(){
   btn.disabled = true; btn.textContent = "제출 중...";
   function done(ok, resub){
     btn.disabled = false; btn.textContent = "📮 제출하기";
-    if (ok) showToast("✅ 제출 완료! (여러 번 내면 마지막 제출이 채점 대상)");
+    if (ok) showToast("전송 요청 완료 — 선생님 화면에서 접수 여부를 확인하세요.");
     else showToast("제출 실패 — [복사] 버튼으로 백업 후 선생님께 알려주세요");
   }
   if (gformReady()){
@@ -1139,7 +1116,7 @@ function enterTeachMode(){
   $("teacherWrap").style.display = "none";
   $("app").style.display = "block";
   $("teachBar").style.display = "block";
-  document.body.className = "teach";
+  document.body.classList.add("teach");
   gotoStep(1);
   updateTeachNav();
   drawTeachQr();
@@ -1156,7 +1133,7 @@ function enterTeachMode(){
 function exitTeachMode(){
   TEACH.on = false;
   if (TEACH.timer){ clearInterval(TEACH.timer); TEACH.timer = null; }
-  document.body.className = "";
+  document.body.classList.remove("teach");
   $("teachBar").style.display = "none";
   $("app").style.display = "none";
   $("teacherWrap").style.display = "block";
@@ -1361,7 +1338,108 @@ function init(){
   updateMoneyUI();
   initLock();
 }
+
+/* 50-minute guided lesson. All original assessment field IDs and rubric keys remain intact. */
+var LESSON_MODE = 'lesson';
+var STAGE_GUIDE = [
+ ['배우고 진로를 준비하는 시기','용돈이나 아르바이트 수입을 생각해 보세요. 가족이 대신 내는 생활비는 이 활동의 내 지출에서 제외해도 돼요.','자격증 응시료 / 노트북 / 저축 습관'],
+ ['취업하고 독립을 준비하는 시기','취업 후 받는 월급과 식비·교통비·주거비를 생각해 보세요. 가족과 살 때와 독립할 때가 달라요.','보증금 / 기술 교육비 / 비상금'],
+ ['생활을 유지하고 노후를 준비하는 시기','직업과 가족 상황에 따라 소득과 지출이 달라져요. 모든 사람이 결혼하거나 자녀를 갖는 것은 아니에요.','주거비 / 가족 생활비 / 은퇴 준비'],
+ ['일을 줄이거나 은퇴한 뒤의 시기','연금이나 계속하는 일에서 수입이 생길 수 있어요. 의료비와 생활비도 필요해요.','노후 생활비 / 의료비 / 여가']
+];
+var FIELD_HELP = {
+ feat:['이 시기에는 어떤 일을 하며 살까요?','나는 이 시기에 ___을 준비하거나 ___하며 살 것이다.'],
+ goal:['돈으로 이루고 싶은 목표는 무엇인가요?','___을 위해 ___만원을 모으고 싶다.'],
+ anal:['들어오는 돈과 쓰는 돈이 왜 다른가요?','월 ___만원이 남는다/부족하다. 그 이유는 ___이다.'],
+ inv:['돈을 어디에 두고 관리할까요? 이유도 써요.','___을 선택하겠다. ___ 때문에 나에게 알맞다.'],
+ sum:['이 시기의 돈 관리 계획을 한 문장으로 써요.','___ 지출을 조절하고 ___을 준비하겠다.']
+};
+function helpBox(title,body){return '<details class="help"><summary>ⓘ '+title+'</summary><p>'+body+'</p></details>';}
+function initLessonLayer(){
+ var wrap=$('app'),body=wrap.querySelector('.lc-body'),dock=$('chartDock');
+ var layout=document.createElement('div');layout.id='lessonLayout';wrap.insertBefore(layout,dock);layout.append(dock,body);
+ var modes=document.createElement('div');modes.innerHTML='<div class="lesson-modes" role="group" aria-label="활동 종류"><button type="button" class="mode-btn" id="modeLesson">50분 학습</button><button type="button" class="mode-btn" id="modeAssessment">전체 수행평가 · 100점</button></div><div class="mode-note" id="modeNote"></div>';
+ body.insertBefore(modes,body.firstChild);
+ $('modeLesson').onclick=function(){setLessonMode('lesson');};$('modeAssessment').onclick=function(){setLessonMode('assessment');};
+ var start=document.querySelector('[data-step="0"]');
+ start.querySelector('.desc').textContent='내가 번 돈과 쓰는 돈을 비교하고, 취업 후의 돈 관리 계획을 세워 봅시다. 실제 집안 소득 대신 가상의 금액을 쓰세요.';
+ start.querySelector('.eval-box').classList.add('assessment-only');start.querySelector('.rubric-table').classList.add('assessment-only');
+ var intro=document.createElement('section');intro.className='learn-card';intro.innerHTML='<h3>오늘 할 일 · 설명과 함께 50분</h3><div class="lesson-route"><span><b>0–8분</b> 개념 배우기</span><span><b>8–13분</b> 예시 함께 풀기</span><span><b>13–25분</b> 네 시기 숫자 넣기</span><span><b>25–37분</b> 청년기 계획</span><span><b>37–45분</b> 변화·실천</span><span><b>45–50분</b> 확인·저장</span></div><div class="concept-grid"><div class="concept"><span class="icon">↓</span><div><strong>수입</strong>내게 들어오는 돈<br>월급·용돈·연금</div></div><div class="concept"><span class="icon">↑</span><div><strong>지출</strong>내가 쓰는 돈<br>식비·교통비·월세</div></div><div class="concept"><span class="icon">＝</span><div><strong>남는 돈</strong>수입 − 지출<br>부족하면 적자</div></div></div><h3 style="margin-top:20px">함께 해 보기</h3><p>가상의 취업자: 월 수입 240만원, 월 지출 180만원</p><div class="practice-equation">240 − 180 = ?</div><div class="practice-options"><button type="button" class="minor-btn" data-answer="yes">60만원 남아요</button><button type="button" class="minor-btn" data-answer="no">60만원 부족해요</button><button type="button" class="minor-btn" data-answer="no">420만원 남아요</button></div><div id="practiceFeedback" class="practice-feedback" aria-live="polite"></div>'+helpBox('안전성·수익성·유동성이 뭐예요?','<b>안전성</b>: 원래 넣은 돈을 잃을 위험이 작은가?<br><b>수익성</b>: 이자나 이익을 얼마나 기대할 수 있는가?<br><b>유동성</b>: 필요할 때 현금으로 얼마나 쉽게 바꿀 수 있는가?<br>큰 수익을 기대하는 투자에는 손실 위험도 있어요. 곧 쓸 돈은 쉽게 꺼낼 수 있는지 살펴봐요.')+'</section>';
+ start.insertBefore(intro,start.querySelector('.grid2'));
+ intro.querySelectorAll('[data-answer]').forEach(function(b){b.onclick=function(){$('practiceFeedback').textContent=b.dataset.answer==='yes'?'맞아요! 60만원이 남는 흑자예요. 이 돈으로 저축이나 투자를 계획할 수 있어요.':'수입에서 지출을 빼 보세요. 240 − 180 = 60, 쓰고도 돈이 남아요.';};});
+ var stage=document.querySelector('[data-step="1"]');stage.querySelector('.badge.pt').classList.add('assessment-only');stage.querySelector('h2').id='stageHeading';stage.querySelector('.desc').id='stageDesc';
+ var allMoney=document.createElement('div');allMoney.id='allMoney';stage.insertBefore(allMoney,$('stageTabs'));
+ var progress=document.createElement('div');progress.id='lessonProgress';progress.className='stage-progress';progress.setAttribute('aria-live','polite');stage.insertBefore(progress,$('stagePanels'));
+ STAGES.forEach(function(st,i){
+  var panel=$('panel_'+i),writing=document.createElement('div');writing.className='writing-group';
+  var money=panel.querySelector('.money-panel');while(money.nextSibling)writing.appendChild(money.nextSibling);panel.appendChild(writing);
+  var context=document.createElement('div');context.className='stage-context';context.innerHTML='<b>'+st.emoji+' '+st.name+' · '+STAGE_GUIDE[i][0]+'</b><p>'+STAGE_GUIDE[i][1]+'</p><p class="field-hint">목표를 떠올리는 단서: '+STAGE_GUIDE[i][2]+'</p>';writing.insertBefore(context,writing.firstChild);
+  TXT.forEach(function(t){var el=$('f_'+st.key+'_'+t.sfx),label=el.previousElementSibling;label.htmlFor=el.id;label.firstChild.textContent=FIELD_HELP[t.sfx][0]+' ';el.placeholder=FIELD_HELP[t.sfx][1];el.setAttribute('aria-describedby',el.id+'_hint');var hint=document.createElement('div');hint.id=el.id+'_hint';hint.className='field-hint';hint.textContent='한 문장이면 충분해요. '+FIELD_HELP[t.sfx][1];el.after(hint);});
+  var inv=$('f_'+st.key+'_inv');inv.insertAdjacentHTML('beforebegin',helpBox('금융 상품을 쉽게 비교해요','<b>예금·적금</b>: 이자를 받으며 돈 모으기. 만기 전에 해지하면 약정 이자가 줄 수 있어요.<br><b>주식</b>: 기업의 지분을 사는 투자. 배당·가격 상승을 기대하지만 원금 손실도 가능해요.<br><b>연금</b>: 노후에 받을 돈 준비하기. 상품에 따라 위험과 중도 인출 조건이 달라요.<br>내 목표 시기와 안전성·수익성·유동성 중 중요한 기준을 연결해 써 보세요.'));
+  ['in','out'].forEach(function(k){var el=$('f_'+st.key+'_'+k);el.min='0';el.max='100000';el.step='1';el.setAttribute('aria-label',st.name+' 월 '+(k==='in'?'수입':'지출')+' 만원');el.previousElementSibling.htmlFor=el.id;el.addEventListener('change',function(){if(el.value!==''&&!el.checkValidity()){el.value='';showToast('0부터 100,000 사이의 정수 금액을 만원 단위로 입력하세요.');updateMoneyUI();}});});
+  var guide=document.createElement('p');guide.className='field-hint';guide.textContent='단위는 만원 · 30만원은 30, 250만원은 250으로 입력';money.insertBefore(guide,money.querySelector('.money-row'));
+  var nav=document.createElement('div');nav.className='stage-jump assessment-only';nav.innerHTML='<button type="button" class="minor-btn" '+(i===0?'disabled':'')+' data-stage-go="'+(i-1)+'">이전 시기</button><button type="button" class="minor-btn" data-stage-go="'+(i+1)+'">'+(i===3?'생각 정리로 →':'다음 시기 →')+'</button>';writing.append(nav);
+ });
+ document.querySelectorAll('[data-stage-go]').forEach(function(b){b.onclick=function(){var n=+b.dataset.stageGo;if(n===4)gotoStep(2);else{selectStage(n);$('stageTabs').scrollIntoView({behavior:'smooth',block:'start'});}};});
+ var scroll=document.createElement('div');scroll.className='chart-scroll';$('lifeChart').before(scroll);scroll.append($('lifeChart'));dock.insertAdjacentHTML('afterbegin','<div class="chart-heading">돈 흐름을 눈으로 확인해요</div><p class="chart-note">파란 실선 = 수입 · 주황 점선 = 지출<br>수입선이 위에 있으면 돈이 남아요. 좁은 화면에서는 그래프를 옆으로 밀어 보세요.</p>');
+ dock.querySelector('.legend').innerHTML='<span class="dot" style="background:#1261b8"></span>수입 <span class="dot" style="background:#bd3e2b"></span>지출';
+ dock.insertAdjacentHTML('beforeend','<div id="chartValues"></div>'+helpBox('누적 잔액은 어떻게 계산하나요?','처음 가진 돈은 0원으로 놓고, 각 시기의 (월 수입 − 월 지출) × 12개월 × 기간을 더해요. 청소년기는 15~19세 5년, 다른 시기는 각각 20년이에요. 각 시기의 금액이 계속 같다고 가정하며, 물가·이자·투자 수익과 손실·대출 이자는 따로 계산하지 않아요. 실제 미래 재산을 예측한 금액은 아니에요.'));
+ var settle=document.querySelector('[data-step="2"]');settle.querySelector('.badge.pt').classList.add('assessment-only');
+ $('f_env').previousElementSibling.firstChild.textContent='물가·금리·고령화 중 하나가 바뀌면, 내 돈 관리도 어떻게 바뀔까요? ';
+ $('f_env').placeholder='___이/가 변하면 ___이/가 달라진다. 그래서 나는 ___하겠다.';$('f_env').insertAdjacentHTML('beforebegin',helpBox('환경 변화의 예를 읽어 봐요','<b>물가 상승</b>: 같은 물건을 사는 데 돈이 더 들 수 있어요.<br><b>금리 상승</b>: 새 예금의 이자와 변동금리 대출의 부담이 커질 수 있어요.<br><b>고령화</b>: 노후 생활을 위한 준비의 중요성이 커져요.<br>하나를 골라 나의 지출·저축·투자 계획이 어떻게 달라질지 써요.'));
+ $('f_plan').placeholder='나는 이번 달부터 ___을/를 하겠다. 왜냐하면 ___이기 때문이다.';
+ ['f_env','f_plan'].forEach(function(id){var el=$(id);var lab=el.parentElement.querySelector('label[for="'+id+'"]');if(!lab){var prev=el.previousElementSibling;while(prev&&prev.tagName!=='LABEL')prev=prev.previousElementSibling;if(prev)prev.htmlFor=id;}});
+ document.querySelector('[data-step="3"] .desc').id='previewDesc';
+ $('btnSubmit').removeEventListener('click',submitForm); // Original listener calls the overridden function below.
+ document.addEventListener('input',updateLessonProgress);
+ try{LESSON_MODE=localStorage.getItem('life_activity_mode_v2')||'lesson';}catch(e){}
+ setLessonMode(LESSON_MODE);window.addEventListener('pagehide',doSave);
+}
+function setLessonMode(mode){
+ LESSON_MODE=mode==='assessment'?'assessment':'lesson';document.body.classList.toggle('lesson-mode',LESSON_MODE==='lesson');
+ $('modeLesson').classList.toggle('active',LESSON_MODE==='lesson');$('modeAssessment').classList.toggle('active',LESSON_MODE==='assessment');
+ $('modeLesson').setAttribute('aria-pressed',LESSON_MODE==='lesson');$('modeAssessment').setAttribute('aria-pressed',LESSON_MODE==='assessment');
+ $('modeNote').textContent=LESSON_MODE==='lesson'?'50분 학습: 네 시기 숫자 8칸 + 청년기 짧은 답 5칸 + 마무리 2칸. 학습용이며 전체 100점 평가 제출과는 구분해요.':'전체 수행평가: 네 시기별 7칸과 마무리 2칸, 총 30칸을 작성해요. 학습에서 쓴 답을 이어서 사용할 수 있어요. 기존 배점은 그대로예요.';
+ STAGES.forEach(function(st,i){var money=$('f_'+st.key+'_in').closest('.money-panel');if(LESSON_MODE==='lesson')$('allMoney').append(money);else $('panel_'+i).insertBefore(money,$('panel_'+i).firstChild);});
+ $('allMoney').style.display=LESSON_MODE==='lesson'?'grid':'none';$('stageTabs').style.display=LESSON_MODE==='lesson'?'none':'flex';
+ $('stageHeading').textContent=LESSON_MODE==='lesson'?'네 시기 비교 → 취업 후 계획':'시기별로 설계하기';$('stageDesc').textContent=LESSON_MODE==='lesson'?'① 네 시기의 월 수입·지출을 넣어요. ② 그래프를 비교해요. ③ 청년기 계획만 한 문장씩 써요. 금액에는 정답이 없어요.':'네 시기를 차례로 작성하세요. 문항마다 한 문장으로 써도 돼요. ⓘ 설명을 누르면 도움말이 나와요.';
+ $('btnSubmit').textContent=LESSON_MODE==='lesson'?'학습 결과 파일 저장':'📮 전체 수행평가 제출';$('previewDesc').textContent=LESSON_MODE==='lesson'?'오늘 작성한 청년기 계획과 네 시기의 숫자를 확인하고 저장하세요. 다른 시기의 서술형은 전체 수행평가에서 이어서 작성해요.':'30개 항목을 확인하고 제출하세요. 빠진 항목은 돌아가서 채워 주세요.';
+ if(LESSON_MODE==='lesson')selectStage(1);updateLessonProgress();if(curStep===3)renderPreview();try{localStorage.setItem('life_activity_mode_v2',LESSON_MODE);}catch(e){}
+}
+function lessonRequired(){return LESSON_MODE==='lesson'?STAGES.flatMap(function(st){return ['f_'+st.key+'_in','f_'+st.key+'_out'];}).concat(TXT.map(function(t){return 'f_p2_'+t.sfx;}),['f_env','f_plan']):stageFieldIds().concat(['f_env','f_plan']);}
+function updateLessonProgress(){if(!$('lessonProgress'))return;var ids=lessonRequired(),filled=ids.filter(function(id){return $(id)&&$(id).value.trim()!=='';}).length;$('lessonProgress').textContent='작성 현황 '+filled+' / '+ids.length+'칸 · 숫자 0도 입력한 답으로 인정해요.';}
+var oldSelectStage=selectStage;selectStage=function(i){oldSelectStage(i);if($('lessonProgress'))updateLessonProgress();};
+var oldGotoStep=gotoStep;gotoStep=function(n){oldGotoStep(n);if($('lessonLayout'))$('lessonLayout').classList.toggle('main-grid',n>0);};
+var oldLoadAll=loadAll;loadAll=function(){oldLoadAll();setTimeout(function(){if($('modeNote'))setLessonMode(LESSON_MODE);},100);};
+drawChart=function(){
+ var d=chartData(),xs=[88,260,432,604],base=240,top=42,max=Math.max(10,...d.pts.flatMap(function(p){return [p.vin,p.vout];}));max=Math.ceil(max/10)*10;
+ function y(v){return base-(v/max)*(base-top);}var out='<title>생애주기별 월 수입과 월 지출, 단위 만원</title><desc>정확한 금액은 그래프 아래 표에서도 확인할 수 있습니다.</desc>';
+ for(var t=0;t<=4;t++){var v=max*t/4,yy=y(v);out+='<line x1="55" x2="655" y1="'+yy+'" y2="'+yy+'" stroke="#d2dde4"/><text x="49" y="'+(yy+5)+'" text-anchor="end" font-size="16" fill="#455b6c">'+Math.round(v)+'</text>';}
+ out+='<text x="12" y="22" font-size="16" fill="#455b6c">만원/월</text>';
+ ['vin','vout'].forEach(function(k){var color=k==='vin'?'#1261b8':'#bd3e2b';var path='';d.pts.forEach(function(p,i){path+=(i?' L':'M')+xs[i]+' '+y(p[k]);});out+='<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="4" '+(k==='vout'?'stroke-dasharray="9 6"':'')+'/>';d.pts.forEach(function(p,i){out+='<circle cx="'+xs[i]+'" cy="'+y(p[k])+'" r="6" fill="'+color+'"/>';});});
+ STAGES.forEach(function(st,i){out+='<text x="'+xs[i]+'" y="270" text-anchor="middle" font-size="19" font-weight="700" fill="#172c3c">'+st.name+'</text><text x="'+xs[i]+'" y="294" text-anchor="middle" font-size="15" fill="#455b6c">'+st.range+'</text>';});
+ $('lifeChart').setAttribute('viewBox','0 0 680 310');$('lifeChart').setAttribute('role','img');$('lifeChart').innerHTML=out;
+ var complete=STAGES.every(function(st){return val('f_'+st.key+'_in')!==''&&val('f_'+st.key+'_out')!=='';});
+ $('finalCap').textContent=complete?'80세 누적 잔액(단순 계산): '+fmt(d.final)+'만원':'빈 숫자 칸은 그래프에서 임시로 0으로 표시돼요.';
+ if($('chartValues'))$('chartValues').innerHTML='<table class="chart-table"><caption style="text-align:left;font-weight:bold;margin:10px 0">한 달 돈 흐름 · 만원</caption><thead><tr><th>시기</th><th>수입</th><th>지출</th><th>차이</th></tr></thead><tbody>'+STAGES.map(function(st,i){var p=d.pts[i],a=val('f_'+st.key+'_in'),b=val('f_'+st.key+'_out');return '<tr><th>'+st.name+'</th><td>'+esc(a||'—')+'</td><td>'+esc(b||'—')+'</td><td>'+(a!==''&&b!==''?fmt(p.vin-p.vout):'—')+'</td></tr>';}).join('')+'</tbody></table>';
+};
+// Local calculation assistance is intentionally not labelled as a connected AI service.
+aiStage=function(){var p=chartData().pts[curStage],d=p.vin-p.vout,el=$('aiStageOut');el.style.display='block';el.textContent='계산 도움말 · 자동 채점이나 AI 응답이 아니에요.\n'+STAGES[curStage].name+'는 한 달에 '+Math.abs(d)+'만원이 '+(d>=0?'남아요.':'부족해요.')+'\n'+(d>=0?'남는 돈으로 목표를 준비할 수 있어요. 언제 쓸 돈인지 생각하고 금융 상품을 골라 보세요.':'지출을 줄이는 방법과 수입을 늘리는 방법을 비교해 보세요. 노년기에는 미리 모은 돈을 쓰는 계획도 가능해요.')+'\n금액은 직접 정한 가정이며, 현실성을 판정한 결과는 아니에요.';};
+aiTotal=function(){var d=chartData(),el=$('aiTotalOut'),neg=STAGES.filter(function(st,i){return d.pts[i].vout>d.pts[i].vin;});el.style.display='block';el.textContent='계산 도움말 · AI 응답이 아니에요.\n'+(neg.length?neg.map(function(s){return s.name;}).join(', ')+'에는 지출이 수입보다 커요. 다른 시기에 모은 돈으로 감당할 수 있는지 확인해 보세요.':'입력한 숫자에서는 매달 지출이 수입을 넘는 시기가 없어요. 예상하지 못한 지출을 위한 돈도 필요해요.')+'\n이자·물가 변화를 제외한 단순 누적 잔액은 '+fmt(d.final)+'만원이에요. 실제 미래 재산을 예측한 값은 아니에요.';};
+var oldRenderPreview=renderPreview;renderPreview=function(){oldRenderPreview();if(LESSON_MODE==='lesson'){document.querySelectorAll('#previewArea .pv-stage').forEach(function(el,i){if(i!==1){el.querySelectorAll('.pv-row').forEach(function(row){row.remove();});el.insertAdjacentHTML('beforeend','<p class="field-hint">이 시기의 서술형은 전체 수행평가에서 작성합니다.</p>');}});$('previewArea').insertAdjacentHTML('afterbegin','<div class="mode-note">50분 학습 결과 · 전체 수행평가 제출본이 아닙니다.</div>');}};
+var oldSubmitForm=submitForm;submitForm=function(){
+ var missing=lessonRequired().filter(function(id){return !val(id);});if(missing.length){var id=missing[0],m=id.match(/^f_p(\d)_/);gotoStep(m?1:2);if(m&&LESSON_MODE==='assessment')selectStage(+m[1]-1);$(id).focus();$(id).scrollIntoView({block:'center',behavior:'smooth'});showToast('아직 '+missing.length+'칸이 비어 있어요. 먼저 표시된 칸을 채워 주세요.');return;}
+ if(LESSON_MODE==='assessment'){oldSubmitForm();return;}
+ var content='[50분 학습 결과 · 전체 수행평가 아님]\n이름: '+val('sname')+'\n반: '+val('sel_cls')+' '+val('sel_no')+'번\n'+STAGES.map(function(st){return st.name+': 월 수입 '+val('f_'+st.key+'_in')+'만원 / 월 지출 '+val('f_'+st.key+'_out')+'만원';}).join('\n')+'\n\n청년기 계획\n'+TXT.map(function(t){return t.label+': '+val('f_p2_'+t.sfx);}).join('\n')+'\n환경 변화: '+val('f_env')+'\n실천: '+val('f_plan');
+ var blob=new Blob([content],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='생애주기_학습결과.txt';a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);doSave();showToast('학습 결과 파일을 저장했어요. 선생님이 안내한 곳에 제출하세요.');
+};
+var oldEnterTeachMode=enterTeachMode;enterTeachMode=function(){oldEnterTeachMode();setLessonMode(LESSON_MODE);};
+var oldCopyBody=copyBody;copyBody=function(){if(LESSON_MODE==='assessment'){oldCopyBody();return;}var txt=$('previewArea').innerText;if(!navigator.clipboard){showToast('학습 결과 파일 저장을 이용하세요.');return;}navigator.clipboard.writeText(txt).then(function(){showToast('학습 결과 복사 완료');}).catch(function(){showToast('복사할 수 없어요. 학습 결과 파일 저장을 이용하세요.');});};
+
 init();
+initLessonLayer();
+updateMoneyUI();
 </script>
 </body>
 </html>
+
