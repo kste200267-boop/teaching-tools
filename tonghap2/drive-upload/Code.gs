@@ -5,9 +5,9 @@
  * Put this deployment's /exec URL in life.html DRIVE_UPLOAD_URL after authorization.
  */
 const SETTINGS = Object.freeze({
-  folderId: '1YvlPnksToDThz0If5Efh_jiF4OteGwnd',
+  folderId: PropertiesService.getScriptProperties().getProperty('SUBMISSION_FOLDER_ID'),
   origin: 'https://kste200267-boop.github.io',
-  passwordHash: '516888deaa262edcf15d719ec71e02f0a1b8353bdc6c6d4f9d784bd561b67cad',
+  passwordHash: PropertiesService.getScriptProperties().getProperty('SUBMISSION_PASSWORD_HASH'),
   maxBytes: 5 * 1024 * 1024,
   classes: ['스마트용접과 1반','스마트용접과 2반','융합기계과 1반','융합기계과 2반','스마트금형과 1반','스마트금형과 2반']
 });
@@ -78,6 +78,8 @@ function getReviewData(){
  requireTeacher_();const rows=roster_(),props=PropertiesService.getScriptProperties(),map={};
  rows.forEach(function(r){r.aliases=JSON.parse(props.getProperty('alias_'+r.key)||'[]');r.files=[];map[r.key]=r;});
  const unmatched=[];folderPDFs_().forEach(function(f){const id=fileStudent_(f.name),r=id&&map[id.key];const file={id:f.id,fileName:f.name,created:f.createdTime||f.modifiedTime||'',enteredName:id?id.name:'',viewUrl:f.webViewLink||'https://drive.google.com/file/d/'+f.id+'/view'};
+ file.review=JSON.parse(props.getProperty('review_'+f.id)||'{}');
+ if(file.review.status==='excluded'){file.excluded=true;unmatched.push(file);return;}
  if(!r){unmatched.push(file);return;}
  file.nameVerified=[r.name].concat(r.aliases).some(function(n){return normalizedName_(n)===normalizedName_(file.enteredName);});r.files.push(file);
  });
@@ -93,4 +95,13 @@ function approveStudentAlias(key,name){
 function teacherPage_(){
  try{requireTeacher_();return HtmlService.createHtmlOutputFromFile('Review').setTitle('생애주기 · 반별 제출 현황').addMetaTag('viewport','width=device-width, initial-scale=1');}
  catch(e){return HtmlService.createHtmlOutput('<!doctype html><html lang="ko"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:sans-serif;padding:48px;line-height:1.8"><h1>교사용 제출 현황</h1><p>이 화면은 배포한 교사 Google 계정에서만 열 수 있습니다.</p><p>학교 계정이 아닌 제출 폴더를 연결한 계정으로 Google에 로그인한 뒤 다시 열어 주세요.</p><p>학생의 명렬과 제출물은 표시하지 않았습니다.</p><a href="https://kste200267-boop.github.io/teaching-tools/tonghap2/life.html" target="_top">수업 사이트로 돌아가기</a></body></html>');}
+}
+
+function saveReviewStatus(fileId,status,note){
+ requireTeacher_();
+ if(!/^[A-Za-z0-9_-]+$/.test(String(fileId))||['pending','reviewed','revise','excluded'].indexOf(status)<0)throw new Error('검토 상태를 확인해 주세요.');
+ note=String(note||'').trim();if(note.length>1000)throw new Error('메모는 1000자까지 저장할 수 있습니다.');
+ if(!folderPDFs_().some(function(f){return f.id===fileId;}))throw new Error('제출 폴더에서 파일을 찾지 못했습니다.');
+ const value={status:status,note:note,updated:new Date().toISOString()};
+ PropertiesService.getScriptProperties().setProperty('review_'+fileId,JSON.stringify(value));return true;
 }
