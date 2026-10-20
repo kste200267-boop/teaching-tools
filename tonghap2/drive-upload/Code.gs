@@ -1,7 +1,7 @@
 /**
  * 나의 생애주기 금융 설계 — PDF 수신기
  * Deploy as web app: execute as folder owner, access anyone.
- * The browser calls only doPost; no list/read/delete endpoint is exposed.
+ * Anonymous students upload through doPost; teacher reads require the deploying account.
  * Put this deployment's /exec URL in life.html DRIVE_UPLOAD_URL after authorization.
  */
 const SETTINGS = Object.freeze({
@@ -53,4 +53,44 @@ function doPost(e) {
   const html='<html><body><p>PDF 제출 처리 결과를 수업 화면에 전달했습니다.</p><script>window.top.postMessage('+json+','+JSON.stringify(SETTINGS.origin)+');</'+'script></body></html>';
   return HtmlService.createHtmlOutput(html).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
-function doGet(){return HtmlService.createHtmlOutput('생애주기 금융 설계 PDF 제출 전용입니다. 수업 사이트의 제출 버튼을 사용하세요.');}
+function doGet(e){if(e&&e.parameter&&e.parameter.view==='teacher')return teacherPage_();return HtmlService.createHtmlOutput('생애주기 금융 설계 PDF 제출 전용입니다. 수업 사이트의 제출 버튼을 사용하세요.');}
+
+/* Teacher-only methods. PRIVATE_ROSTER exists only in the private Apps Script project. */
+function requireTeacher_(){
+ const active=Session.getActiveUser().getEmail(),owner=Session.getEffectiveUser().getEmail();
+ if(!active||!owner||active.toLowerCase()!==owner.toLowerCase())throw new Error('교사 Google 계정으로 접속해 주세요. 학생용 비밀번호로는 열 수 없습니다.');
+ return active;
+}
+function roster_(){
+ if(typeof PRIVATE_ROSTER==='undefined')throw new Error('교사용 명렬이 아직 연결되지 않았습니다.');
+ const rows=[];PRIVATE_ROSTER.forEach(function(names,c){names.forEach(function(name,i){if(name)rows.push({key:'1|'+c+'|'+(i+1),grade:'1',cls:SETTINGS.classes[c],number:i+1,name:name});});});return rows;
+}
+function normalizedName_(name){return String(name||'').normalize('NFKC').toLowerCase().replace(/[\s.'’\-]/g,'');}
+function fileStudent_(name){
+ const m=String(name).normalize('NFKC').match(/^([123])학년\s+(.+?)\s+(\d{1,2})번\s+(.+)\.pdf$/i);
+ if(!m)return null;const c=SETTINGS.classes.indexOf(m[2]);if(c<0||+m[3]<1||+m[3]>40)return null;
+ return {key:m[1]+'|'+c+'|'+Number(m[3]),name:m[4]};
+}
+function folderPDFs_(){
+ let files=[],pageToken;do{const options={q:"'"+SETTINGS.folderId+"' in parents and trashed = false and mimeType = 'application/pdf'",pageSize:1000,fields:'nextPageToken,files(id,name,createdTime,modifiedTime,webViewLink)',orderBy:'createdTime desc'};if(pageToken)options.pageToken=pageToken;const page=Drive.Files.list(options);files=files.concat(page.files||[]);pageToken=page.nextPageToken;}while(pageToken);return files;
+}
+function getReviewData(){
+ requireTeacher_();const rows=roster_(),props=PropertiesService.getScriptProperties(),map={};
+ rows.forEach(function(r){r.aliases=JSON.parse(props.getProperty('alias_'+r.key)||'[]');r.files=[];map[r.key]=r;});
+ const unmatched=[];folderPDFs_().forEach(function(f){const id=fileStudent_(f.name),r=id&&map[id.key];const file={id:f.id,fileName:f.name,created:f.createdTime||f.modifiedTime||'',enteredName:id?id.name:'',viewUrl:f.webViewLink||'https://drive.google.com/file/d/'+f.id+'/view'};
+ if(!r){unmatched.push(file);return;}
+ file.nameVerified=[r.name].concat(r.aliases).some(function(n){return normalizedName_(n)===normalizedName_(file.enteredName);});r.files.push(file);
+ });
+ rows.forEach(function(r){r.files.sort(function(a,b){return b.created.localeCompare(a.created)||a.id.localeCompare(b.id);});});
+ return {rows:rows,unmatched:unmatched,classes:SETTINGS.classes,updated:new Date().toISOString(),folderUrl:'https://drive.google.com/drive/folders/'+SETTINGS.folderId};
+}
+function approveStudentAlias(key,name){
+ requireTeacher_();name=String(name||'').normalize('NFKC').trim().replace(/\s+/g,' ');
+ if(!roster_().some(function(r){return r.key===key;})||!name||name.length>80)throw new Error('학생과 이름을 확인해 주세요.');
+ const present=folderPDFs_().some(function(f){const id=fileStudent_(f.name);return id&&id.key===key&&id.name===name;});if(!present)throw new Error('해당 학생의 제출 이름을 찾지 못했습니다. 새로고침해 주세요.');
+ const lock=LockService.getScriptLock();lock.waitLock(10000);try{const props=PropertiesService.getScriptProperties(),aliases=JSON.parse(props.getProperty('alias_'+key)||'[]');if(!aliases.some(function(n){return normalizedName_(n)===normalizedName_(name);}))aliases.push(name);props.setProperty('alias_'+key,JSON.stringify(aliases));}finally{lock.releaseLock();}return true;
+}
+function teacherPage_(){
+ try{requireTeacher_();return HtmlService.createHtmlOutputFromFile('Review').setTitle('생애주기 · 반별 제출 현황').addMetaTag('viewport','width=device-width, initial-scale=1');}
+ catch(e){return HtmlService.createHtmlOutput('<!doctype html><html lang="ko"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:sans-serif;padding:48px;line-height:1.8"><h1>교사용 제출 현황</h1><p>이 화면은 배포한 교사 Google 계정에서만 열 수 있습니다.</p><p>학교 계정이 아닌 제출 폴더를 연결한 계정으로 Google에 로그인한 뒤 다시 열어 주세요.</p><p>학생의 명렬과 제출물은 표시하지 않았습니다.</p><a href="https://kste200267-boop.github.io/teaching-tools/tonghap2/life.html" target="_top">수업 사이트로 돌아가기</a></body></html>');}
+}
