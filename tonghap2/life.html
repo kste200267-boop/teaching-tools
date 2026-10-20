@@ -2221,7 +2221,7 @@ async function exportResultPDF(b){if(pdfBusy)return;if(!entryAuthorized){view='s
 var homeBeforeSlides=home;home=function(){return homeBeforeSlides().replace(/<div class="lesson-strip">[\s\S]*?<\/div><\/div><details/,'<details');};
 
 /* Student entry and verified PDF submission. Deployment URL is set only after Google authorization. */
-var DRIVE_UPLOAD_URL='';
+var DRIVE_UPLOAD_URL='https://script.google.com/macros/s/AKfycbznMsg7T0eG06WGrfKcrvnCvM_rcSgoS_7QSxCg7X8QcMjISHQBnMO-XZ29h0NmQgyI/exec';
 var studentIdentity=null,entryAuthorized=false,entryPassword='',entryShowing=false,uploadBusy=false;
 var ENTRY_PASSWORD_SHA256='516888deaa262edcf15d719ec71e02f0a1b8353bdc6c6d4f9d784bd561b67cad';
 function identityLabel(i){return i?i.grade+'학년 '+i.cls+' '+i.number+'번 '+i.name:'';}
