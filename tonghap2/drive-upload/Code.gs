@@ -37,14 +37,13 @@ function doPost(e) {
     if(!lock.tryLock(25000)) throw new Error('다른 제출을 처리 중이에요. 잠시 후 다시 눌러 주세요.');
     const props=PropertiesService.getScriptProperties(),previous=props.getProperty(input.key);
     let file=null;
-    if(previous){try{const old=DriveApp.getFileById(previous);if(!old.isTrashed())file=old;}catch(ignore){}}
+    if(previous){try{const old=Drive.Files.get(previous,{fields:'id,name,trashed'});if(!old.trashed)file=old;}catch(ignore){}}
     if(!file){
-      const folder=DriveApp.getFolderById(SETTINGS.folderId);
-      file=folder.createFile(Utilities.newBlob(input.bytes,'application/pdf',input.name));
+      file=Drive.Files.create({name:input.name,mimeType:'application/pdf',parents:[SETTINGS.folderId]},Utilities.newBlob(input.bytes,'application/pdf',input.name),{fields:'id,name'});
       // Store the receipt immediately: retries must never silently create duplicates.
-      props.setProperty(input.key,file.getId());
+      props.setProperty(input.key,file.id);
     }
-    result.ok=true;result.fileId=file.getId();result.fileName=file.getName();
+    result.ok=true;result.fileId=file.id;result.fileName=file.name;
   } catch(err) {
     const message=String(err.message||'');
     result.message=/주세요|아니에요|않아요|중이에요/.test(message)?message:'저장하지 못했어요. PDF를 내려받아 보관하고 선생님께 알려 주세요.';
